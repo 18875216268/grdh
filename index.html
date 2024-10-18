@@ -1,10 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>知识 · 中心</title>
-    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="icon" href="logo.png" type="image/png"> <!-- 设置网页图标 -->
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,36 +13,35 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            background-color: #0d1117;
-            /* 默认背景颜色为黑色 */
+            background-color: #0d1117; /* 设置默认背景颜色为深色 */
             background-size: cover; /* 确保背景图片覆盖整个页面 */
             background-position: center; /* 背景图片居中对齐 */
         }
-        
+
         /* 桌面设备背景设置 */
         @media screen and (min-width: 600px) {
             body {
-                background-image: url('https://www.helloimg.com/i/2024/10/19/671289e6dbc3b.png'); /* 设置电脑背景 */
+                background-image: url('https://www.helloimg.com/i/2024/10/19/671289e6dbc3b.png'); /* 设置桌面设备的背景图片 */
             }
         }
 
         /* 移动设备背景设置 */
         @media screen and (max-width: 599px) {
             body {
-                background-image: url('https://www.helloimg.com/i/2024/10/19/67128710b286d.jpg'); /* 设置手机背景 */
+                background-image: url('https://www.helloimg.com/i/2024/10/19/67128710b286d.jpg'); /* 设置移动设备的背景图片 */
             }
         }
 
         .container {
             padding: 10px;
             max-width: 1500px;
-            margin: 30px auto;
+            margin: 30px auto; /* 设置页面主体的最大宽度并居中显示 */
         }
 
         .content {
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: center; /* 内容垂直居中对齐 */
         }
 
         .logo {
@@ -50,13 +50,13 @@
             border-radius: 50%;
             border: 5px solid #fff;
             object-fit: cover;
-            margin-top: 30px;
+            margin-top: 30px; /* 设置 logo 的样式 */
         }
 
         h2 {
             margin-bottom: 5px;
             font-size: 24px;
-            color: #fff;
+            color: #fff; /* 标题样式，白色文字 */
         }
 
         .small-link {
@@ -67,7 +67,7 @@
         }
 
         .small-link:hover {
-            text-decoration: underline;
+            text-decoration: underline; /* 链接悬停时显示下划线 */
         }
 
         .link-list {
@@ -75,12 +75,12 @@
             padding: 0;
             width: 100%;
             max-width: 600px;
-            margin: 0 auto;
+            margin: 0 auto; /* 设置链接列表样式，宽度自适应 */
         }
 
         .link-item {
             margin: 15px 0;
-            position: relative;
+            position: relative; /* 链接项样式 */
         }
 
         .link-item a {
@@ -90,7 +90,7 @@
             color: rgb(51, 51, 51);
             font-weight: bold;
             letter-spacing: 0.1em;
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.7); /* 背景设置为白色的半透明 */
             padding: 22px 16px;
             border-radius: 30px;
             font-size: 14px;
@@ -99,7 +99,7 @@
         }
 
         .link-item a:hover {
-            background-color: rgba(255, 255, 255, 0.85);
+            background-color: rgba(255, 255, 255, 0.85); /* 悬停时增加背景透明度 */
         }
 
         .link-icon {
@@ -109,7 +109,7 @@
             height: 35px;
             border-radius: 50%;
             object-fit: cover;
-            display: block;
+            display: block; /* 图标样式 */
         }
 
         .link-text {
@@ -117,14 +117,14 @@
             text-align: center;
             position: absolute;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%); /* 文本居中 */
         }
 
         .link-arrow {
             position: absolute;
             right: 15px;
             font-weight: bold;
-            color: #5f5c5c;
+            color: #5f5c5c; /* 右侧箭头样式 */
         }
 
         .friend-link {
@@ -135,7 +135,7 @@
         }
 
         .friend-link:hover {
-            text-decoration: underline;
+            text-decoration: underline; /* 友链样式和悬停效果 */
         }
 
         /* 响应式布局 */
@@ -155,11 +155,11 @@
 
             .link-icon {
                 width: 30px;
-                height: 30px;
+                height: 30px; /* 调整图标尺寸 */
             }
 
             .link-arrow {
-                font-size: 12px;
+                font-size: 12px; /* 调整箭头尺寸 */
             }
         }
     </style>
@@ -167,10 +167,13 @@
 <body>
     <div class="container">
         <div class="content">
-            <img src="logo.png" alt="Logo" class="logo" id="site-logo">
-            <h2 id="site-name">知识 · 中心</h2>
-            <a href="https://space.bilibili.com/519341297?spm_id_from=333.1007.0.0" class="small-link" id="link-description" target="_blank">→爱生活·爱分享·爱白嫖(,,･∀･)ﾉ゛</a>
+            <img src="logo.png" alt="Logo" class="logo" id="site-logo"> <!-- 显示网站 Logo -->
+            <h2 id="site-name">知识 · 中心</h2> <!-- 显示网站名称 -->
+            <a href="https://space.bilibili.com/519341297?spm_id_from=333.1007.0.0" class="small-link" id="link-description" target="_blank">
+                →爱生活·爱分享·爱白嫖(,,･∀･)ﾉ゛
+            </a> <!-- 小链接描述 -->
             <ul class="link-list" id="link-list">
+                <!-- 链接列表开始 -->
                 <li class="link-item">
                     <a href="http://quruanpu.cccpan.com/" target="_blank">
                         <img class="link-icon" src="uploads/tubiao/宝藏中心.png" alt="icon">
@@ -214,21 +217,22 @@
                     </a>
                 </li>
             </ul>
-            <a href="https://qm.qq.com/q/gJwCnVwuNU" class="friend-link" id="friend-link" target="_blank">加入QQ交流群(,,･∀･)ﾉ</a>
+            <!-- 链接列表结束 -->
+            <a href="https://qm.qq.com/q/gJwCnVwuNU" class="friend-link" id="friend-link" target="_blank">加入QQ交流群(,,･∀･)ﾉ</a> <!-- 友链 -->
         </div>
     </div>
     
-<!-- 隐藏的音频自动播放功能 -->
-<audio autoplay loop>
-    <source src="uploads/music/音乐.mp3" type="audio/mpeg">
-    您的浏览器不支持音频元素，请更新或换用支持的浏览器。
-</audio>
+    <!-- 隐藏的音频自动播放功能 -->
+    <audio autoplay loop>
+        <source src="uploads/music/音乐.mp3" type="audio/mpeg">
+        您的浏览器不支持音频元素，请更新或换用支持的浏览器。
+    </audio>
 
-<style>
-    audio {
-        display: none; /* 隐藏音频控件 */
-    }
-</style>
+    <style>
+        audio {
+            display: none; /* 隐藏音频控件 */
+        }
+    </style>
 
 </body>
 </html>
