@@ -60,7 +60,7 @@
             display: flex; /* 使用 Flexbox 布局，使内容在水平方向对齐 */
             align-items: center; /* 使内容在垂直方向居中对齐 */
             text-decoration: none; /* 移除文本下划线，使链接看起来更简洁 */
-            color: rgba(0, 0, 0, 0.8); /* 设置文本颜色为深灰色 */
+            color: rgba(0, 0, 0, 0.75); /* 设置文本颜色为深灰色 */
             font-weight: bold; /* 设置文本加粗，使其更显眼 */
             letter-spacing: 0.1em; /* 增加字母之间的间距，使文本更具可读性 */
             background-color: rgba(255, 255, 255, 0.7); /* 背景设置为白色的半透明，增加层次感 */
@@ -90,7 +90,7 @@
             position: absolute;
             right: 15px;
             font-weight: bold;
-            color: #5f5c5c; /* 右侧箭头样式 */
+            color: rgba(0, 0, 0, 0.75);
         }
 
 
