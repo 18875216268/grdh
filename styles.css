@@ -36,10 +36,10 @@
         /* 二、网站样式 */
         /* 1.网站Logo */
         .logo {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            border: 5px solid #fff;
+            width: 90px; /* 设置 logo 宽 */
+            height: 90px; /* 设置 logo 高 */
+            border-radius: 50%;/* 设置 logo 的圆形边框宽度 */
+            border: 2px solid #a9a9a9
             object-fit: cover;
             margin-top: 30px; /* 设置 logo 的样式 */
         }
@@ -48,7 +48,7 @@
             list-style: none; /* 去掉默认的列表项符号（如圆点、数字） */
             padding: 0; /* 删除列表的默认内边距，确保列表紧贴容器边缘 */
             width: 100%; /* 列表宽度设置为100%，占满父元素的宽度 */
-            max-width: 600px; /* 列表最大宽度设置为600px，防止列表在大屏幕上过宽 */
+            max-width: 500px; /* 列表最大宽度设置为600px，防止列表在大屏幕上过宽 */
             margin: 0 auto; /* 将列表居中对齐，左右外边距设置为自动 */
         }
         /* 3.具体列表样式 */
