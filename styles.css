@@ -13,11 +13,13 @@
             color: rgb(255, 255, 255,0.8); /* 设置文字颜色为白色，透明度60% */
             text-decoration: none; /* 移除下划线 */
             margin-bottom: 2px;
+            font-weight: bold; /* 设置文本加粗，使其更显眼 */
         }
         /* ②鼠标悬停时显示下划线 */
         .shuoming-wenben:hover {
             text-decoration: underline; 
             color: rgb(255, 255, 255,1); /* 鼠标悬停时颜色变化 */
+            font-weight: bold; /* 设置文本加粗，使其更显眼 */
         }
 
         /* 3.列表文本样式 */
