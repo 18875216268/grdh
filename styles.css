@@ -117,7 +117,7 @@
           left: 0;
           width: 100%;
           height: 100%;
-          background-color: rgba(0, 0, 0, 0.4); /* 黑色半透明 */
+          background-color: rgba(0, 0, 0, 0.2); /* 黑色半透明 */
           z-index: 1; /* 设定蒙版层级，确保在背景图片之上 */
        }
         /* 3.1级div主体层级 */ 
