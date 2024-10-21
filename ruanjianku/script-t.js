@@ -3,10 +3,6 @@ window.onload = function () {
     document.getElementById('弹窗容器id').style.display = 'flex'; // 页面加载时显示弹窗
 };
 
-function closeModal() {
-    window.close(); // 关闭窗口
-}
-
 function confirmAccess() {
     document.getElementById('弹窗容器id').style.display = 'none'; // 隐藏弹窗
 }
