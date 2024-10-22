@@ -58,9 +58,9 @@ body {
     /* 内容横向居中对齐 */
     align-items: center;
     /* 内容纵向居中对齐 */
-    width: 200px;
+    width: 100%;
     /* 块的宽度 */
-    height: 50px;
+    height: 50%;
     /* 块的高度 */
     transition: transform 0.6s ease, box-shadow 0.4s ease;
     /* 动画效果 */
