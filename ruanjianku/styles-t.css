@@ -39,7 +39,7 @@ body {
     /* 允许换行 */
     justify-content: center;
     /* 横向居中对齐 */
-    gap: 40%;
+    gap: 20px;
     /* 项目间距 */
 }
 
@@ -199,8 +199,8 @@ button+button {
     width: 50px; /* 初始宽度，根据需要调整 */
     height: auto; /* 自适应高度 */
     max-width: 100%; /* 确保图片不会超出设备宽度 */
-    margin-top: 20px; /* 设置图片离顶部的距离 */
-    margin-left: 15px; /* 设置图片离左侧的距离 */
+    margin-top: 20%; /* 设置图片离顶部的距离 */
+    margin-left: 15%; /* 设置图片离左侧的距离 */
     transform: rotate(40deg)  /* 设置图片旋转角度 */
 }
 
@@ -243,6 +243,13 @@ button+button {
         height: 60px; /* 在更小的设备上调整容器高度 */
     }
 }
+
+
+
+
+
+
+
 
 h2 {
     color: #333;
