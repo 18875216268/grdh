@@ -199,8 +199,8 @@ button+button {
     width: 50px; /* 初始宽度，根据需要调整 */
     height: auto; /* 自适应高度 */
     max-width: 100%; /* 确保图片不会超出设备宽度 */
-    margin-top: 20%; /* 设置图片离顶部的距离 */
-    margin-left: 15%; /* 设置图片离左侧的距离 */
+    margin-top: 35%; /* 设置图片离顶部的距离 */
+    margin-left: 20%; /* 设置图片离左侧的距离 */
     transform: rotate(40deg)  /* 设置图片旋转角度 */
 }
 
