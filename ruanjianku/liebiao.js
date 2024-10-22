@@ -1,11 +1,11 @@
  // 使用AJAX从远程JSON文件获取软件库列表
         function loadSoftwareList() {
             const xhr = new XMLHttpRequest();
-            xhr.open("GET", "/ruanjianku.json", true);
+            xhr.open("GET", "ruanjianku.json", true);
             xhr.onload = function () {
                 if (xhr.status === 200) {
                     const softwareList = JSON.parse(xhr.responseText);
-                    const container = document.getElementById('软件库列表');
+                    const container = document.getElementById('软件库列表id');
                     
                     // 遍历JSON数据并动态生成列表项
                     softwareList.forEach(item => {
