@@ -1,0 +1,49 @@
+﻿<!-- index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>软件库目录</title>
+    <link rel="icon" href="c其它/logo.png" type="image/png"> <!-- 设置网页图标 -->
+    <link rel="stylesheet" href="zy.css">
+    <link rel="stylesheet" href="a弹窗/tc.css">
+    <link rel="stylesheet" href="b返回/fh.css">
+
+</head>
+
+<body>
+
+    <!-- 返回按钮容器 -->
+    <div class="返回图片容器class">
+        <img src="c其它/返回.png" alt="返回" class="返回图片class"> <!-- 返回图片 -->
+        <div class="圆形容器class" onclick="goBack()"></div> <!-- 圆形容器 -->
+    </div>
+
+    <!-- 公告弹窗容器 -->
+    <div class="弹窗容器class" id="弹窗容器id"> <!-- 弹窗容器 -->
+        <div class="弹窗内容class"> <!-- 弹窗内容 -->
+            <h2>公告</h2> <!-- 弹窗标题 -->
+            <p>本网站不存储任何资源，所有软件库均来源于互联网，请各位客官仔细鉴别其真实性、安全性！请勿滥传滥用，且用且珍惜。</p> <!-- 弹窗内容 -->
+            <button id="关闭按钮id" class="按钮class" onclick="goBack()">关闭</button> <!-- 关闭按钮.返回主页面 -->
+            <button id="确认按钮id" class="按钮class" onclick="confirmAccess()">确认</button> <!-- 确认按钮 -->
+        </div>
+    </div>
+
+    <!-- 软件库大容器，用于容纳多个软件块 -->
+    <div class="软件库1级容器class">
+        <!-- 小块容器，用于放置各个软件块 -->
+        <div class="软件库2级容器class" id="软件列表id" role="list"></div>
+    </div>
+
+    <!-- 分页按钮的容器，用于显示分页控件 -->
+    <div class="pagination" id="pagination-controls" aria-label="分页控件"></div>
+    <script type="module" src="zy.js"></script>
+    <script src="a弹窗/tc.js"></script>
+    <script src="b返回/fh.js"></script>
+    <script src="c其它/bj.js"></script>
+
+</body>
+
+</html>

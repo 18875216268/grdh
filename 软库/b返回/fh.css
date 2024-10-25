@@ -1,0 +1,59 @@
+/* 返回图片容器样式 */
+.返回图片容器class {
+    position: absolute; /* 绝对定位 */
+    top: 0px; /* 设置距离顶部的距离 */
+    left: 0px; /* 设置距离左侧的距离 */
+    z-index: 100; /* 保证图片在所有元素上方 */
+    cursor: pointer; /* 鼠标悬停时显示为手指样式 */
+}
+
+/* 返回图片自适应样式 */
+.返回图片class {
+    width: 50px; /* 初始宽度，根据需要调整 */
+    height: auto; /* 自适应高度 */
+    max-width: 100%; /* 确保图片不会超出设备宽度 */
+    margin-top: 35%; /* 设置图片离顶部的距离 */
+    margin-left: 20%; /* 设置图片离左侧的距离 */
+    transform: rotate(40deg)  /* 设置图片旋转角度 */
+}
+
+/* 四分之一圆形容器样式 */
+.圆形容器class {
+    position: absolute; /* 绝对定位 */
+    width: 100px; /* 容器宽度 */
+    height: 100px; /* 容器高度 */
+    background-color: rgba(0, 0, 0, 0.2); /* 半透明黑色背景 */
+    border-bottom-right-radius: 100px; /* 圆角，确保朝右下方 */
+    top: 0; /* 距离顶部 */
+    left: 0; /* 距离左侧 */
+    transition: box-shadow 0.3s ease; /* 添加过渡效果 */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.4); /* 白光柔滑效果 */
+}
+
+.圆形容器class:hover {
+    box-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 50px rgba(255, 255, 255, 0.8); /* 强化白光效果 */
+}
+
+/* 自适应样式 */
+@media (max-width: 768px) {
+    .返回图片class {
+        width: 40px; /* 在小屏设备上调整图片大小 */
+    }
+
+    .圆形容器class {
+        width: 80px; /* 在小屏设备上调整容器宽度 */
+        height: 80px; /* 在小屏设备上调整容器高度 */
+    }
+}
+
+@media (max-width: 480px) {
+    .返回图片class {
+        width: 30px; /* 在更小的设备上调整图片大小 */
+    }
+
+    .圆形容器class {
+        width: 60px; /* 在更小的设备上调整容器宽度 */
+        height: 60px; /* 在更小的设备上调整容器高度 */
+    }
+}
+
