@@ -141,6 +141,8 @@ function generatePaginationControls(totalPages) {
         button.textContent = text; // 设置按钮文本
         button.disabled = disabled; // 根据情况禁用按钮
         button.style.width = '50px'; // 确保按钮宽度一致
+        button.style.textAlign = 'center'; // 按钮内文字居中
+        button.style.overflow = 'hidden'; // 确保文字不换行
         if (isCurrent) {
             button.classList.add('current-page'); // 当前页按钮的特殊样式
         }
