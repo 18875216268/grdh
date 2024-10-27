@@ -8,11 +8,12 @@ body {
     display: flex; /* 使用 Flexbox 布局，使页面内容容易居中和排列。 */
     flex-direction: column; /* Flexbox 布局方向为列，使内容从上到下排列。 */
     align-items: center; /* 内容在水平方向上居中对齐。 */
-    justify-content: center; /* 内容在垂直方向上居中对齐。 */
+    justify-content: flex-start; /* 将内容从顶部开始排列，而不是完全居中，给顶部留出更多空间。 */
     height: 100vh; /* 页面高度设置为视口高度，使内容充满整个页面。 */
     overflow: hidden; /* 禁止滚动条，保持页面简洁。 */
     position: relative; /* 设置为相对定位，以便后续使用伪元素覆盖页面。 */
     transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out; /* 背景颜色和文字颜色的渐变效果，提升页面的交互性。 */
+    padding-top: 50px; /* 增加顶部的距离，确保页面内容与浏览器上边距之间有足够的间距。 */
 }
 
 /* 添加渐变蒙版效果，使页面看起来更加柔和且富有层次感 */
@@ -29,9 +30,9 @@ body::before {
 
 /* 软件库大容器的样式 */
 .软件库1级容器class {
-    width: 80%; /* 设置容器宽度为页面宽度的90%，确保内容在大屏幕上也有一定留白。 */
-    max-width: 1080px; /* 最大宽度为1140px，防止容器在大屏幕上过宽，保持用户体验。 */
-    height: 420px; /* 高度固定为500px，可以根据需要调整。 */
+    width: 90%; /* 设置容器宽度为页面宽度的90%，确保内容在大屏幕上也有一定留白。 */
+    max-width: 1140px; /* 最大宽度为1140px，防止容器在大屏幕上过宽，保持用户体验。 */
+    height: 500px; /* 高度固定为500px，可以根据需要调整。 */
     padding: 25px; /* 容器内部的边距，保持内容与边界的距离。 */
     background: rgba(255, 255, 255, 0.5); /* 半透明的白色背景，使内容和背景有明显区分。 */
     border-radius: 20px; /* 设置20px的圆角，使容器看起来更加柔和。 */
@@ -42,6 +43,7 @@ body::before {
     overflow: hidden; /* 隐藏可能超出的内容。 */
     position: relative; /* 设置相对定位，以便子元素的绝对定位操作。 */
     transition: transform 0.5s ease, opacity 0.5s ease, background-color 0.5s ease-in-out; /* 添加过渡效果，使交互更加平滑。 */
+    margin-top: 30px; /* 增加顶部的外边距，使大容器与顶部有更大的间距。 */
 }
 
 /* 小块容器的样式（包含软件块的容器） */
@@ -57,8 +59,8 @@ body::before {
 
 /* 单个软件库块的样式 */
 .软件库块class {
-    width: 180px; /* 固定宽度，保持统一。 */
-    height: 80px; /* 固定高度，保持统一。 */
+    width: 200px; /* 固定宽度为200px，保持统一。 */
+    height: 100px; /* 固定高度为100px，保持统一。 */
     background: rgba(0, 0, 0, 0.4); /* 黑色半透明背景，增强对比度。 */
     border-radius: 30px; /* 圆角设置为30px，使块看起来更加柔和。 */
     box-shadow: 0 4px 10px rgba(255, 255, 255, 0.15); /* 添加轻微的阴影，使其看起来立体。 */
