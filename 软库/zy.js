@@ -140,9 +140,7 @@ function generatePaginationControls(totalPages) {
         const button = document.createElement('button'); // 创建按钮元素
         button.textContent = text; // 设置按钮文本
         button.disabled = disabled; // 根据情况禁用按钮
-        button.style.width = '50px'; // 确保按钮宽度一致
-        button.style.textAlign = 'center'; // 按钮内文字居中
-        button.style.overflow = 'hidden'; // 确保文字不换行
+        button.classList.add('pagination-button'); // 统一添加按钮样式类
         if (isCurrent) {
             button.classList.add('current-page'); // 当前页按钮的特殊样式
         }
