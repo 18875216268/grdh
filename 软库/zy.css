@@ -1,153 +1,150 @@
 /* styles.css */
 /* 设置页面的全局样式 */
 body {
-    font-family: 'Arial', sans-serif; /* 设置页面的字体为 Arial，如果没有则使用 sans-serif。改变字体会影响整个页面的文字显示风格 */
-    background-size: cover; /* 背景图片将覆盖整个页面。可以改为 'contain' 让背景图片适应页面大小，但可能导致部分空白 */
-    margin: 0; /* 去除浏览器的默认页面边距，确保内容能紧贴浏览器边缘 */
-    padding: 0; /* 去除浏览器的默认页面内边距，避免内容被推离 */
-    display: flex; /* 使用 Flexbox 布局，使元素能方便地在页面上居中或排列 */
-    flex-direction: column; /* Flexbox 主轴方向设为纵向，页面元素从上到下排列。改为 'row' 会使元素从左到右排列 */
-    align-items: center; /* 子元素在交叉轴上居中对齐。改为 'flex-start' 会让子元素从左对齐 */
-    justify-content: center; /* 子元素在主轴上居中对齐。改为 'flex-start' 会让子元素从顶部开始排列 */
-    height: 100vh; /* 页面高度设置为视口高度，使内容占满整个页面高度。可改为具体数值控制高度 */
-    overflow: hidden; /* 禁止页面滚动。改为 'auto' 可以启用滚动条 */
-    position: relative; /* 设置相对定位，以便子元素可以进行绝对定位 */
-    transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out; /* 设置背景颜色和文字颜色的过渡效果，持续 0.5 秒。改变时间会使颜色变化更慢或更快 */
+    font-family: 'Arial', sans-serif;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out;
 }
 
 /* 添加渐变蒙版效果，使页面看起来更加柔和且富有层次感 */
 body::before {
-    content: ''; /* 创建一个伪元素，不显示任何内容，仅用于样式 */
-    position: absolute; /* 绝对定位使伪元素覆盖整个页面 */
-    top: 0; /* 伪元素的顶部边缘与页面顶部对齐 */
-    left: 0; /* 伪元素的左侧边缘与页面左侧对齐 */
-    right: 0; /* 伪元素的右侧边缘与页面右侧对齐 */
-    bottom: 0; /* 伪元素的底部边缘与页面底部对齐 */
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.2)); /* 创建从顶部到底部的渐变效果，顶部透明度较低，底部透明度较高 */
-    z-index: -1; /* 确保伪元素位于所有其他元素之后 */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.2));
+    z-index: -1;
 }
 
 /* 软件库大容器的样式 */
 .软件库1级容器class {
-    width: 90%; /* 容器宽度为页面的 90%，改为 100% 可以让容器占据全部宽度 */
-    max-width: 1140px; /* 设置最大宽度，防止在大屏幕上容器过宽 */
-    height: 500px; /* 固定容器高度为 500px。可以根据需要调整，或使用百分比以适应不同屏幕 */
-    padding: 25px; /* 容器内边距，增加内容与容器边缘的距离 */
-    background: rgba(255, 255, 255, 0.5); /* 设置白色背景，带有 0.8 的不透明度，能使背景有半透明效果 */
-    border-radius: 20px; /* 设置圆角，使容器的边框更加柔和。减小值会减少圆角的效果 */
-    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2); /* 添加阴影，使容器看起来有立体感 */
-    display: flex; /* 使用 Flexbox 布局，便于内部元素的排列 */
-    flex-direction: column; /* 容器内部元素从上到下排列 */
-    box-sizing: border-box; /* 包含内边距和边框在内计算总宽度和高度，防止溢出 */
-    overflow: hidden; /* 防止内容溢出容器 */
-    position: relative; /* 相对定位，允许子元素的绝对定位 */
-    transition: transform 0.5s ease, opacity 0.5s ease, background-color 0.5s ease-in-out; /* 添加转换和背景颜色的平滑过渡效果 */
+    width: 90%;
+    max-width: 1140px;
+    height: 500px;
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.5s ease, opacity 0.5s ease, background-color 0.5s ease-in-out;
 }
 
 /* 小块容器的样式（包含软件块的容器） */
 .软件库2级容器class {
-    display: flex; /* 使用 Flexbox 布局，以方便内部软件块的排列 */
-    flex-wrap: wrap; /* 内容如果超出一行，会自动换行 */
-    justify-content: space-around; /* 子元素在水平方向均匀分布 */
-    align-content: space-around; /* 多行子元素在垂直方向均匀分布 */
-    gap: 20px 10px; /* 设置子元素之间的水平间距为 20px，垂直间距为 10px */
-    flex-grow: 1; /* 容器将占据父容器的剩余空间 */
-    transition: background-color 0.5s ease-in-out; /* 设置背景颜色的平滑过渡效果 */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-content: space-around;
+    gap: 20px 10px;
+    flex-grow: 1;
+    transition: background-color 0.5s ease-in-out;
 }
 
 /* 单个软件库块的样式 */
 .软件库块class {
-    width: 200px; /* 固定块的宽度为 200px。增大宽度可展示更多内容 */
-    height: 100px; /* 固定块的高度为 100px */
-    background: rgba(0, 0, 0, 0.4); /* 设置黑色半透明背景，增强与背景的对比度 */
-    border-radius: 30px; /* 设置圆角，使软件块的边框更加柔和 */
-    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.15); /* 添加阴影效果，使软件块更具有立体感 */
-    display: flex; /* 使用 Flexbox 布局，以便内容居中 */
-    align-items: center; /* 垂直方向居中对齐内容 */
-    justify-content: center; /* 水平方向居中对齐内容 */
-    text-align: center; /* 文本水平居中对齐 */
-    flex-direction: column; /* 纵向排列内容 */
-    cursor: pointer; /* 背景模糊效果 */
-    transition: transform 0.4s ease, box-shadow 0.4s ease, background-color 0.5s ease-in-out; /* 添加平滑的悬停效果和背景色切换效果 */
-    cursor: pointer; /* 鼠标悬停时显示手指形状，提示可点击 */
-    text-shadow: 0 20 40px rgba(255, 255, 255, 1); /* 设置文字发光效果，增强可读性 */
+    width: 200px;
+    height: 100px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 30px;
+    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    cursor: pointer;
+    transition: transform 0.4s ease, box-shadow 0.4s ease, background-color 0.5s ease-in-out;
+    text-shadow: 0 20 40px rgba(255, 255, 255, 1);
 }
 
 /* 软件库块的悬停效果样式 */
 .软件库块class:hover {
     transform: translateY(-10px);
-    /* 鼠标悬停时块的移动量 */
     text-shadow: 0 0 10px rgb(255, 217, 0), 0 0 20px rgba(255, 215, 0, 0.8);
-    /* 文字添加金光效果 */
     box-shadow: 0 0 40px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.6);
-    /* 添加金光效果 */
 }
 
 /* 软件库块中文字样式的定义 */
 .文字class {
-    max-width: 14ch; /* 设置最大字符长度为 16 个字符，适应较长的软件名称 */
-    overflow-wrap: break-word; /* 超出长度自动换行 */
-    font-size: 16px; /* 设置文字大小为 18px，确保清晰可读 */
-    font-weight: 600; /* 字体加粗，使文字更加醒目 */
-    color: rgba(255, 255, 255, 0.8); /* 字体颜色设为白色 */
-    text-align: center; /* 文字水平居中对齐 */
-    text-shadow: 0 10 20px rgba(255, 255, 255, 0.8); /* 设置文字的发光效果，增加可读性 */
+    max-width: 14ch;
+    overflow-wrap: break-word;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    text-shadow: 0 10 20px rgba(255, 255, 255, 0.8);
 }
 
 /* 设置分页控件的样式 */
 .pagination {
-    display: flex; /* 使用 Flexbox 布局，使分页控件在页面上居中 */
-    justify-content: center; /* 分页按钮水平居中对齐 */
-    align-items: center; /* 垂直方向居中对齐 */
-    margin-top: 20px; /* 设置分页控件与主要内容的距离 */
-    padding: 10px; /* 增加分页区域的内边距，使其更醒目 */
-    background-color: rgba(255, 255, 255, 0.3); /* 设置轻微的背景色，提高分页区域的可见性 */
-    border-radius: 10px; /* 设置圆角，使分页控件看起来更加美观 */
-    transition: background-color 0.5s ease-in-out; /* 添加背景颜色的平滑过渡效果 */
-    max-width: 1000px; /* 限制分页容器最大宽度 */
-    overflow: hidden; /* 隐藏超出宽度的按钮 */
-    position: relative; /* 设置相对定位，用于按钮滑动 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    transition: background-color 0.5s ease-in-out;
+    max-width: 1000px;
+    overflow: hidden;
+    position: relative;
 }
 
 /* 分页按钮的样式 */
-.pagination button {
-    background-color: rgba(50, 50, 50, 0.5); /* 设置按钮为深灰色半透明背景 */
-    color: #fff; /* 按钮文字颜色设为白色 */
-    border: none; /* 去掉按钮的默认边框 */
+.pagination-button {
+    width: 50px; /* 所有按钮宽度一致 */
+    height: 50px; /* 所有按钮高度一致 */
+    line-height: 50px; /* 使按钮内文本垂直居中 */
+    text-align: center; /* 按钮内文字水平居中 */
+    font-size: 15px; /* 字体大小一致 */
+    border: none; /* 去掉按钮边框 */
+    background-color: rgba(50, 50, 50, 0.5); /* 示例背景色 */
+    color: white; /* 按钮文字颜色设为白色 */
     margin: 0 8px; /* 按钮之间设置 8px 的水平间距，防止按钮挤在一起 */
-    padding: 12px 18px; /* 设置按钮的内边距，使其更大更易点击 */
-    border-radius: 8px; /* 圆角按钮，使其看起来更加柔和 */
-    cursor: pointer; /* 鼠标悬停时显示手指形状，提示可点击 */
-    font-size: 15px; /* 设置按钮文字的大小，确保可读性 */
-    transition: background 0.3s, transform 0.3s, color 0.5s ease-in-out; /* 添加背景色、放大效果和颜色的过渡效果 */
+    cursor: pointer; /* 鼠标悬停时显示手形 */
+    transition: background 0.3s, transform 0.3s, color 0.5s ease-in-out; /* 背景颜色和放大效果的过渡 */
 }
 
-/* 分页按钮的悬停效果 */
-.pagination button:hover {
+.pagination-button:hover {
     background-color: rgba(255, 242, 0, 0.6); /* 悬停时背景颜色加深，增加视觉反馈 */
-    transform: scale(1.1); /* 悬停时按钮放大 5%，增加交互感 */
-    color:rgb(255, 255, 255); /* 悬停时按钮文字变为金黄色，增加视觉效果 */
-}
-
-/* 分页按钮的滑动效果 */
-.pagination-scroll {
-    display: flex;
-    transition: transform 0.5s ease; /* 添加按钮滑动的过渡效果 */
+    transform: scale(1.1); /* 悬停时放大 */
+    color: rgb(255, 255, 255); /* 悬停时按钮文字变为白色，增加视觉效果 */
 }
 
 /* 分页按钮禁用状态的样式（如在第一页或最后一页） */
-.pagination button:disabled {
+.pagination-button:disabled {
     background-color: #ccc; /* 禁用状态下按钮背景设为浅灰色 */
     cursor: not-allowed; /* 鼠标悬停时显示禁用符号，提示不可点击 */
     opacity: 0.6; /* 减少透明度，使禁用按钮显得不那么醒目 */
 }
 
 /* 当前页按钮的样式 */
-.pagination button.current-page {
+.pagination-button.current-page {
     background-color: rgba(255, 215, 0, 0.9); /* 当前页按钮设为醒目的金黄色背景，突出显示 */
     font-weight: bold; /* 字体加粗，使其更加醒目 */
     cursor: default; /* 当前页按钮不可点击，因此设置为默认鼠标指针 */
     color: #fff; /* 当前页的按钮文字颜色为白色 */
+}
+
+/* 分页按钮的滑动效果 */
+.pagination-scroll {
+    display: flex;
+    transition: transform 0.5s ease; /* 添加按钮滑动的过渡效果 */
 }
 
 /* 页面切换动画：从左侧滑入 */
@@ -181,4 +178,12 @@ body::before {
 @keyframes fadeInOut {
     from { opacity: 0; } /* 起始状态完全透明 */
     to { opacity: 1; } /* 渐变到完全不透明 */
+}
+
+/* 确保“首页”和“末页”按钮与其他分页按钮风格一致 */
+.pagination-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
