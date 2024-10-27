@@ -91,21 +91,47 @@ function generatePaginationControls(totalPages) {
     const paginationControls = document.getElementById('pagination-controls'); // 获取分页按钮的容器元素
     paginationControls.innerHTML = ''; // 清空之前的分页控件
 
+    // 计算按钮的可视范围
+    const visibleButtonCount = 10;
+    let startPage = Math.max(1, currentPage - Math.floor(visibleButtonCount / 2));
+    let endPage = startPage + visibleButtonCount - 1;
+    if (endPage > totalPages) {
+        endPage = totalPages;
+        startPage = Math.max(1, endPage - visibleButtonCount + 1);
+    }
+
     // 定义分页按钮，包括首页、上一页、页码、下一页和末页
     const paginationButtons = [
         { text: '首页', disabled: currentPage === 1, action: () => (currentPage = 1) },
-        { text: '◀', disabled: currentPage === 1, action: () => currentPage-- },
-        ...Array.from({ length: totalPages }, (_, i) => ({
-            text: `${i + 1}`,
-            disabled: false,
-            action: () => (currentPage = i + 1),
-            isCurrent: currentPage === (i + 1)
-        })),
-        { text: '▶', disabled: currentPage === totalPages, action: () => currentPage++ },
-        { text: '末页', disabled: currentPage === totalPages, action: () => (currentPage = totalPages) }
+        { text: '◀', disabled: currentPage === 1, action: () => currentPage-- }
     ];
 
+    // 创建中间的页码按钮，基于当前页码动态显示
+    for (let i = startPage; i <= endPage; i++) {
+        paginationButtons.push({
+            text: `${i}`,
+            disabled: false,
+            action: () => {
+                currentPage = i;
+                loadSoftwareList(); // 重新加载软件列表
+                updatePaginationControls(totalPages, visibleButtonCount); // 更新分页控件
+            },
+            isCurrent: currentPage === i
+        });
+    }
+
+    paginationButtons.push(
+        { text: '▶', disabled: currentPage === totalPages, action: () => {
+            currentPage++;
+            loadSoftwareList(); // 重新加载软件列表
+            updatePaginationControls(totalPages, visibleButtonCount); // 更新分页控件
+        } },
+        { text: '末页', disabled: currentPage === totalPages, action: () => (currentPage = totalPages) }
+    );
+
     // 逐个创建分页按钮并添加到分页控件容器中
+    const paginationWrapper = document.createElement('div');
+    paginationWrapper.classList.add('pagination-wrapper');
     paginationButtons.forEach(({ text, disabled, action, isCurrent }) => {
         const button = document.createElement('button'); // 创建按钮元素
         button.textContent = text; // 设置按钮文本
@@ -117,8 +143,44 @@ function generatePaginationControls(totalPages) {
             action(); // 设置按钮点击后执行的动作
             loadSoftwareList(); // 重新加载软件列表
         });
-        paginationControls.appendChild(button); // 将按钮添加到分页控件容器中
+        paginationWrapper.appendChild(button); // 将按钮添加到分页控件容器中
     });
+
+    paginationControls.appendChild(paginationWrapper);
+}
+
+// 更新分页控件以确保滑动效果
+function updatePaginationControls(totalPages, visibleButtonCount) {
+    const paginationControls = document.getElementById('pagination-controls');
+    const buttons = Array.from(paginationControls.querySelectorAll('.pagination-wrapper button'));
+    const pageButtons = buttons.filter(button => !isNaN(parseInt(button.textContent)));
+    const paginationWrapper = paginationControls.querySelector('.pagination-wrapper');
+
+    if (totalPages > visibleButtonCount) {
+        let startPage = currentPage - Math.floor(visibleButtonCount / 2);
+        startPage = Math.max(1, startPage);
+        let endPage = startPage + visibleButtonCount - 1;
+        if (endPage > totalPages) {
+            endPage = totalPages;
+            startPage = Math.max(1, endPage - visibleButtonCount + 1);
+        }
+
+        pageButtons.forEach((button, index) => {
+            const pageNumber = startPage + index;
+            if (pageNumber <= endPage) {
+                button.style.display = 'inline-block';
+                button.textContent = pageNumber;
+                button.classList.toggle('current-page', pageNumber === currentPage);
+            } else {
+                button.style.display = 'none';
+            }
+        });
+
+        // 添加滑动动画效果
+        paginationWrapper.style.transition = 'transform 0.5s ease-in-out';
+        const translateAmount = -(startPage - 1) * (buttons[0].offsetWidth + 16); // 根据按钮宽度计算滑动量
+        paginationWrapper.style.transform = `translateX(${translateAmount}px)`;
+    }
 }
 
 // 初次加载软件列表
