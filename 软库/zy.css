@@ -118,6 +118,7 @@ body::before {
     margin: 0 8px; /* 按钮之间设置 8px 的水平间距，防止按钮挤在一起 */
     cursor: pointer; /* 鼠标悬停时显示手形 */
     transition: background 0.3s, transform 0.3s, color 0.5s ease-in-out; /* 背景颜色和放大效果的过渡 */
+    border-radius: 15px; /* 添加圆角，使按钮更美观 */
 }
 
 .pagination-button:hover {
@@ -139,6 +140,7 @@ body::before {
     font-weight: bold; /* 字体加粗，使其更加醒目 */
     cursor: default; /* 当前页按钮不可点击，因此设置为默认鼠标指针 */
     color: #fff; /* 当前页的按钮文字颜色为白色 */
+    border-radius: 15px; /* 保持圆角样式 */
 }
 
 /* 分页按钮的滑动效果 */
@@ -186,4 +188,5 @@ body::before {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    border-radius: 15px; /* 为分页容器添加圆角，使整体更美观 */
 }
