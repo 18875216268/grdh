@@ -1,184 +1,190 @@
-/* styles.css */
-/* 设置页面的全局样式 */
-body {
-    font-family: 'Arial', sans-serif; /* 设置页面的字体为 Arial，如果没有则使用 sans-serif。改变字体会影响整个页面的文字显示风格 */
-    background-size: cover; /* 背景图片将覆盖整个页面。可以改为 'contain' 让背景图片适应页面大小，但可能导致部分空白 */
-    margin: 0; /* 去除浏览器的默认页面边距，确保内容能紧贴浏览器边缘 */
-    padding: 0; /* 去除浏览器的默认页面内边距，避免内容被推离 */
-    display: flex; /* 使用 Flexbox 布局，使元素能方便地在页面上居中或排列 */
-    flex-direction: column; /* Flexbox 主轴方向设为纵向，页面元素从上到下排列。改为 'row' 会使元素从左到右排列 */
-    align-items: center; /* 子元素在交叉轴上居中对齐。改为 'flex-start' 会让子元素从左对齐 */
-    justify-content: center; /* 子元素在主轴上居中对齐。改为 'flex-start' 会让子元素从顶部开始排列 */
-    height: 100vh; /* 页面高度设置为视口高度，使内容占满整个页面高度。可改为具体数值控制高度 */
-    overflow: hidden; /* 禁止页面滚动。改为 'auto' 可以启用滚动条 */
-    position: relative; /* 设置相对定位，以便子元素可以进行绝对定位 */
-    transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out; /* 设置背景颜色和文字颜色的过渡效果，持续 0.5 秒。改变时间会使颜色变化更慢或更快 */
+// script.js
+// 引入 Firebase 所需的库
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+// Firebase 应用的配置参数
+const firebaseConfig = {
+    apiKey: "AIzaSyDk5p6EJAe02LEeqhQm1Z1dZxlIqGrRcUo",
+    authDomain: "asqrt-ed615.firebaseapp.com",
+    databaseURL: "https://asqrt-ed615-default-rtdb.firebaseio.com",
+    projectId: "asqrt-ed615",
+    storageBucket: "asqrt-ed615.appspot.com",
+    messagingSenderId: "131720495048",
+    appId: "1:131720495048:web:35f43929e31c1cc3428afd",
+    measurementId: "G-G7D5HRMF0E"
+};
+
+// 初始化 Firebase 应用
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app); // 获取数据库实例
+
+const itemsPerPage = 20; // 每页显示 20 个软件块
+let currentPage = 1; // 当前页码，默认第一页
+let previousPage = 1; // 记录前一页的页码，初始为第一页
+
+// 加载软件列表数据
+function loadSoftwareList() {
+    const softwareListRef = ref(database, 'sites'); // 从 Firebase 数据库获取 'sites' 节点的数据
+    onValue(softwareListRef, (snapshot) => {
+        const softwareList = snapshot.val(); // 获取所有软件的列表数据
+        if (!softwareList) {
+            // 如果数据库中没有数据，则显示无数据信息
+            document.getElementById('软件列表id').innerHTML = '<p>没有可显示的软件库</p>';
+            document.getElementById('pagination-controls').innerHTML = '';
+            return;
+        }
+
+        const container = document.getElementById('软件列表id'); // 获取软件块的容器元素
+        container.innerHTML = ''; // 清空容器内容
+        const keys = Object.keys(softwareList); // 获取所有软件的 key
+        const totalPages = Math.ceil(keys.length / itemsPerPage); // 计算总页数
+
+        generatePaginationControls(totalPages); // 生成分页按钮
+
+        const startIndex = (currentPage - 1) * itemsPerPage; // 当前页的起始索引
+        const endIndex = startIndex + itemsPerPage; // 当前页的结束索引
+        const currentKeys = keys.slice(startIndex, endIndex); // 获取当前页的软件列表
+
+        // 根据页码变化应用不同的动画效果
+        if (currentPage > previousPage) {
+            container.classList.add('slide-in-left'); // 向右滑动动画
+        } else if (currentPage < previousPage) {
+            container.classList.add('slide-in-right'); // 向左滑动动画
+        } else {
+            container.classList.add('fade-in-out'); // 渐入渐出效果
+        }
+        previousPage = currentPage; // 更新前一页的页码
+
+        // 动画完成后，移除动画类
+        container.addEventListener('animationend', () => {
+            container.classList.remove('slide-in-left', 'slide-in-right', 'fade-in-out');
+        });
+
+        // 为当前页的软件生成软件块并添加到容器中
+        currentKeys.forEach((key) => {
+            const item = softwareList[key]; // 获取软件条目
+            const div = document.createElement('div'); // 创建一个新的 div 元素
+            div.className = 'class="特效class 软件库块class'; // 设置样式类
+            div.setAttribute('role', 'listitem'); // 为无障碍支持设置 role 属性
+            div.setAttribute('tabindex', '0'); // 可通过键盘导航
+            div.setAttribute('onclick', `window.open('${item.url}', '_blank')`); // 点击后在新标签页打开链接
+            div.innerHTML = `<span class="特效class 文字class">${item.name}</span>`; // 显示软件名称
+            container.appendChild(div); // 将新软件块添加到容器中
+        });
+
+        // 如果当前页不足 20 个软件块，则填充空白块以保持布局一致
+        const remainingItems = itemsPerPage - currentKeys.length;
+        if (remainingItems > 0) {
+            for (let i = 0; i < remainingItems; i++) {
+                const emptyDiv = document.createElement('div'); // 创建空白块
+                emptyDiv.className = '软件库块class';
+                emptyDiv.style.visibility = 'hidden'; // 隐藏占位块，仅用于保持布局一致
+                container.appendChild(emptyDiv); // 添加到容器中
+            }
+        }
+    });
 }
 
-/* 添加渐变蒙版效果，使页面看起来更加柔和且富有层次感 */
-body::before {
-    content: ''; /* 创建一个伪元素，不显示任何内容，仅用于样式 */
-    position: absolute; /* 绝对定位使伪元素覆盖整个页面 */
-    top: 0; /* 伪元素的顶部边缘与页面顶部对齐 */
-    left: 0; /* 伪元素的左侧边缘与页面左侧对齐 */
-    right: 0; /* 伪元素的右侧边缘与页面右侧对齐 */
-    bottom: 0; /* 伪元素的底部边缘与页面底部对齐 */
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.2)); /* 创建从顶部到底部的渐变效果，顶部透明度较低，底部透明度较高 */
-    z-index: -1; /* 确保伪元素位于所有其他元素之后 */
+// 生成分页按钮
+function generatePaginationControls(totalPages) {
+    const paginationControls = document.getElementById('pagination-controls'); // 获取分页按钮的容器元素
+    paginationControls.innerHTML = ''; // 清空之前的分页控件
+
+    // 计算按钮的可视范围
+    const visibleButtonCount = 10;
+    let startPage = Math.max(1, currentPage - Math.floor(visibleButtonCount / 2));
+    let endPage = startPage + visibleButtonCount - 1;
+    if (endPage > totalPages) {
+        endPage = totalPages;
+        startPage = Math.max(1, endPage - visibleButtonCount + 1);
+    }
+
+    // 定义分页按钮，包括首页、上一页、页码、下一页和末页
+    const paginationButtons = [
+        { text: '首页', disabled: currentPage === 1, action: () => (currentPage = 1) },
+        { text: '◀', disabled: currentPage === 1, action: () => currentPage-- }
+    ];
+
+    // 创建中间的页码按钮，基于当前页码动态显示
+    for (let i = startPage; i <= endPage; i++) {
+        paginationButtons.push({
+            text: `${i}`,
+            disabled: false,
+            action: () => {
+                currentPage = i;
+                loadSoftwareList(); // 重新加载软件列表
+                updatePaginationControls(totalPages, visibleButtonCount); // 更新分页控件
+            },
+            isCurrent: currentPage === i
+        });
+    }
+
+    paginationButtons.push(
+        { text: '▶', disabled: currentPage === totalPages, action: () => {
+            currentPage++;
+            loadSoftwareList(); // 重新加载软件列表
+            updatePaginationControls(totalPages, visibleButtonCount); // 更新分页控件
+        } },
+        { text: '末页', disabled: currentPage === totalPages, action: () => (currentPage = totalPages) }
+    );
+
+    // 逐个创建分页按钮并添加到分页控件容器中
+    const paginationWrapper = document.createElement('div');
+    paginationWrapper.classList.add('pagination-wrapper');
+    paginationButtons.forEach(({ text, disabled, action, isCurrent }) => {
+        const button = document.createElement('button'); // 创建按钮元素
+        button.textContent = text; // 设置按钮文本
+        button.disabled = disabled; // 根据情况禁用按钮
+        button.style.minWidth = '40px'; // 确保按钮宽度一致
+        if (isCurrent) {
+            button.classList.add('current-page'); // 当前页按钮的特殊样式
+        }
+        button.addEventListener('click', () => {
+            action(); // 设置按钮点击后执行的动作
+            loadSoftwareList(); // 重新加载软件列表
+        });
+        paginationWrapper.appendChild(button); // 将按钮添加到分页控件容器中
+    });
+
+    paginationControls.appendChild(paginationWrapper);
 }
 
-/* 软件库大容器的样式 */
-.软件库1级容器class {
-    width: 90%; /* 容器宽度为页面的 90%，改为 100% 可以让容器占据全部宽度 */
-    max-width: 1140px; /* 设置最大宽度，防止在大屏幕上容器过宽 */
-    height: 500px; /* 固定容器高度为 500px。可以根据需要调整，或使用百分比以适应不同屏幕 */
-    padding: 25px; /* 容器内边距，增加内容与容器边缘的距离 */
-    background: rgba(255, 255, 255, 0.5); /* 设置白色背景，带有 0.8 的不透明度，能使背景有半透明效果 */
-    border-radius: 20px; /* 设置圆角，使容器的边框更加柔和。减小值会减少圆角的效果 */
-    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2); /* 添加阴影，使容器看起来有立体感 */
-    display: flex; /* 使用 Flexbox 布局，便于内部元素的排列 */
-    flex-direction: column; /* 容器内部元素从上到下排列 */
-    box-sizing: border-box; /* 包含内边距和边框在内计算总宽度和高度，防止溢出 */
-    overflow: hidden; /* 防止内容溢出容器 */
-    position: relative; /* 相对定位，允许子元素的绝对定位 */
-    transition: transform 0.5s ease, opacity 0.5s ease, background-color 0.5s ease-in-out; /* 添加转换和背景颜色的平滑过渡效果 */
+// 更新分页控件以确保滑动效果
+function updatePaginationControls(totalPages, visibleButtonCount) {
+    const paginationControls = document.getElementById('pagination-controls');
+    const buttons = Array.from(paginationControls.querySelectorAll('.pagination-wrapper button'));
+    const pageButtons = buttons.filter(button => !isNaN(parseInt(button.textContent)));
+    const paginationWrapper = paginationControls.querySelector('.pagination-wrapper');
+
+    if (totalPages > visibleButtonCount) {
+        let startPage = currentPage - Math.floor(visibleButtonCount / 2);
+        startPage = Math.max(1, startPage);
+        let endPage = startPage + visibleButtonCount - 1;
+        if (endPage > totalPages) {
+            endPage = totalPages;
+            startPage = Math.max(1, endPage - visibleButtonCount + 1);
+        }
+
+        pageButtons.forEach((button, index) => {
+            const pageNumber = startPage + index;
+            if (pageNumber <= endPage) {
+                button.style.display = 'inline-block';
+                button.textContent = pageNumber;
+                button.classList.toggle('current-page', pageNumber === currentPage);
+            } else {
+                button.style.display = 'none';
+            }
+        });
+
+        // 添加滑动动画效果
+        if ((currentPage === endPage && currentPage < totalPages) || (currentPage === startPage && currentPage > 1)) {
+            paginationWrapper.style.transition = 'transform 0.5s ease-in-out';
+            const translateAmount = -(startPage - 1) * (buttons[0].offsetWidth + 16); // 根据按钮宽度计算滑动量
+            paginationWrapper.style.transform = `translateX(${translateAmount}px)`;
+        }
+    }
 }
 
-/* 小块容器的样式（包含软件块的容器） */
-.软件库2级容器class {
-    display: flex; /* 使用 Flexbox 布局，以方便内部软件块的排列 */
-    flex-wrap: wrap; /* 内容如果超出一行，会自动换行 */
-    justify-content: space-around; /* 子元素在水平方向均匀分布 */
-    align-content: space-around; /* 多行子元素在垂直方向均匀分布 */
-    gap: 20px 10px; /* 设置子元素之间的水平间距为 20px，垂直间距为 10px */
-    flex-grow: 1; /* 容器将占据父容器的剩余空间 */
-    transition: background-color 0.5s ease-in-out; /* 设置背景颜色的平滑过渡效果 */
-}
-
-/* 单个软件库块的样式 */
-.软件库块class {
-    width: 200px; /* 固定块的宽度为 200px。增大宽度可展示更多内容 */
-    height: 100px; /* 固定块的高度为 100px */
-    background: rgba(0, 0, 0, 0.4); /* 设置黑色半透明背景，增强与背景的对比度 */
-    border-radius: 30px; /* 设置圆角，使软件块的边框更加柔和 */
-    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.15); /* 添加阴影效果，使软件块更具有立体感 */
-    display: flex; /* 使用 Flexbox 布局，以便内容居中 */
-    align-items: center; /* 垂直方向居中对齐内容 */
-    justify-content: center; /* 水平方向居中对齐内容 */
-    text-align: center; /* 文本水平居中对齐 */
-    flex-direction: column; /* 纵向排列内容 */
-    cursor: pointer; /* 背景模糊效果 */
-    transition: transform 0.4s ease, box-shadow 0.4s ease, background-color 0.5s ease-in-out; /* 添加平滑的悬停效果和背景色切换效果 */
-    cursor: pointer; /* 鼠标悬停时显示手指形状，提示可点击 */
-    text-shadow: 0 20 40px rgba(255, 255, 255, 1); /* 设置文字发光效果，增强可读性 */
-}
-
-/* 软件库块的悬停效果样式 */
-.软件库块class:hover {
-    transform: translateY(-10px);
-    /* 鼠标悬停时块的移动量 */
-    text-shadow: 0 0 10px rgb(255, 217, 0), 0 0 20px rgba(255, 215, 0, 0.8);
-    /* 文字添加金光效果 */
-    box-shadow: 0 0 40px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.6);
-    /* 添加金光效果 */
-}
-
-/* 软件库块中文字样式的定义 */
-.文字class {
-    max-width: 14ch; /* 设置最大字符长度为 16 个字符，适应较长的软件名称 */
-    overflow-wrap: break-word; /* 超出长度自动换行 */
-    font-size: 16px; /* 设置文字大小为 18px，确保清晰可读 */
-    font-weight: 600; /* 字体加粗，使文字更加醒目 */
-    color: rgba(255, 255, 255, 0.8); /* 字体颜色设为白色 */
-    text-align: center; /* 文字水平居中对齐 */
-    text-shadow: 0 10 20px rgba(255, 255, 255, 0.8); /* 设置文字的发光效果，增加可读性 */
-}
-
-/* 设置分页控件的样式 */
-.pagination {
-    display: flex; /* 使用 Flexbox 布局，使分页控件在页面上居中 */
-    justify-content: center; /* 分页按钮水平居中对齐 */
-    align-items: center; /* 垂直方向居中对齐 */
-    margin-top: 20px; /* 设置分页控件与主要内容的距离 */
-    padding: 10px; /* 增加分页区域的内边距，使其更醒目 */
-    background-color: rgba(255, 255, 255, 0.3); /* 设置轻微的背景色，提高分页区域的可见性 */
-    border-radius: 10px; /* 设置圆角，使分页控件看起来更加美观 */
-    transition: background-color 0.5s ease-in-out; /* 添加背景颜色的平滑过渡效果 */
-    max-width: 1000px; /* 限制分页容器最大宽度 */
-    overflow: hidden; /* 隐藏超出宽度的按钮 */
-    position: relative; /* 设置相对定位，用于按钮滑动 */
-}
-
-/* 分页按钮的样式 */
-.pagination button {
-    background-color: rgba(50, 50, 50, 0.5); /* 设置按钮为深灰色半透明背景 */
-    color: #fff; /* 按钮文字颜色设为白色 */
-    border: none; /* 去掉按钮的默认边框 */
-    margin: 0 8px; /* 按钮之间设置 8px 的水平间距，防止按钮挤在一起 */
-    padding: 12px 18px; /* 设置按钮的内边距，使其更大更易点击 */
-    border-radius: 8px; /* 圆角按钮，使其看起来更加柔和 */
-    cursor: pointer; /* 鼠标悬停时显示手指形状，提示可点击 */
-    font-size: 15px; /* 设置按钮文字的大小，确保可读性 */
-    transition: background 0.3s, transform 0.3s, color 0.5s ease-in-out; /* 添加背景色、放大效果和颜色的过渡效果 */
-}
-
-/* 分页按钮的悬停效果 */
-.pagination button:hover {
-    background-color: rgba(255, 242, 0, 0.6); /* 悬停时背景颜色加深，增加视觉反馈 */
-    transform: scale(1.1); /* 悬停时按钮放大 5%，增加交互感 */
-    color:rgb(255, 255, 255); /* 悬停时按钮文字变为金黄色，增加视觉效果 */
-}
-
-/* 分页按钮的滑动效果 */
-.pagination-scroll {
-    display: flex;
-    transition: transform 0.5s ease; /* 添加按钮滑动的过渡效果 */
-}
-
-/* 分页按钮禁用状态的样式（如在第一页或最后一页） */
-.pagination button:disabled {
-    background-color: #ccc; /* 禁用状态下按钮背景设为浅灰色 */
-    cursor: not-allowed; /* 鼠标悬停时显示禁用符号，提示不可点击 */
-    opacity: 0.6; /* 减少透明度，使禁用按钮显得不那么醒目 */
-}
-
-/* 当前页按钮的样式 */
-.pagination button.current-page {
-    background-color: rgba(255, 215, 0, 0.9); /* 当前页按钮设为醒目的金黄色背景，突出显示 */
-    font-weight: bold; /* 字体加粗，使其更加醒目 */
-    cursor: default; /* 当前页按钮不可点击，因此设置为默认鼠标指针 */
-    color: #fff; /* 当前页的按钮文字颜色为白色 */
-}
-
-/* 页面切换动画：从左侧滑入 */
-.slide-in-left {
-    animation: slideInLeft 0.5s ease forwards; /* 调用 slideInLeft 动画，持续时间为 0.5 秒 */
-}
-
-/* 页面切换动画：从右侧滑入 */
-.slide-in-right {
-    animation: slideInRight 0.5s ease forwards; /* 调用 slideInRight 动画，持续时间为 0.5 秒 */
-}
-
-/* 页面切换动画：渐入渐出效果 */
-.fade-in-out {
-    animation: fadeInOut 0.5s ease; /* 调用 fadeInOut 动画，持续时间为 0.5 秒 */
-}
-
-/* 定义从左侧滑入的动画效果 */
-@keyframes slideInLeft {
-    from { transform: translateX(100%); opacity: 0; } /* 起始位置在页面右侧，完全透明 */
-    to { transform: translateX(0); opacity: 1; } /* 结束位置在页面中，完全不透明 */
-}
-
-/* 定义从右侧滑入的动画效果 */
-@keyframes slideInRight {
-    from { transform: translateX(-100%); opacity: 0; } /* 起始位置在页面左侧，完全透明 */
-    to { transform: translateX(0); opacity: 1; } /* 结束位置在页面中，完全不透明 */
-}
-
-/* 定义渐入渐出的动画效果 */
-@keyframes fadeInOut {
-    from { opacity: 0; } /* 起始状态完全透明 */
-    to { opacity: 1; } /* 渐变到完全不透明 */
-}
+// 初次加载软件列表
+loadSoftwareList();
