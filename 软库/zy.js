@@ -136,6 +136,7 @@ function generatePaginationControls(totalPages) {
         const button = document.createElement('button'); // 创建按钮元素
         button.textContent = text; // 设置按钮文本
         button.disabled = disabled; // 根据情况禁用按钮
+        button.style.minWidth = '40px'; // 确保按钮宽度一致
         if (isCurrent) {
             button.classList.add('current-page'); // 当前页按钮的特殊样式
         }
@@ -177,9 +178,11 @@ function updatePaginationControls(totalPages, visibleButtonCount) {
         });
 
         // 添加滑动动画效果
-        paginationWrapper.style.transition = 'transform 0.5s ease-in-out';
-        const translateAmount = -(startPage - 1) * (buttons[0].offsetWidth + 16); // 根据按钮宽度计算滑动量
-        paginationWrapper.style.transform = `translateX(${translateAmount}px)`;
+        if ((currentPage === endPage && currentPage < totalPages) || (currentPage === startPage && currentPage > 1)) {
+            paginationWrapper.style.transition = 'transform 0.5s ease-in-out';
+            const translateAmount = -(startPage - 1) * (buttons[0].offsetWidth + 16); // 根据按钮宽度计算滑动量
+            paginationWrapper.style.transform = `translateX(${translateAmount}px)`;
+        }
     }
 }
 
