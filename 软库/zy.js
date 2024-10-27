@@ -65,7 +65,7 @@ function loadSoftwareList() {
         currentKeys.forEach((key) => {
             const item = softwareList[key]; // 获取软件条目
             const div = document.createElement('div'); // 创建一个新的 div 元素
-            div.className = 'class="特效class 软件库块class'; // 设置样式类
+            div.className = '特效class 软件库块class'; // 设置样式类
             div.setAttribute('role', 'listitem'); // 为无障碍支持设置 role 属性
             div.setAttribute('tabindex', '0'); // 可通过键盘导航
             div.setAttribute('onclick', `window.open('${item.url}', '_blank')`); // 点击后在新标签页打开链接
@@ -102,7 +102,7 @@ function generatePaginationControls(totalPages) {
 
     // 定义分页按钮，包括首页、上一页、页码、下一页和末页
     const paginationButtons = [
-        { text: '首页', disabled: currentPage === 1, action: () => (currentPage = 1) },
+        { text: '首页', disabled: currentPage === 1, action: () => { currentPage = 1; loadSoftwareList(); updatePaginationControls(totalPages, visibleButtonCount); } },
         { text: '◀', disabled: currentPage === 1, action: () => {
             currentPage--;
             loadSoftwareList();
@@ -130,7 +130,7 @@ function generatePaginationControls(totalPages) {
             loadSoftwareList(); // 重新加载软件列表
             updatePaginationControls(totalPages, visibleButtonCount); // 更新分页控件
         } },
-        { text: '末页', disabled: currentPage === totalPages, action: () => (currentPage = totalPages) }
+        { text: '末页', disabled: currentPage === totalPages, action: () => { currentPage = totalPages; loadSoftwareList(); updatePaginationControls(totalPages, visibleButtonCount); } }
     );
 
     // 逐个创建分页按钮并添加到分页控件容器中
@@ -146,7 +146,6 @@ function generatePaginationControls(totalPages) {
         }
         button.addEventListener('click', () => {
             action(); // 设置按钮点击后执行的动作
-            loadSoftwareList(); // 重新加载软件列表
         });
         paginationWrapper.appendChild(button); // 将按钮添加到分页控件容器中
     });
