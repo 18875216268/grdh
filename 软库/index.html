@@ -1,0 +1,23 @@
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>软件库首页 - 自动跳转</title>
+    <script>
+        // 检测用户设备并跳转到相应页面
+        document.addEventListener('DOMContentLoaded', function() {
+            if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                // 如果是移动设备，跳转到手机端页面
+                window.location.href = "0设备/手机/shouji.html";
+            } else {
+                // 否则跳转到电脑端页面
+                window.location.href = "0设备/电脑/diannao.html";
+            }
+        });
+    </script>
+</head>
+<body>
+    <p>正在跳转，请稍后...</p>
+</body>
+</html>
+
