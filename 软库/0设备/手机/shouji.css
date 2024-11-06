@@ -22,7 +22,7 @@ body {
 }
 
 .logo {
-  font-size: 1.2em; /* 设置 logo 字体大小为 1.2 倍基准字体 */
+  font-size: 1em; /* 设置 logo 字体大小为 1.2 倍基准字体 */
   font-weight: normal; /* 正常字体粗细 */
   text-align: left; /* 文字左对齐 */
   padding-left: 10px; /* 左侧内边距为 10px */
