@@ -1,38 +1,39 @@
-<!DOCTYPE html> <!-- 声明文档类型为HTML5 -->
-<html lang="en"> <!-- 设置语言为英文 -->
+<!DOCTYPE html> <!-- 声明 HTML5 文档类型，确保页面在现代浏览器中按照 HTML5 标准渲染 -->
+<html lang="en"> <!-- 设置网页语言为英文 -->
 <head>
-  <meta charset="UTF-8"> <!-- 设置字符编码为UTF-8 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 设置视口以适应移动设备的宽度，初始缩放比例为1.0 -->
-  <title>知晓卜</title> <!-- 设置页面标题 -->
-  <link rel="stylesheet" href="shouji.css"> <!-- 引入外部样式表 -->
-  <script type="module" src="shouji.js"></script> <!-- 引入外部JavaScript模块 -->
+  <meta charset="UTF-8"> <!-- 设置字符编码为 UTF-8，支持多语言文本显示 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 设置视口，确保页面在移动设备上适配 -->
+  <title>知晓卜</title> <!-- 页面标题，显示在浏览器标签栏上 -->
+  <link rel="stylesheet" href="shouji.css"> <!-- 引入外部 CSS 样式文件，控制页面样式 -->
+  <script type="module" src="shouji.js"></script> <!-- 引入外部 JavaScript 模块，管理页面功能逻辑 -->
 </head>
 <body>
-  <div class="header"> <!-- 顶部导航栏 -->
-    <div class="logo" id="logo" style="font-weight: normal; text-align: center; flex: 1;">
-      知晓(<span id="count" style="font-weight: normal;">0</span>) <!-- 显示软件数量的动态计数 -->
+  <!-- 页头，包含页面的标题和动态软件数量 -->
+  <header class="header"> <!-- header标签，用于表示顶部导航栏 -->
+    <div class="logo" id="logo"> <!-- logo元素，显示页面标题 -->
+      知晓(<span id="count">0</span>) <!-- 动态显示当前软件数量 -->
     </div>
-  </div>
+  </header>
 
-  <div class="content-container"> <!-- 主内容区域，展示软件列表 -->
-    <div id="software-list" class="list-container">
-      <!-- 软件列表会通过JavaScript动态插入到此处 -->
-    </div>
-  </div>
+  <!-- 主内容区域，包含软件列表 -->
+  <main class="content-container"> <!-- main标签，包含页面的主要内容 -->
+    <div id="software-list" class="list-container"></div> <!-- 用于动态加载和显示软件列表的容器 -->
+  </main>
 
-  <div class="footer"> <!-- 底部导航栏 -->
-    <div class="footer-item"> <!-- 返回按钮 -->
-      <img id="back-btn" src="返回.png" alt="返回"> <!-- 返回图标 -->
-      <div class="footer-text">返回</div> <!-- 返回文字说明 -->
+  <!-- 页脚，包含导航按钮：返回、主页、前进 -->
+  <footer class="footer"> <!-- footer标签，包含页面的底部导航栏 -->
+    <div class="footer-item"> <!-- 返回按钮，用户可返回上一级页面 -->
+      <img id="back-btn" src="返回.png" alt="返回"> <!-- 图标图片，显示“返回”图标 -->
+      <div class="footer-text">返回</div> <!-- 文字描述“返回” -->
     </div>
-    <div class="footer-item"> <!-- 主页按钮 -->
-      <img id="home-btn" src="主页.png" alt="主页"> <!-- 主页图标 -->
-      <div class="footer-text">主页</div> <!-- 主页文字说明 -->
+    <div class="footer-item"> <!-- 主页按钮，用户可返回主页 -->
+      <img id="home-btn" src="主页.png" alt="主页"> <!-- 图标图片，显示“主页”图标 -->
+      <div class="footer-text">主页</div> <!-- 文字描述“主页” -->
     </div>
-    <div class="footer-item"> <!-- 前进按钮 -->
-      <img id="forward-btn" src="前进.png" alt="前进"> <!-- 前进图标 -->
-      <div class="footer-text">前进</div> <!-- 前进文字说明 -->
+    <div class="footer-item"> <!-- 前进按钮，用户可前往下一页面 -->
+      <img id="forward-btn" src="前进.png" alt="前进"> <!-- 图标图片，显示“前进”图标 -->
+      <div class="footer-text">前进</div> <!-- 文字描述“前进” -->
     </div>
-  </div>
+  </footer>
 </body>
 </html>
