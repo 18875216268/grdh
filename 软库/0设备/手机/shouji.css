@@ -1,153 +1,136 @@
-body { /* 设置页面主体样式 */
-  font-family: Arial, sans-serif; /* 设置字体 */
-  display: flex; /* 使用flex布局 */
-  flex-direction: column; /* 垂直排列 */
-  align-items: center; /* 内容水平居中 */
-  height: 100vh; /* 设置页面高度 */
+body {
+  font-family: Arial, sans-serif; /* 设置全局字体为 Arial，sans-serif 作为备用字体 */
+  display: flex; /* 使用 flex 布局，使 body 内元素垂直排列 */
+  flex-direction: column; /* 将子元素垂直排列 */
+  align-items: center; /* 水平居中对齐子元素 */
+  height: 100vh; /* 设定页面高度为视口高度，填满屏幕 */
   margin: 0; /* 去除默认外边距 */
-  background-color: #f5f5f5; /* 背景颜色 */
+  background-color: #f0f4ff; /* 设置全局背景颜色 */
 }
 
-.footer { /* 底部样式 */
-  display: flex; /* 使用flex布局 */
-  align-items: center; /* 垂直居中 */
-  justify-content: center; /* 水平居中 */
-  width: 100%; /* 占满宽度 */
-  max-width: 600px; /* 最大宽度 */
-  padding: 10px 0; /* 上下内边距 */
-  background-color: #f0f4ff; /* 背景颜色 */
-  position: fixed; /* 固定位置 */
-  z-index: 10; /* 层级 */
-  bottom: 0; /* 固定在底部 */
-  justify-content: space-around; /* 水平方向均匀分布 */
-}
-
-.header { /* 底部样式 */
-  display: flex; /* 使用flex布局 */
-  align-items: center; /* 垂直居中 */
-  width: 100%; /* 占满宽度 */
-  max-width: 600px; /* 最大宽度 */
-  padding: 10px 0; /* 上下内边距 */
-  background-color: #f0f4ff; /* 背景颜色 */
-  position: fixed; /* 固定位置 */
-  top: 0; /* 固定在顶部 */
-  z-index: 10; /* 层级 */
+.header {
+  display: flex; /* 使用 flex 布局，使内容水平排列 */
+  align-items: center; /* 子元素垂直居中 */
+  width: 100%; /* 设置宽度为 100% 屏幕宽度 */
+  max-width: 600px; /* 最大宽度设置为 600px，以保持中心内容宽度一致 */
+  padding: 0; /* 移除内边距 */
+  background-color: #f0f4ff; /* 顶部背景颜色 */
+  position: fixed; /* 固定在页面顶部，随滚动保持在上方 */
+  top: 0; /* 将位置固定在页面顶部 */
+  z-index: 10; /* 设置层级，确保 header 置于其他内容之上 */
+  height: 6vh; /* 动态高度，约占屏幕高度的 7% */
 }
 
 .logo {
-  font-size: 1.2em; /* 字体大小 */
-  font-weight: normal; /* 字体粗细 */
-  text-align: left; /* 左对齐文字 */
-  padding-left: 10px; /* 左侧内边距 */
-  margin-right: auto; /* 将 logo 推到左侧 */
+  font-size: 1.2em; /* 设置 logo 字体大小为 1.2 倍基准字体 */
+  font-weight: normal; /* 正常字体粗细 */
+  text-align: left; /* 文字左对齐 */
+  padding-left: 10px; /* 左侧内边距为 10px */
+  margin: 0; /* 确保无外边距 */
 }
 
-.content-container { /* 主内容区域样式 */
-  flex: 1; /* 占据剩余空间 */
+.content-container {
+  flex: 1; /* 占据剩余空间，确保容器填满中间区域 */
+  width: 100%; /* 设置宽度为 100% */
+  max-width: 600px; /* 最大宽度为 600px，保持页面居中 */
+  margin: 0; /* 移除默认外边距 */
+  padding: 0; /* 移除内边距 */
+  background-color: #f0f4ff; /* 中间内容背景颜色 */
+  overflow-y: auto; /* 垂直方向可滚动 */
+  box-sizing: border-box; /* 包含内边距和边框在宽高计算内，防止宽度超出 */
+  margin-top: 6vh; /* 上方留出 7vh 空间与 header 紧贴 */
+  margin-bottom: 6vh; /* 下方留出 7vh 空间与 footer 紧贴 */
+  -ms-overflow-style: none; /* 隐藏滚动条样式（IE 和 Edge） */
+  scrollbar-width: none; /* 隐藏滚动条（Firefox） */
+}
+
+.content-container::-webkit-scrollbar {
+  display: none; /* 在 Webkit 浏览器中隐藏滚动条 */
+}
+
+.list-container {
+  width: 100%; /* 设置宽度为 100% */
+  max-width: 600px; /* 最大宽度为 600px */
+  padding: 0; /* 无内边距 */
+  box-sizing: border-box; /* 包含内边距和边框在宽高计算内 */
+}
+
+.software-item {
+  display: flex; /* 使用 flex 布局 */
+  justify-content: space-between; /* 子元素在水平方向两端对齐 */
+  align-items: center; /* 子元素垂直居中 */
+  padding: 10px 0; /* 上下内边距为 10px */
   width: 100%; /* 占满宽度 */
-  max-width: 600px; /* 最大宽度 */
-  margin-top: 60px; /* 顶部外边距 */
-  margin-bottom: 60px; /* 底部外边距 */
-  overflow-y: auto; /* 垂直方向滚动 */
-  padding: 0; /* 内边距 */
-  -ms-overflow-style: none; /* IE和Edge的滚动条样式 */
-  scrollbar-width: none; /* Firefox的滚动条样式 */
+  max-width: 600px; /* 最大宽度为 600px */
+  cursor: pointer; /* 鼠标悬停时显示为指针 */
+  transition: background-color 0.3s; /* 背景色渐变效果，时长 0.3s */
+  background-color: #f0f4ff; /* 设置默认背景颜色 */
 }
 
-.content-container::-webkit-scrollbar { /* 隐藏滚动条样式 */
-  display: none;
+.software-item:hover {
+  background-color: #e0e0e0; /* 悬停时的背景颜色 */
 }
 
-.list-container { /* 列表容器样式 */
-  width: 100%; /* 占满宽度 */
-  max-width: 600px; /* 最大宽度 */
-  height: 100%; /* 高度 */
-  text-align: left; /* 左对齐 */
-  padding: 0; /* 内边距 */
+.text-logo-container {
+  display: flex; /* 使用 flex 布局 */
+  align-items: center; /* 垂直居中对齐 */
+  margin-left: 15px; /* 左侧外边距为 15px */
 }
 
-.software-item { /* 软件列表项样式 */
-  display: flex; /* 使用flex布局 */
-  justify-content: space-between; /* 水平方向两端对齐 */
-  align-items: center; /* 垂直居中 */
-  padding: 10px 0; /* 上下内边距 */
-  width: 100%; /* 占满宽度 */
-  max-width: 600px; /* 最大宽度 */
-  border-bottom: none; /* 去除边框 */
-  cursor: pointer; /* 鼠标变为指针 */
-  transition: background-color 0.3s; /* 背景色过渡效果 */
-  background-color: #f0f4ff; /* 背景颜色 */
+.software-text {
+  font-size: 1em; /* 字体大小为 1 倍基准字体 */
+  text-align: left; /* 文字左对齐 */
+  margin-left: 10px; /* 左侧外边距为 10px */
 }
 
-.software-item:hover { /* 列表项悬停样式 */
-  background-color: #e0e0e0; /* 改变背景颜色 */
+.software-logo {
+  width: 30px; /* 设置图标宽度为 30px */
+  height: 30px; /* 设置图标高度为 30px */
+  border-radius: 50%; /* 圆角效果，形成圆形图标 */
 }
 
-.text-logo-container { /* 图标和文字的容器样式 */
-  display: flex; /* 使用flex布局 */
-  align-items: center; /* 垂直居中 */
-  margin-left: 15px; /* 左侧外边距 */
-}
-
-.software-text { /* 软件名称文字样式 */
-  font-size: 1em; /* 字体大小 */
-  text-align: left; /* 左对齐 */
-  margin-left: 10px; /* 左侧外边距 */
-}
-
-.software-logo { /* 图标样式 */
-  width: 30px; /* 宽度 */
-  height: 30px; /* 高度 */
-  border-radius: 50%; /* 圆角效果 */
-}
-
-.load-time { /* 加载时间文字样式 */
-  font-size: 0.8em; /* 字体大小 */
-  color: #888; /* 文字颜色 */
+.load-time {
+  font-size: 0.8em; /* 字体大小为 0.8 倍基准字体 */
+  color: #888; /* 文字颜色为灰色 */
   text-align: right; /* 右对齐 */
   white-space: nowrap; /* 不换行 */
-  margin-left: 15px; /* 左侧外边距 */
-  margin-right: 20px; /* 右侧外边距 */
+  margin-left: 15px; /* 左侧外边距为 15px */
+  margin-right: 20px; /* 右侧外边距为 20px */
 }
 
-.content-frame { /* iframe嵌入内容样式 */
-  width: 100%; /* 宽度 */
-  height: calc(100vh - 120px); /* 高度填满容器 */
+.content-frame {
+  width: 100%; /* iframe 宽度占满父元素 */
+  height: calc(100vh - 12vh); /* 动态计算内容框高度，填满上下块之间的中间区域 */
   border: none; /* 去除边框 */
 }
 
-.footer-item { /* 底部按钮项样式 */
-  display: flex; /* 使用flex布局 */
+.footer {
+  display: flex; /* 使用 flex 布局 */
+  align-items: center; /* 垂直居中对齐 */
+  justify-content: center; /* 水平居中对齐子元素 */
+  width: 100%; /* 占满宽度 */
+  max-width: 600px; /* 最大宽度为 600px */
+  padding: 0; /* 无内边距 */
+  background-color: #f0f4ff; /* 设置底部背景颜色 */
+  position: fixed; /* 固定在页面底部 */
+  z-index: 10; /* 设置层级，确保 footer 置于内容之上 */
+  bottom: 0; /* 将位置固定在页面底部 */
+  height: 6vh; /* 动态高度，约占屏幕高度的 7% */
+  justify-content: space-around; /* 子元素均匀分布 */
+}
+
+.footer-item {
+  display: flex; /* 使用 flex 布局 */
   flex-direction: column; /* 垂直排列 */
-  align-items: center; /* 水平居中 */
+  align-items: center; /* 水平居中对齐子元素 */
 }
 
-.footer-item img { /* 底部按钮图标样式 */
-  width: 20px; /* 宽度 */
-  height: 20px; /* 高度 */
-  cursor: pointer; /* 鼠标变为指针 */
+.footer-item img {
+  width: 20px; /* 设置图标宽度为 20px */
+  height: 20px; /* 设置图标高度为 20px */
+  cursor: pointer; /* 鼠标悬停时显示为指针 */
 }
 
-.footer-text { /* 底部按钮文字样式 */
-  font-size: 0.6em; /* 字体大小 */
-}
-
-.search-container {
-  display: flex; /* 保持为flex布局 */
-  align-items: center; /* 垂直居中 */
-}
-
-.search-icon { /* 搜索图标样式 */
-  width: 26px; /* 宽度 */
-  height: 26px; /* 高度 */
-  cursor: pointer; /* 鼠标变为指针 */
-  margin-left: 5px; /* 左侧外边距 */
-}
-
-#search-input { /* 搜索输入框样式 */
-  width: 70%; /* 宽度 */
-  margin-left: 10px; /* 左侧外边距 */
-  padding: 5px; /* 内边距 */
-  border: 1px solid #ccc; /* 边框样式 */
-  border-radius: 20px; /* 圆角边框 */
+.footer-text {
+  font-size: 0.6em; /* 设置文字大小为 0.6 倍基准字体 */
 }
