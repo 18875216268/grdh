@@ -132,12 +132,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 返回按钮点击事件，使用浏览器历史记录
   backButton.addEventListener('click', () => {
-    window.history.back();
+    if (window.history.state && window.history.state.type !== 'list') {
+      window.history.back();
+    } else {
+      console.warn("已经是最初的软件库列表界面，无法再返回");
+    }
   });
 
   // 前进按钮点击事件，使用浏览器历史记录
   forwardButton.addEventListener('click', () => {
-    window.history.forward();
+    if (window.history.length > 1) {
+      window.history.forward();
+    } else {
+      console.warn("已经是最末状态，无法再前进");
+    }
   });
 
   // 浏览器历史记录状态变化事件
