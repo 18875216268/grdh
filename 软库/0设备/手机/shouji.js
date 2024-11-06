@@ -27,8 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const forwardButton = document.getElementById('forward-btn'); // 前进按钮元素
 
   let currentData = []; // 存储从数据库获取的数据
-  let history = []; // 存储用户的浏览历史记录
-  let historyIndex = -1; // 当前浏览历史的位置
 
   // 更新显示的计数
   const updateCount = (count) => {
@@ -98,9 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 处理软件项点击事件
   const handleItemClick = (item) => {
-    history = history.slice(0, historyIndex + 1); // 截断未来历史记录
-    history.push({ type: 'content', data: item }); // 添加新记录，保存完整的数据以供返回
-    historyIndex++; // 更新历史索引位置
+    window.history.pushState({ type: 'content', data: item }, '', ''); // 将状态推入浏览器历史记录
     renderContent(item.url); // 加载内容
   };
 
@@ -117,44 +113,42 @@ document.addEventListener('DOMContentLoaded', () => {
       snapshot.forEach((childSnapshot) => { // 遍历每个数据节点
         currentData.push(childSnapshot.val());
       });
-      if (historyIndex === -1) { // 初始化时，确保只记录一次
-        history.push({ type: 'list', data: currentData }); // 保存当前列表页面为历史记录
-        historyIndex++; // 更新历史索引位置
+      if (window.history.state === null) { // 初始化时，确保只记录一次
+        window.history.replaceState({ type: 'list', data: currentData }, '', '');
       }
       renderList(currentData); // 渲染软件列表
     });
   };
 
   // 主页按钮点击事件，跳转到主页
-  homeButton.addEventListener('click', () => window.location.href = 'https://www.quruanpu.cn');
-
-  // 返回按钮点击事件
-  backButton.addEventListener('click', () => {
-    if (historyIndex > 0) { // 确保可以返回上一个页面
-      historyIndex--; // 更新历史索引位置，指向上一步操作
-      const previousState = history[historyIndex]; // 获取上一个历史状态
-      if (previousState.type === 'list') { // 如果历史状态是列表页面
-        renderList(previousState.data); // 渲染软件列表
-      } else if (previousState.type === 'content') { // 如果历史状态是内容页面
-        renderContent(previousState.data.url); // 显示软件内容
-      }
+  homeButton.addEventListener('click', () => {
+    // 返回到软件库列表界面
+    if (window.history.state && window.history.state.type === 'list') {
+      renderList(window.history.state.data);
     } else {
-      console.warn("无法返回 - 已经是历史记录的最初位置"); // 调整为警告信息，以更符合常见的调试逻辑
+      fetchData(); // 确保数据加载并渲染
     }
   });
 
-  // 前进按钮点击事件
+  // 返回按钮点击事件，使用浏览器历史记录
+  backButton.addEventListener('click', () => {
+    window.history.back();
+  });
+
+  // 前进按钮点击事件，使用浏览器历史记录
   forwardButton.addEventListener('click', () => {
-    if (historyIndex < history.length - 1) { // 确保可以前进
-      historyIndex++; // 更新历史索引
-      const nextState = history[historyIndex]; // 获取下一个历史状态
-      if (nextState.type === 'list') { // 如果是列表页面
-        renderList(nextState.data); // 渲染列表
-      } else if (nextState.type === 'content') { // 如果是内容页面
-        renderContent(nextState.data.url); // 显示内容
+    window.history.forward();
+  });
+
+  // 浏览器历史记录状态变化事件
+  window.addEventListener('popstate', (event) => {
+    if (event.state) {
+      const state = event.state;
+      if (state.type === 'list') {
+        renderList(state.data); // 渲染软件列表
+      } else if (state.type === 'content') {
+        renderContent(state.data.url); // 显示软件内容
       }
-    } else {
-      console.warn("无法前进 - 已经是历史记录的最末位置"); // 调整为警告信息，以更符合常见的调试逻辑
     }
   });
 
