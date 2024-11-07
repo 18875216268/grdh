@@ -30,11 +30,12 @@
   flex: 1; /* 占据剩余空间 */
   padding: 8px; /* 设置内边距，确保用户输入的舒适性 */
   font-size: 1em; /* 设置字体大小 */
-  border: 1px solid #f0f4ff; /* 设置边框样式 */
   border-radius: 5px; /* 设置圆角边框 */
   margin-left: 15px; /* 左边距 */
   margin-right: 5px; /* 设置右边距，与取消按钮保持一定距离 */
   background-color: #f0f4ff; /* 设置搜索输入框背景颜色为浅蓝色 #f0f4ff */
+  border: none; /* 取消搜索输入框边框 */
+  outline: none; /* 如果需要也可以去掉焦点时的轮廓 */
 }
 
 /* 取消按钮样式 */
@@ -127,7 +128,7 @@ body {
   background-color: #f0f4ff; /* 背景颜色 */
   position: fixed; /* 固定在视口顶部 */
   z-index: 10; /* 层级最高，确保置顶 */
-  height: 6vh; /* 高度占视口 6% */
+  height: 8vh; /* 高度占视口 6% */
   top: 0; /* 将位置固定在页面顶部 */
 }
 
@@ -168,11 +169,11 @@ body {
   flex: 1; /* 占据剩余空间 */
   width: 100%; /* 占满宽度 */
   max-width: 600px; /* 最大宽度 */
-  margin: 6vh 0 0 0; /* 上边距为 6vh，下边距为 7vh */
+  margin: 8vh 0 0 0; /* 上边距为8vh，下边距为0vh */
   background-color: #fdfdfd; /* 背景颜色 */
   overflow-y: auto; /* 内容可垂直滚动 */
   box-sizing: border-box; /* 包含内边距和边框 */
-  height: calc(100vh - 6vh); /* 动态计算内容区域的高度 */
+  height: calc(100vh - 8vh); /* 动态计算内容区域的高度 */
 }
 
 /* 隐藏滚动条 */
@@ -205,7 +206,7 @@ body {
   bottom: 0; /* 将位置固定在页面底部 */
   height: 7vh; /* 动态高度，约占屏幕高度的 7% */
   backdrop-filter: blur(2px); /* 添加磨砂玻璃效果 */
-  background: rgba(240, 244, 255, 0.8); /* 半透明背景颜色 */
+  background: rgba(240, 244, 255, 0.9); /* 半透明背景颜色 */
 }
 
 /* 底部导航按钮样式 */
