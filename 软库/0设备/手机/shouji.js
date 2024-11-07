@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchResults = document.getElementById('search-results'); // 搜索结果显示容器
   const cancelSearch = document.getElementById('cancel-search'); // 取消搜索按钮
   const homeButton = document.getElementById('home-btn'); // 主页按钮元素
-  const backButton = document.getElementById('back-btn'); // 返回按钮元素
+  const backButton = document.getElementById('back-btn'); // 后退按钮元素
   const forwardButton = document.getElementById('forward-btn'); // 前进按钮元素
   let currentData = []; // 存储从数据库获取的数据
 
@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 主页按钮点击事件，跳转到主页
   homeButton.addEventListener('click', () => {
-    // 返回到软件库列表界面
+    // 后退到软件库列表界面
     if (window.history.state && window.history.state.type === 'list') {
       renderList(window.history.state.data);
     } else {
@@ -199,12 +199,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 返回按钮点击事件，使用浏览器历史记录
+  // 后退按钮点击事件，使用浏览器历史记录
   backButton.addEventListener('click', () => {
     if (window.history.state && window.history.state.type !== 'list') {
       window.history.back();
     } else {
-      console.warn("已经是最初的软件库列表界面，无法再返回");
+      console.warn("已经是最初的软件库列表界面，无法再后退");
     }
   });
 
