@@ -128,7 +128,7 @@ body {
   background-color: #f0f4ff; /* 背景颜色 */
   position: fixed; /* 固定在视口顶部 */
   z-index: 10; /* 层级最高，确保置顶 */
-  height: 8vh; /* 高度占视口 6% */
+  height: 7vh; /* 高度占视口 6% */
   top: 0; /* 将位置固定在页面顶部 */
 }
 
@@ -169,11 +169,11 @@ body {
   flex: 1; /* 占据剩余空间 */
   width: 100%; /* 占满宽度 */
   max-width: 600px; /* 最大宽度 */
-  margin: 8vh 0 0 0; /* 上边距为8vh，下边距为0vh */
+  margin: 6.5vh 0 0 0; /* 上边距为8vh，下边距为0vh */
   background-color: #fdfdfd; /* 背景颜色 */
   overflow-y: auto; /* 内容可垂直滚动 */
   box-sizing: border-box; /* 包含内边距和边框 */
-  height: calc(100vh - 8vh); /* 动态计算内容区域的高度 */
+  height: calc(100vh - 6.5vh); /* 动态计算内容区域的高度 */
 }
 
 /* 隐藏滚动条 */
@@ -204,7 +204,7 @@ body {
   position: fixed; /* 固定在页面底部 */
   z-index: 10; /* 设置层级，确保 footer 置于内容之上 */
   bottom: 0; /* 将位置固定在页面底部 */
-  height: 7vh; /* 动态高度，约占屏幕高度的 7% */
+  height: 6.5vh; /* 动态高度，约占屏幕高度的 7% */
   backdrop-filter: blur(2px); /* 添加磨砂玻璃效果 */
   background: rgba(240, 244, 255, 0.9); /* 半透明背景颜色 */
 }
