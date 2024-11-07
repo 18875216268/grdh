@@ -1,3 +1,4 @@
+// JavaScript 文件的修改 (shouji.js)
 // 导入 Firebase 的核心模块和实时数据库模块
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
@@ -20,12 +21,14 @@ const db = getDatabase(app);
 
 // 页面加载后执行的函数
 document.addEventListener('DOMContentLoaded', () => {
-  // 获取页面中的元素
   const listContainer = document.getElementById('software-list'); // 用于显示软件列表的容器
+  const searchPage = document.getElementById('search-page'); // 搜索页面元素
+  const searchInput = document.getElementById('search-input'); // 搜索输入框
+  const searchResults = document.getElementById('search-results'); // 搜索结果显示容器
+  const cancelSearch = document.getElementById('cancel-search'); // 取消搜索按钮
   const homeButton = document.getElementById('home-btn'); // 主页按钮元素
   const backButton = document.getElementById('back-btn'); // 返回按钮元素
   const forwardButton = document.getElementById('forward-btn'); // 前进按钮元素
-
   let currentData = []; // 存储从数据库获取的数据
 
   // 更新显示的计数
@@ -33,11 +36,92 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('count').textContent = count; // 动态更新软件计数
   };
 
+  // 初始化搜索框按钮事件
+  const initSearch = () => {
+    // 在列表顶部增加搜索框
+    const topSearchBox = document.createElement('div');
+    topSearchBox.classList.add('top-search-box');
+    topSearchBox.innerHTML = `<input type="text" id="top-search-input" class="top-search-input" placeholder="🔍 搜索">`;
+    listContainer.prepend(topSearchBox); // 将搜索框添加到软件列表的顶部
+
+    const topSearchInput = document.getElementById('top-search-input'); // 获取顶部搜索框元素
+
+    // 当点击顶部搜索框时，显示搜索页面
+    topSearchInput.addEventListener('click', () => {
+      searchPage.style.display = 'block'; // 显示搜索页面
+      searchInput.focus(); // 聚焦搜索输入框
+    });
+
+    // 取消按钮事件
+    cancelSearch.addEventListener('click', () => {
+      searchPage.style.display = 'none'; // 隐藏搜索页面
+      searchInput.value = ''; // 清空搜索输入框
+      searchResults.innerHTML = ''; // 清空搜索结果
+    });
+
+    // 搜索输入框事件
+    searchInput.addEventListener('input', (event) => {
+      const keyword = event.target.value; // 获取输入框中的关键字
+      if (keyword.trim() === '') {
+        searchResults.innerHTML = '<p>请输入关键词进行搜索</p>'; // 提示用户输入关键词
+      } else {
+        const filteredData = fuzzySearch(currentData, keyword.trim().toLowerCase());
+        renderSearchResults(filteredData); // 渲染匹配的结果
+      }
+    });
+  };
+
+  // 模糊搜索功能
+  const fuzzySearch = (data, keyword) => {
+    const regex = new RegExp(keyword.split('').join('.*'), 'i'); // 创建模糊匹配的正则表达式
+    return data.filter(item => regex.test(item.name)); // 通过正则表达式匹配名称
+  };
+
+  // 渲染搜索结果
+  const renderSearchResults = (data) => {
+    searchResults.innerHTML = ''; // 清空当前的搜索结果
+    if (data.length === 0) {
+      searchResults.innerHTML = '<p>未找到匹配的软件</p>'; // 无匹配结果时显示提示
+      return;
+    }
+    data.forEach(item => {
+      const listItem = document.createElement('div'); // 创建列表项容器
+      listItem.classList.add('software-item'); // 添加样式类
+
+      const link = document.createElement('a'); // 创建链接元素
+      link.href = '#'; // 链接为空，点击时执行事件
+      link.textContent = item.name; // 设置链接文本为软件名称
+      link.addEventListener('click', (e) => {
+        e.preventDefault(); // 阻止默认链接跳转行为
+        searchPage.style.display = 'none'; // 隐藏搜索页面
+        handleItemClick(item); // 点击后处理项目的加载
+      });
+
+      listItem.appendChild(link); // 将链接添加到列表项
+      searchResults.appendChild(listItem); // 将列表项添加到搜索结果容器
+    });
+  };
+
+  // 初始化Firebase获取数据
+  const fetchData = () => {
+    const sitesRef = ref(db, 'sites'); // 引用数据库路径
+    onValue(sitesRef, (snapshot) => { // 监听数据变化
+      currentData = []; // 清空当前数据
+      snapshot.forEach((childSnapshot) => {
+        currentData.push(childSnapshot.val()); // 将每个节点数据加入到currentData中
+      });
+      renderList(currentData); // 渲染软件列表
+    });
+  };
+
   // 渲染软件列表
   const renderList = (data) => {
     updateCount(data.length); // 更新软件数量
-    listContainer.innerHTML = data.length ? '' : '<p>未搜索到软件库</p>'; // 无数据时显示提示
-
+    listContainer.innerHTML = ''; // 清空现有内容
+    
+    // 始终在列表顶部添加搜索框
+    initSearch();
+    
     data.forEach(item => { // 遍历软件数据，生成每个软件项
       const listItem = document.createElement('div'); // 创建列表项容器
       listItem.classList.add('software-item'); // 添加样式类
@@ -105,21 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
     listContainer.innerHTML = `<iframe src="${url}" class="content-frame"></iframe>`; // 使用 iframe 加载指定 URL 的内容
   };
 
-  // 从 Firebase 数据库获取数据
-  const fetchData = () => {
-    const sitesRef = ref(db, 'sites'); // 引用数据库路径
-    onValue(sitesRef, (snapshot) => { // 监听数据变化
-      currentData = []; // 清空当前数据
-      snapshot.forEach((childSnapshot) => { // 遍历每个数据节点
-        currentData.push(childSnapshot.val());
-      });
-      if (window.history.state === null) { // 初始化时，确保只记录一次
-        window.history.replaceState({ type: 'list', data: currentData }, '', '');
-      }
-      renderList(currentData); // 渲染软件列表
-    });
-  };
-
   // 主页按钮点击事件，跳转到主页
   homeButton.addEventListener('click', () => {
     // 返回到软件库列表界面
@@ -160,5 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  fetchData(); // 获取数据并渲染软件列表
+  // 获取数据
+  fetchData();
 });
