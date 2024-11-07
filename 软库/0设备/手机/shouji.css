@@ -81,17 +81,22 @@
 
 /* 顶部搜索框样式，保持与软件列表项一致 */
 .top-search-box {
-  display: flex; /* 使用 flex 布局，保持与软件列表项一致 */
-  justify-content: center; /* 水平居中对齐内容 */
+  display: flex; /* 使用 flex 布局 */
+  justify-content: space-between; /* 两端对齐 */
   align-items: center; /* 垂直居中对齐 */
-  padding: 10px 15px; /* 设置与软件列表项相同的内边距 */
-  width: calc(100% - 60px); /* 设置宽度，保持与软件列表一致 */
-  max-width: 600px; /* 设置最大宽度，与软件列表一致 */
-  margin: 0 auto; /* 居中对齐容器 */
+  padding: 10px 15px; /* 上下内边距为10px，左右边距为15px */
+  width: calc(100% - 30px); /* 减去左右各15px的边距，保持一致对齐 */
+  max-width: 600px; /* 最大宽度 */
+  cursor: pointer; /* 鼠标悬停时显示手指图标 */
+  transition: background-color 0.3s; /* 背景色渐变效果 */
+  background-color: #f0f4ff; /* 设置背景颜色 */
+  margin: 0 auto; /* 使元素在列表中居中对齐 */
 }
 
 .top-search-input {
-  width: 100%; /* 占满容器的宽度 */
+  display: flex; /* 使用 flex 布局，保持与软件列表项一致 */
+  margin: 0 auto; /* 水平居中对齐,左右外边距15px */
+  width:100%; /* 自动宽度，保持与软件列表项一致 */
   height: 30px; /* 设置与其他列表项相同的高度 */
   border: 1px solid #ddd; /* 边框样式，与其他列表保持一致 */
   border-radius: 5px; /* 保持输入框的圆角样式 */
@@ -127,7 +132,6 @@ body {
 }
 
 /* #logo 样式：确保“知晓”文字在头部水平居中 */
-/* #logo 样式：确保“知晓”文字在头部水平居中 */
 #logo {
   font-size: 1em;
   font-weight: normal;
@@ -145,11 +149,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   cursor: pointer;
   position: absolute;
-  right: 35px;
+  right: 15px;
   top: 50%;
   transform: translateY(-50%); /* 确保图标在垂直方向居中 */
 }
@@ -165,7 +169,7 @@ body {
   width: 100%; /* 占满宽度 */
   max-width: 600px; /* 最大宽度 */
   margin: 6vh 0 7vh 0; /* 上边距为 6vh，下边距为 7vh */
-  background-color: #f0f4ff; /* 背景颜色 */
+  background-color: #fdfdfd; /* 背景颜色 */
   overflow-y: auto; /* 内容可垂直滚动 */
   box-sizing: border-box; /* 包含内边距和边框 */
   height: calc(100vh - 10vh); /* 动态计算内容区域的高度 */
@@ -238,14 +242,13 @@ body {
 
 /* 悬停背景色 */
 .software-item:hover {
-  background-color: #e0e0e0; /* 悬停时背景色 */
+  background-color: #f0f4ff; /* 悬停时背景色 */
 }
 
 /* 图标和名称容器 */
 .text-logo-container {
   display: flex; /* 使用 flex 布局 */
   align-items: center; /* 垂直居中对齐 */
-  margin-left: 15px; /* 左侧外边距 */
 }
 
 /* 软件名称样式 */
@@ -265,7 +268,6 @@ body {
 .load-time {
   font-size: 0.8em; /* 字体大小 */
   color: #888; /* 字体颜色 */
-  margin-right: 15px; /* 右侧外边距 */
   white-space: nowrap; /* 禁止换行 */
 }
 
