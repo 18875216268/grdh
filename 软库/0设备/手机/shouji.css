@@ -168,11 +168,11 @@ body {
   flex: 1; /* 占据剩余空间 */
   width: 100%; /* 占满宽度 */
   max-width: 600px; /* 最大宽度 */
-  margin: 6vh 0 7vh 0; /* 上边距为 6vh，下边距为 7vh */
+  margin: 6vh 0 0 0; /* 上边距为 6vh，下边距为 7vh */
   background-color: #fdfdfd; /* 背景颜色 */
   overflow-y: auto; /* 内容可垂直滚动 */
   box-sizing: border-box; /* 包含内边距和边框 */
-  height: calc(100vh - 10vh); /* 动态计算内容区域的高度 */
+  height: calc(100vh - 6vh); /* 动态计算内容区域的高度 */
 }
 
 /* 隐藏滚动条 */
@@ -204,6 +204,8 @@ body {
   z-index: 10; /* 设置层级，确保 footer 置于内容之上 */
   bottom: 0; /* 将位置固定在页面底部 */
   height: 7vh; /* 动态高度，约占屏幕高度的 7% */
+  backdrop-filter: blur(2px); /* 添加磨砂玻璃效果 */
+  background: rgba(240, 244, 255, 0.8); /* 半透明背景颜色 */
 }
 
 /* 底部导航按钮样式 */
