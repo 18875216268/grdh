@@ -169,7 +169,7 @@ body {
   flex: 1; /* 占据剩余空间 */
   width: 100%; /* 占满宽度 */
   max-width: 600px; /* 最大宽度 */
-  margin: 5.5vh 0 0 0; /* 上边距为8vh，下边距为0vh */
+  margin: 5.5vh 0 7vh 0; /* 上边距为8vh，下边距为0vh */
   background-color: #fdfdfd; /* 背景颜色 */
   overflow-y: auto; /* 内容可垂直滚动 */
   box-sizing: border-box; /* 包含内边距和边框 */
