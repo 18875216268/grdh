@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>源星球</title>
+    <style>
+        /* Toast 提示样式 */
+        .toast-container {
+            position: fixed;
+            top: 50px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast-success {
+            border-left: 4px solid #4CAF50;
+        }
+
+        .toast-info {
+            border-left: 4px solid #2196F3;
+        }
+
+        .toast-error {
+            border-left: 4px solid #f44336;
+        }
+
+        /* 保持原有样式不变 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-size: 12.5px;
+            color: #454545;
+        }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        .基本块 {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: rgba(209, 208, 208, 0.4);
+        }
+
+        .顶部块 {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f4ff;
+            position: relative;
+            padding: 10px;
+        }
+
+        .顶部块 h1 {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .顶部块 .logo {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+        }
+
+        .底部块 {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #f0f4ff;
+            padding: 10px;
+        }
+
+        .功能块 {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .功能块 img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .功能块 span {
+            font-size: 10.5px;
+        }
+
+        .内容块 {
+            width: calc(100% - 20px);
+            margin: 10px auto;
+            display: grid;
+            gap: 15px;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .内容块::-webkit-scrollbar {
+            display: none;
+        }
+
+        .资源块 {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .资源块 .日期 {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .资源块 .标题 {
+            margin-top: 30px;
+            font-weight: bold;
+        }
+
+        .资源表格 {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .资源表格 th,
+        .资源表格 td {
+            border: 1px solid #e0e0e0;
+            padding: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .资源表格 th {
+            background-color: #f5f5f5;
+            text-align: center;
+        }
+
+        .资源表格 .url-cell {
+            text-align: left;
+            max-width: 200px;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
+        }
+
+        .资源表格 .url-cell::-webkit-scrollbar {
+            display: none;
+        }
+
+        .资源表格 .copy-cell {
+            width: 40px;
+            text-align: center;
+        }
+
+        .复制按钮 {
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+
+        .复制按钮:hover {
+            background-color: #45a049;
+        }
+
+        /* 在已有的样式表中添加 */
+        .复制按钮.冷却中 {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+            color: #666;
+        }
+
+        .状态按钮 {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 10.5px;
+        }
+
+        .状态按钮.冷却中 {
+            cursor: not-allowed;
+            opacity: 0.5;
+            font-size: 12.5px;
+        }
+
+        .附加信息 {
+            margin-top: 10px;
+            font-size: 10.5px;
+            color: #666;
+        }
+
+        /* 搜索弹窗样式 */
+        .搜索弹窗 {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            padding: 20px;
+            display: none;
+        }
+
+        .搜索弹窗.显示 {
+            display: block;
+        }
+
+        .搜索弹窗 h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .搜索输入框 {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+
+        .搜索按钮块 {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .搜索按钮块 button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .搜索按钮块 .取消按钮 {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .搜索按钮块 .确认按钮 {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .弹窗蒙版 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .弹窗蒙版.active {
+            display: block;
+        }
+
+        /* 媒体查询 */
+        @media (min-width: 769px) {
+
+            /* 电脑端样式 */
+            .内容块 {
+                grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            /* 手机端样式 */
+            .内容块 {
+                grid-template-columns: repeat(auto-fit, minmax(95%, 1fr));
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="gonggao/styles.css">
+</head>
+
+<body>
+    <div class="overlay">
+        <div class="公告弹窗">
+            <h2>您好，源星人(,,･∀･)ﾉ゛</h2>
+            <div class="公告弹窗内容">
+                <p>本页所有资"源"均来自于网络搬运和网友投稿！请合理使用，勿滥传滥用。同时也恳请您尊重知识产权，遵守相关法律法规。</p>
+            </div>
+            <div class="公告弹窗按钮块">
+                <button class="公告弹窗按钮 公告弹窗取消按钮">取消</button>
+                <button class="公告弹窗按钮 公告弹窗确认按钮">确认</button>
+            </div>
+        </div>
+    </div>
+    <div class="基本块">
+        <div class="顶部块">
+            <h1>源星球</h1>
+            <a href="https://www.quruanpu.cn/"><img src="zhuye.png" alt="主页Logo" class="logo"></a>
+        </div>
+        <div class="弹窗蒙版"></div>
+        <div class="内容块">
+            <!-- 资源块将在此动态加载 -->
+        </div>
+
+        <div class="toast-container">
+            <!-- Toast 提示将在这里动态插入 -->
+        </div>
+
+        <div class="底部块">
+            <div class="功能块" id="投稿块" onclick="location.href='tougao.html'">
+                <img src="tougao.png" alt="投稿">
+                <span>投稿</span>
+            </div>
+            <div class="功能块" id="搜索块">
+                <img src="sousuo.png" alt="搜索">
+                <span>搜索</span>
+            </div>
+            <div class="功能块" id="应用块">
+                <img src="yingyong.png" alt="应用">
+                <span>应用</span>
+            </div>
+        </div>
+        <div class="搜索弹窗">
+            <h2>您好，源星人！</h2>
+            <input type="text" class="搜索输入框" placeholder="多关键字用“,”或“|”分隔！前者为并，后者为或......">
+            <div class="搜索按钮块">
+                <button class="取消按钮">取消</button>
+                <button class="确认按钮">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+
+    <script>
+        // Firebase 配置
+        function decrypt(encryptedConfig) {
+            const key = 'YXingQiu2024';
+            let decrypted = '';
+            const base64 = atob(encryptedConfig);
+            for (let i = 0; i < base64.length; i++) {
+                decrypted += String.fromCharCode(base64.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return JSON.parse(decrypted);
+        }
+
+        const encryptedConfig = "InoIHg4aDAwQChB1ECIIPR4VDhZ7YHFBYDpaHggiGBxmBGZMH2A/AT1pIUJTVXNWLjdLQkUwHAFadF1ZODEHTF1zEA1bXlVFMC1EC1Q1WRQcVltGPDoIHQIwGQUcU11Ze3RLCgYlCBdTQ1dhCxRLVEU5HQFCQwgbdiERBwk2GBxHHVcHPWgIQwM0DxRHXEYZKywNDEk3AAdXUlNHPDEGQAQ+BFceEkJGNjIMDRMYDVcIEktMMDYOHw4kRBABVAJVe3RLHRM+GxRVVXBBOjMMGkVrSwxKWVxTKDEcQwJiDUVTHlNEKSsZARN/ChpfEh4WND0aHQY2ABtVY1daPT0bJwNzU1cFAwsNYGhfW1dlX0YQHBBVKSggCkVrS0QIBwENYGFZWFJhXUMBCkVRO2JRXQEzCBYKVQMBaDlbClJmC01XBVdVe3RLAwIwGgBAVV9RNywgCkVrSzIffnQHAQoiPl9pWVdP";
+
+        // 初始化 Firebase
+        const firebaseConfig = decrypt(encryptedConfig);
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let 当前搜索状态 = {
+            是否搜索中: false,
+            关键字: '',
+            搜索模式: 'or'
+        };
+
+        // 在 Firebase 配置之后，添加这些工具函数
+        function 获取按钮冷却状态(资源ID) {
+            const 存储的数据 = localStorage.getItem(`copyButtonCooldown_${资源ID}`);
+            if (!存储的数据) return null;
+
+            const 数据 = JSON.parse(存储的数据);
+            if (数据.结束时间 <= Date.now()) {
+                localStorage.removeItem(`copyButtonCooldown_${资源ID}`);
+                return null;
+            }
+            return 数据;
+        }
+
+        function 设置按钮冷却状态(资源ID, 秒数) {
+            const 数据 = {
+                开始时间: Date.now(),
+                结束时间: Date.now() + (秒数 * 1000)
+            };
+            localStorage.setItem(`copyButtonCooldown_${资源ID}`, JSON.stringify(数据));
+        }
+
+        function 移除按钮冷却状态(资源ID) {
+            localStorage.removeItem(`copyButtonCooldown_${资源ID}`);
+        }
+
+        // Toast 提示函数
+        function showToast(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+
+            toastContainer.appendChild(toast);
+
+            // 触发重排以应用过渡效果
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+
+            // 3秒后移除提示
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toastContainer.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // 创建资源块的函数
+        function 创建资源块(资源数据) {
+            const 资源块 = document.createElement('div');
+            资源块.classList.add('资源块');
+
+            // 设置状态图标
+            const 状态图标 = 资源数据.state === "有效" ? "⭐️" : "🔴";
+
+            资源块.innerHTML = `
+                <div class="日期">${资源数据.date}</div>
+                <div class="状态按钮">${状态图标}</div>
+                <div class="标题">💡 ${资源数据.title}</div>
+                <table class="资源表格">
+                    <tr>
+                        <th>>>星·址<<</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr>
+                        <td class="url-cell">${资源数据.url}</td>
+                        <td class="copy-cell">
+                            <button class="复制按钮">复制</button>
+                        </td>
+                    </tr>
+                </table>
+                <div class="附加信息">
+                    (标签:${资源数据.tag}) (适用:${资源数据.app}) (源数量:${资源数据.number}) (已复制:${资源数据.copy})
+                </div>
+            `;
+
+            // 复制按钮功能
+            const 复制按钮 = 资源块.querySelector('.复制按钮');
+            const 初始冷却状态 = 获取按钮冷却状态(资源数据.id);
+
+            // 如果有保存的冷却状态，恢复它
+            if (初始冷却状态) {
+                const 剩余毫秒 = 初始冷却状态.结束时间 - Date.now();
+                const 剩余秒数 = Math.ceil(剩余毫秒 / 1000);
+
+                if (剩余秒数 > 0) {
+                    复制按钮.classList.add('冷却中');
+                    复制按钮.textContent = `${剩余秒数}s`;
+
+                    const timer = setInterval(() => {
+                        const 当前剩余秒数 = Math.ceil((初始冷却状态.结束时间 - Date.now()) / 1000);
+
+                        if (当前剩余秒数 <= 0) {
+                            clearInterval(timer);
+                            复制按钮.classList.remove('冷却中');
+                            复制按钮.textContent = '复制';
+                            移除按钮冷却状态(资源数据.id);
+                        } else {
+                            复制按钮.textContent = `${当前剩余秒数}s`;
+                        }
+                    }, 1000);
+                }
+            }
+
+            复制按钮.addEventListener('click', () => {
+                // 检查冷却状态
+                const 当前冷却状态 = 获取按钮冷却状态(资源数据.id);
+                if (当前冷却状态) {
+                    const 剩余毫秒 = 当前冷却状态.结束时间 - Date.now();
+                    if (剩余毫秒 > 0) {
+                        showToast(`请等待${Math.ceil(剩余毫秒 / 1000)}秒后再复制`, 'info');
+                        return;
+                    }
+                }
+
+                // 立即更新按钮视觉状态
+                复制按钮.classList.add('冷却中');
+                let 剩余秒数 = 30;
+                复制按钮.textContent = `${剩余秒数}s`;
+                设置按钮冷却状态(资源数据.id, 30);
+
+                // 创建定时器
+                const timer = setInterval(() => {
+                    剩余秒数--;
+                    if (剩余秒数 <= 0) {
+                        clearInterval(timer);
+                        复制按钮.classList.remove('冷却中');
+                        复制按钮.textContent = '复制';
+                        移除按钮冷却状态(资源数据.id);
+                    } else {
+                        复制按钮.textContent = `${剩余秒数}s`;
+                    }
+                }, 1000);
+
+                navigator.clipboard.writeText(资源数据.url).then(() => {
+                    const resourceRef = database.ref(`resources/${资源数据.id}`);
+
+                    resourceRef.child('copy').once('value', (snapshot) => {
+                        let currentCopy = snapshot.val();
+                        if (!currentCopy || isNaN(parseInt(currentCopy))) {
+                            currentCopy = "0";
+                        }
+                        const newCopy = (parseInt(currentCopy) + 1).toString();
+                        resourceRef.child('copy').set(newCopy)
+                            .then(() => {
+                                showToast('链接复制成功！', 'success');
+                            })
+                            .catch((error) => {
+                                console.error('更新复制次数失败:', error);
+                                showToast('更新复制次数失败，请重试', 'error');
+                                // 即使更新失败，也保持冷却状态，因为复制已经完成
+                            });
+                    });
+                }).catch((error) => {
+                    console.error('复制失败:', error);
+                    showToast('复制失败，请重试', 'error');
+                    // 如果复制失败，取消冷却状态
+                    clearInterval(timer);
+                    复制按钮.classList.remove('冷却中');
+                    复制按钮.textContent = '复制';
+                    移除按钮冷却状态(资源数据.id);
+                });
+            });
+
+            // 状态按钮功能
+            const 状态按钮 = 资源块.querySelector('.状态按钮');
+
+            // 检查初始冷却状态
+            const 状态按钮初始冷却状态 = 获取按钮冷却状态(`state_${资源数据.id}`);
+            if (状态按钮初始冷却状态) {
+                const 剩余毫秒 = 状态按钮初始冷却状态.结束时间 - Date.now();
+                const 剩余秒数 = Math.ceil(剩余毫秒 / 1000);
+
+                if (剩余秒数 > 0) {
+                    状态按钮.classList.add('冷却中');
+                    状态按钮.textContent = `${剩余秒数}s`;
+
+                    const timer = setInterval(() => {
+                        const 当前剩余秒数 = Math.ceil((状态按钮初始冷却状态.结束时间 - Date.now()) / 1000);
+
+                        if (当前剩余秒数 <= 0) {
+                            clearInterval(timer);
+                            状态按钮.classList.remove('冷却中');
+                            状态按钮.textContent = 资源数据.state === "有效" ? "⭐️" : "🔴";
+                            移除按钮冷却状态(`state_${资源数据.id}`);
+                        } else {
+                            状态按钮.textContent = `${当前剩余秒数}s`;
+                        }
+                    }, 1000);
+                }
+            }
+
+            状态按钮.addEventListener('click', () => {
+                // 检查冷却状态
+                const 当前冷却状态 = 获取按钮冷却状态(`state_${资源数据.id}`);
+                if (当前冷却状态) {
+                    const 剩余毫秒 = 当前冷却状态.结束时间 - Date.now();
+                    if (剩余毫秒 > 0) {
+                        showToast(`请等待${Math.ceil(剩余毫秒 / 1000)}秒后再切换状态`, 'info');
+                        return;
+                    }
+                }
+
+                // 计算新状态
+                const newState = 资源数据.state === "有效" ? "无效" : "有效";
+
+                // 立即显示提示
+                showToast(`已标记星球为${newState}状态！`, 'success');
+
+                // 立即更新按钮视觉状态
+                状态按钮.classList.add('冷却中');
+                let 剩余秒数 = 30;
+                状态按钮.textContent = `${剩余秒数}s`;
+                设置按钮冷却状态(`state_${资源数据.id}`, 30);
+
+                // 创建定时器
+                const timer = setInterval(() => {
+                    剩余秒数--;
+                    if (剩余秒数 <= 0) {
+                        clearInterval(timer);
+                        状态按钮.classList.remove('冷却中');
+                        状态按钮.textContent = newState === "有效" ? "⭐️" : "🔴";
+                        移除按钮冷却状态(`state_${资源数据.id}`);
+
+                        // 冷却结束后更新数据库
+                        const resourceRef = database.ref(`resources/${资源数据.id}`);
+                        resourceRef.child('state').set(newState)
+                            .then(() => {
+                                资源数据.state = newState; // 更新本地状态
+                            })
+                            .catch((error) => {
+                                console.error('状态更新失败:', error);
+                                showToast('状态更新失败，请重试', 'error');
+                                // 如果更新失败，恢复原来的图标
+                                状态按钮.textContent = 资源数据.state === "有效" ? "⭐️" : "🔴";
+                            });
+                    } else {
+                        状态按钮.textContent = `${剩余秒数}s`;
+                    }
+                }, 1000);
+            });
+
+            return 资源块;
+        }
+
+        function 加载资源块() {
+            const 内容块 = document.querySelector('.内容块');
+            内容块.innerHTML = ''; // 清空现有内容
+
+            // 从 Firebase 获取数据并实时监听
+            const resourcesRef = database.ref('resources');
+            // 添加查询条件：只查找 status 为"已审核"的记录
+            resourcesRef.orderByChild('status').equalTo('已审核').on('value', (snapshot) => {
+                const data = snapshot.val();
+                内容块.innerHTML = ''; // 清空现有内容
+
+                if (data) {
+                    // 将数据转化为数组并排序
+                    const sortedData = Object.entries(data)
+                        .map(([id, resource]) => ({ ...resource, id }))
+                        .sort((a, b) => new Date(b.date) - new Date(a.date)); // 按日期降序排序
+
+                    // 加载排序后的数据
+                    sortedData.forEach(resource => {
+                        if (resource.status === '已审核') {
+                            内容块.appendChild(创建资源块(resource));
+                        }
+                    });
+
+                    // 重要：如果正在搜索中，重新应用搜索过滤
+                    if (当前搜索状态.是否搜索中) {
+                        搜索资源(当前搜索状态.关键字, 当前搜索状态.搜索模式);
+                    }
+
+                    // 如果内容块为空（没有符合条件的记录）
+                    if (内容块.children.length === 0) {
+                        const noDataMsg = document.createElement('div');
+                        noDataMsg.style.textAlign = 'center';
+                        noDataMsg.style.padding = '20px';
+                        noDataMsg.style.color = '#666';
+                        noDataMsg.textContent = '暂无已审核的资源';
+                        内容块.appendChild(noDataMsg);
+                    }
+                } else {
+                    // 如果没有任何记录，显示提示信息
+                    const noDataMsg = document.createElement('div');
+                    noDataMsg.style.textAlign = 'center';
+                    noDataMsg.style.padding = '20px';
+                    noDataMsg.style.color = '#666';
+                    noDataMsg.textContent = '暂无已审核的资源';
+                    内容块.appendChild(noDataMsg);
+                }
+            }, (error) => {
+                console.error("数据加载错误:", error);
+                showToast('数据加载失败，请刷新页面重试', 'error');
+            });
+        }
+
+
+        // 搜索功能
+        function 搜索资源(关键字, 搜索模式) {
+            const 内容块 = document.querySelector('.内容块');
+            const 资源块列表 = 内容块.querySelectorAll('.资源块');
+
+            关键字 = 关键字.trim().split(/[,，|]/);
+
+            资源块列表.forEach(资源块 => {
+                const 资源数据 = 资源块.querySelector('.附加信息').textContent;
+                const 标题 = 资源块.querySelector('.标题').textContent;
+                const URL = 资源块.querySelector('.url-cell').textContent;
+                const 日期 = 资源块.querySelector('.日期').textContent;
+                const 状态按钮 = 资源块.querySelector('.状态按钮').textContent;
+
+                let 匹配 = 搜索模式 === 'and'
+                    ? 关键字.every(k =>
+                        资源数据.includes(k) ||
+                        标题.includes(k) ||
+                        URL.includes(k) ||
+                        状态按钮.includes(k) ||
+                        日期.includes(k)
+                    )
+                    : 关键字.some(k =>
+                        资源数据.includes(k) ||
+                        标题.includes(k) ||
+                        URL.includes(k) ||
+                        状态按钮.includes(k) ||
+                        日期.includes(k)
+                    );
+
+                资源块.style.display = 匹配 ? 'block' : 'none';
+            });
+        }
+
+        // 搜索块和取消块切换逻辑
+        const 搜索块 = document.getElementById('搜索块');
+        const 搜索弹窗 = document.querySelector('.搜索弹窗');
+        const 搜索输入框 = document.querySelector('.搜索输入框');
+        const 确认按钮 = document.querySelector('.确认按钮');
+        const 取消按钮 = document.querySelector('.取消按钮');
+        const 搜索图标 = 搜索块.querySelector('img');
+        const 搜索文字 = 搜索块.querySelector('span');
+        const 弹窗蒙版 = document.querySelector('.弹窗蒙版');
+
+        搜索块.addEventListener('click', () => {
+            if (搜索块.id === '搜索块') {
+                搜索弹窗.classList.add('显示');
+                弹窗蒙版.classList.add('active');
+            } else {
+                // 重置搜索状态
+                当前搜索状态 = {
+                    是否搜索中: false,
+                    关键字: '',
+                    搜索模式: 'or'
+                };
+                加载资源块();
+                搜索块.id = '搜索块';
+                搜索图标.src = 'sousuo.png';
+                搜索文字.textContent = '搜索';
+            }
+        });
+
+        确认按钮.addEventListener('click', () => {
+            let 关键字 = 搜索输入框.value;
+
+            // 处理无效/失效/不可用/不能用 关键词
+            关键字 = 关键字.replace(/无效|失效|异常|错误|有问题|无用|不可以用|不可用|不能用/g, '🔴');
+
+            // 处理有效/可用/正常 关键词
+            关键字 = 关键字.replace(/有效|可用|能用|可以用|有用|无问题|正常/g, '⭐️');
+
+            const 搜索模式 = 关键字.includes('，') || 关键字.includes(',') ? 'and' : 'or';
+
+            // 更新搜索状态
+            当前搜索状态 = {
+                是否搜索中: true,
+                关键字: 关键字,
+                搜索模式: 搜索模式
+            };
+
+            搜索资源(关键字, 搜索模式);
+            搜索弹窗.classList.remove('显示');
+            弹窗蒙版.classList.remove('active');
+            搜索块.id = '取消块';
+            搜索图标.src = 'quxiao.png';
+            搜索文字.textContent = '取消';
+        });
+
+        取消按钮.addEventListener('click', () => {
+            搜索输入框.value = '';
+            搜索弹窗.classList.remove('显示');
+            弹窗蒙版.classList.remove('active'); // 移除遮罩层
+        });
+
+        //跳转按钮
+        document.getElementById('投稿块').addEventListener('click', function () {
+            window.location.href = 'tougao.html';
+        });
+
+        document.getElementById('应用块').addEventListener('click', function () {
+            window.location.href = 'yingyong.html';
+        });
+
+        // 初始化页面
+        window.addEventListener('load', 加载资源块);
+        window.addEventListener('resize', 加载资源块);
+
+    </script>
+    <script src="gonggao/script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>源投稿网站</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Firebase Scripts -->
+   <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, push, set, orderByChild, equalTo, query, limitToFirst, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    
+    const encryptedConfig = "eyJhcGlLZXkiOiAiQUl6YVN5RGdjSVBDdTliM3Bvc3FpVDRUeEY4Vm9aOGg3YWVBYndvIiwgImF1dGhEb21haW4iOiAieXhpbmdxaXUtZTNkMGEuZmlyZWJhc2VhcHAuY29tIiwgImRhdGFiYXNlVVJMIjogImh0dHBzOi8veXhpbmdxaXUtZTNkMGEtZGVmYXVsdC1ydGRiLmZpcmViYXNlaW8uY29tIiwgInByb2plY3RJZCI6ICJ5eGluZ3FpdS1lM2QwYSIsICJzdG9yYWdlQnVja2V0IjogInl4aW5ncWl1LWUzZDBhLmFwcHNwb3QuY29tIiwgIm1lc3NhZ2luZ1NlbmRlcklkIjogIjczOTk5MDY1MDQ2MyIsICJhcHBJZCI6ICIxOjczOTk5MDY1MDQ2Mzp3ZWI6ODNmYmFjOGUxNTFhMmQ1N2I4ZTVlYSIsICJtZWFzdXJlbWVudElkIjogIkctTkYzWFJLUDg4MCJ9";
+    function decryptConfig(encrypted) {
+        return JSON.parse(atob(encrypted));
+    }
+
+    const firebaseConfig = decryptConfig(encryptedConfig);
+
+    // 初始化 Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // 获取用户唯一标识（基于用户浏览器和设备）
+    function getUserFingerprint() {
+        const navigatorInfo = window.navigator;
+        const screenInfo = window.screen;
+        const uid = navigatorInfo.userAgent + navigatorInfo.language + screenInfo.width + screenInfo.height + screenInfo.colorDepth;
+        return btoa(uid); // 使用 base64 编码生成唯一 ID
+    }
+
+    // 显示通知
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerText = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                notification.remove();
+            }, 500);
+        }, 3000);
+    }
+
+    // 处理表单提交
+    document.getElementById('submissionForm').addEventListener('submit', async function (event) {
+        const submitButton = document.getElementById('submitButton');
+        submitButton.disabled = true;
+        submitButton.innerText = '投稿中...';
+        event.preventDefault();
+
+        // 获取表单值
+        const tag = document.getElementById('tag').value;
+        const title = document.getElementById('title').value;
+        const url = document.getElementById('url').value;
+        const number = parseInt(document.getElementById('number').value);
+        const date = new Date().toISOString().split('T')[0]; // 此处自动生成当前日期
+        const state = "有效";
+        const status = "未审核";
+        const userId = getUserFingerprint(); // 获取用户唯一标识
+
+        // 获取适用应用
+        const appOptions = document.querySelectorAll('input[name="app"]:checked');
+        const applicableApps = [];
+        appOptions.forEach(option => applicableApps.push(option.value));
+        const appString = applicableApps.join('|');
+
+        try {
+            // 检查URL是否已存在
+            const urlQuery = query(ref(database, '/resources'), orderByChild('url'), equalTo(url));
+            const snapshot = await get(urlQuery);
+            if (snapshot.exists()) {
+                submitButton.disabled = false;
+                submitButton.innerText = '提交';
+                showNotification('投稿失败：该网址已存在！', 'error');
+                return;
+            }
+
+            // 检查记录数是否超过1000
+            const totalRecordsSnapshot = await get(ref(database, '/resources'));
+            const totalRecords = totalRecordsSnapshot.exists() ? Object.keys(totalRecordsSnapshot.val()).length : 0;
+            if (totalRecords >= 1000) {
+                // 查找最早的记录
+                const oldestRecordQuery = query(ref(database, '/resources'), orderByChild('date'), limitToFirst(1));
+                const oldestRecordSnapshot = await get(oldestRecordQuery);
+                if (oldestRecordSnapshot.exists()) {
+                    const oldestRecordKey = Object.keys(oldestRecordSnapshot.val())[0];
+                    await set(ref(database, '/resources/' + oldestRecordKey), null);
+                }
+            }
+
+            // 检查当天用户提交数量
+            const todaySubmissionsQuery = query(ref(database, '/resources'), orderByChild('date'), equalTo(date));
+            const todaySubmissionsSnapshot = await get(todaySubmissionsQuery);
+            let userSubmissionCount = 0;
+            if (todaySubmissionsSnapshot.exists()) {
+                todaySubmissionsSnapshot.forEach(record => {
+                    if (record.val().userId === userId) {
+                        userSubmissionCount++;
+                    }
+                });
+            }
+            if (userSubmissionCount >= 20) {
+                submitButton.disabled = false;
+                submitButton.innerText = '提交';
+                showNotification('今日投稿次数已达上限（20次）', 'error');
+                return;
+            }
+
+            // 创建新的资源条目
+            const newResourceKey = push(ref(database, '/resources')).key;
+            const newResourceData = {
+                tag: tag,
+                title: title,
+                url: url,
+                number: number,
+                app: appString,
+                date: date,
+                state: state,
+                status: status,
+                userId: userId,
+                copy: '0' // 新增字段 copy，默认值为 0
+            };
+
+            // 写入数据库
+            await set(ref(database, '/resources/' + newResourceKey), newResourceData);
+            showNotification('投稿成功！感谢您的投稿，我们会尽快审核。', 'success');
+            document.getElementById('submissionForm').reset();
+            submitButton.disabled = false;
+            submitButton.innerText = '提交';
+        } catch (error) {
+            showNotification('投稿失败: ' + error.message, 'error');
+            submitButton.disabled = false;
+            submitButton.innerText = '提交';
+        }
+    });
+
+    // 处理返回按钮点击
+    document.getElementById('backButton').addEventListener('click', function () {
+        window.location.href = 'index.html';
+    });
+</script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background: linear-gradient(135deg, #ffffff, #f0f2f5);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            max-width: 500px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 22px;
+            color: #007bff;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #0056b3;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        #app-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        #app-options label {
+            display: flex;
+            align-items: center;
+            margin: 0;
+            padding: 8px;
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            background: #ffffff;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.3s, border 0.3s;
+        }
+        #app-options label:hover {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        #backButton, #submitButton {
+            background-color: #6c757d;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            width: calc(50% - 5px);
+            padding: 12px;
+            font-size: 14px;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        #backButton:hover {
+            background-color: #dc3545;
+            transform: translateY(-2px);
+        }
+        #submitButton {
+            background-color: #28a745;
+        }
+        #submitButton:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #333;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+        }
+        .notification.success {
+            background-color: #28a745;
+        }
+        .notification.error {
+            background-color: #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 18px;
+            }
+            input, select, #backButton, #submitButton {
+                font-size: 12px;
+                padding: 8px;
+            }
+            #backButton, #submitButton {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>→"源"来如此(,,·‿·)ﾉ</h1>
+        <form id="submissionForm">
+            <label for="tag">1. 标签:</label>
+            <select id="tag" name="tag" required>
+                <option value="">请选择标签......</option>
+                <option value="小说">小说</option>
+                <option value="音乐">音乐</option>
+                <option value="漫画">漫画</option>
+                <option value="动漫">动漫</option>
+                <option value="影视">影视</option>
+                <option value="其它">其它</option>
+            </select>
+            
+            <label for="title">2. 标题:</label>
+            <input type="text" id="title" name="title" maxlength="30" placeholder="最多30字" required>
+
+            <label for="url">3. 网址:</label>
+            <input type="url" id="url" name="url" placeholder="例如：https://example.com" required>
+
+            <label for="number">4. 源数量:</label>
+            <input type="number" id="number" name="number" min="1" step="1" required>
+
+            <label>5. 适用:</label>
+            <div id="app-options">
+                <label><input type="checkbox" name="app" value="阅读"> 阅读</label>
+                <label><input type="checkbox" name="app" value="小书包"> 小书包</label>
+                <label><input type="checkbox" name="app" value="洛雪"> 洛雪</label>
+                <label><input type="checkbox" name="app" value="异次元"> 异次元</label>
+                <label><input type="checkbox" name="app" value="影视仓"> 影视仓</label>
+                <label><input type="checkbox" name="app" value="其它"> 其它</label>
+                <label><input type="checkbox" name="app" value="通用"> 通用</label>
+            </div>
+
+            <div class="button-group">
+                <button type="button" id="backButton">返回</button>
+                <button type="submit" id="submitButton">提交</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
