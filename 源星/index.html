@@ -610,40 +610,40 @@
                 // 计算新状态
                 const newState = 资源数据.state === "有效" ? "无效" : "有效";
 
-                // 立即显示提示
-                showToast(`已标记星球为${newState}状态！`, 'success');
-
-                // 立即更新按钮视觉状态
+                // 先开始冷却，防止重复点击
                 状态按钮.classList.add('冷却中');
                 let 剩余秒数 = 30;
                 状态按钮.textContent = `${剩余秒数}s`;
                 设置按钮冷却状态(`state_${资源数据.id}`, 30);
 
-                // 创建定时器
-                const timer = setInterval(() => {
-                    剩余秒数--;
-                    if (剩余秒数 <= 0) {
-                        clearInterval(timer);
-                        状态按钮.classList.remove('冷却中');
-                        状态按钮.textContent = newState === "有效" ? "⭐️" : "🔴";
-                        移除按钮冷却状态(`state_${资源数据.id}`);
+                // 更新数据库
+                const resourceRef = database.ref(`resources/${资源数据.id}`);
+                resourceRef.child('state').set(newState)
+                    .then(() => {
+                        资源数据.state = newState; // 更新本地状态
+                        showToast(`已标记星球为${newState}状态！`, 'success');
 
-                        // 冷却结束后更新数据库
-                        const resourceRef = database.ref(`resources/${资源数据.id}`);
-                        resourceRef.child('state').set(newState)
-                            .then(() => {
-                                资源数据.state = newState; // 更新本地状态
-                            })
-                            .catch((error) => {
-                                console.error('状态更新失败:', error);
-                                showToast('状态更新失败，请重试', 'error');
-                                // 如果更新失败，恢复原来的图标
-                                状态按钮.textContent = 资源数据.state === "有效" ? "⭐️" : "🔴";
-                            });
-                    } else {
-                        状态按钮.textContent = `${剩余秒数}s`;
-                    }
-                }, 1000);
+                        // 创建冷却定时器
+                        const timer = setInterval(() => {
+                            剩余秒数--;
+                            if (剩余秒数 <= 0) {
+                                clearInterval(timer);
+                                状态按钮.classList.remove('冷却中');
+                                状态按钮.textContent = newState === "有效" ? "⭐️" : "🔴";
+                                移除按钮冷却状态(`state_${资源数据.id}`);
+                            } else {
+                                状态按钮.textContent = `${剩余秒数}s`;
+                            }
+                        }, 1000);
+                    })
+                    .catch((error) => {
+                        console.error('状态更新失败:', error);
+                        showToast('状态更新失败，请重试', 'error');
+                        // 如果更新失败，取消冷却状态
+                        状态按钮.classList.remove('冷却中');
+                        状态按钮.textContent = 资源数据.state === "有效" ? "⭐️" : "🔴";
+                        移除按钮冷却状态(`state_${资源数据.id}`);
+                    });
             });
 
             return 资源块;
@@ -702,6 +702,36 @@
             });
         }
 
+        // 底部功能块“应用块”和“投稿块”点击处理
+        function initializeBottomButtons() {
+            // 投稿按钮
+            const 投稿块 = document.getElementById('投稿块');
+            投稿块.addEventListener('click', function (e) {
+                e.preventDefault(); // 防止可能的默认行为
+                const ripple = document.createElement('div');
+                showToast('正在跳转到投稿页面...', 'info');
+                setTimeout(() => {
+                    window.location.href = 'tougao.html';
+                }, 300); // 添加短暂延迟以显示过渡效果
+            });
+
+            // 应用按钮
+            const 应用块 = document.getElementById('应用块');
+            应用块.addEventListener('click', function (e) {
+                e.preventDefault();
+                const ripple = document.createElement('div');
+                showToast('正在跳转到应用页面...', 'info');
+                setTimeout(() => {
+                    window.location.href = 'yingyong.html';
+                }, 300);
+            });
+        }
+
+        // 添加到页面加载时初始化
+        window.addEventListener('load', function () {
+            加载资源块();
+            initializeBottomButtons(); // 初始化底部按钮
+        });
 
         // 搜索功能
         function 搜索资源(关键字, 搜索模式) {
@@ -812,7 +842,6 @@
 
     </script>
     <script src="gonggao/script.js"></script>
-    <script src="gongneng/script.js"></script>
 </body>
 
 </html>
