@@ -522,7 +522,7 @@
                 }
             }
 
-            // 修改复制按钮的点击处理函数
+            // 修改复制按钮的点击处理函数部分
             复制按钮.addEventListener('click', async () => {
                 // 检查冷却状态
                 const 当前冷却状态 = 获取按钮冷却状态(资源数据.id);
@@ -535,28 +535,81 @@
                 }
 
                 try {
-                    // 尝试使用新的异步剪贴板API
+                    let copySuccess = false;
+
+                    // 方法1：尝试使用 Clipboard API
                     if (navigator.clipboard && window.isSecureContext) {
-                        await navigator.clipboard.writeText(资源数据.url);
-                    } else {
-                        // 降级方案：使用传统方法
+                        try {
+                            await navigator.clipboard.writeText(资源数据.url);
+                            copySuccess = true;
+                        } catch (err) {
+                            console.log('Clipboard API failed, trying alternative method');
+                        }
+                    }
+
+                    // 方法2：如果方法1失败，尝试使用 execCommand
+                    if (!copySuccess) {
                         const textarea = document.createElement('textarea');
                         textarea.value = 资源数据.url;
-                        textarea.style.position = 'fixed';
-                        textarea.style.opacity = '0';
+                        // 一些重要的样式设置
+                        textarea.style.cssText = 'position:fixed;opacity:0;z-index:-1;pointer-events:none;';
                         document.body.appendChild(textarea);
-                        textarea.select();
-                        document.execCommand('copy');
+
+                        if (navigator.userAgent.match(/iphone|ipad|ipod/i)) {
+                            // iOS 设备特殊处理
+                            const range = document.createRange();
+                            range.selectNodeContents(textarea);
+                            const selection = window.getSelection();
+                            selection.removeAllRanges();
+                            selection.addRange(range);
+                            textarea.setSelectionRange(0, 999999);
+                        } else {
+                            // 其他设备
+                            textarea.select();
+                        }
+
+                        try {
+                            document.execCommand('copy');
+                            copySuccess = true;
+                        } catch (err) {
+                            console.log('execCommand failed');
+                        }
+
                         document.body.removeChild(textarea);
                     }
 
-                    // 立即更新按钮视觉状态
+                    // 方法3：如果前两种方法都失败，尝试使用 document.execCommand 的另一种方式
+                    if (!copySuccess) {
+                        const container = document.createElement('div');
+                        container.innerHTML = 资源数据.url;
+                        container.style.cssText = 'position:fixed;opacity:0;z-index:-1;pointer-events:none;';
+                        document.body.appendChild(container);
+
+                        const range = document.createRange();
+                        range.selectNode(container);
+                        window.getSelection().removeAllRanges();
+                        window.getSelection().addRange(range);
+
+                        try {
+                            document.execCommand('copy');
+                            copySuccess = true;
+                        } catch (err) {
+                            console.log('Alternative execCommand failed');
+                        }
+
+                        document.body.removeChild(container);
+                    }
+
+                    if (!copySuccess) {
+                        throw new Error('所有复制方法都失败了');
+                    }
+
+                    // 复制成功后的处理
                     复制按钮.classList.add('冷却中');
                     let 剩余秒数 = 30;
                     复制按钮.textContent = `${剩余秒数}s`;
                     设置按钮冷却状态(资源数据.id, 30);
 
-                    // 创建定时器
                     const timer = setInterval(() => {
                         剩余秒数--;
                         if (剩余秒数 <= 0) {
@@ -569,7 +622,7 @@
                         }
                     }, 1000);
 
-                    // 更新Firebase数据
+                    // 更新 Firebase 数据
                     const resourceRef = database.ref(`resources/${资源数据.id}`);
                     const snapshot = await resourceRef.child('copy').once('value');
                     let currentCopy = snapshot.val();
@@ -582,8 +635,7 @@
 
                 } catch (error) {
                     console.error('复制失败:', error);
-                    showToast('复制失败，请重试', 'error');
-                    // 如果复制失败，取消冷却状态
+                    showToast('复制失败，请长按内容手动复制', 'error');
                     复制按钮.classList.remove('冷却中');
                     复制按钮.textContent = '复制';
                     移除按钮冷却状态(资源数据.id);
