@@ -702,37 +702,6 @@
             });
         }
 
-        // 底部功能块“应用块”和“投稿块”点击处理
-        function initializeBottomButtons() {
-            // 投稿按钮
-            const 投稿块 = document.getElementById('投稿块');
-            投稿块.addEventListener('click', function (e) {
-                e.preventDefault(); // 防止可能的默认行为
-                const ripple = document.createElement('div');
-                showToast('正在跳转到投稿页面...', 'info');
-                setTimeout(() => {
-                    window.location.href = 'tougao.html';
-                }, 300); // 添加短暂延迟以显示过渡效果
-            });
-
-            // 应用按钮
-            const 应用块 = document.getElementById('应用块');
-            应用块.addEventListener('click', function (e) {
-                e.preventDefault();
-                const ripple = document.createElement('div');
-                showToast('正在跳转到应用页面...', 'info');
-                setTimeout(() => {
-                    window.location.href = 'yingyong.html';
-                }, 300);
-            });
-        }
-
-        // 添加到页面加载时初始化
-        window.addEventListener('load', function () {
-            加载资源块();
-            initializeBottomButtons(); // 初始化底部按钮
-        });
-
         // 搜索功能
         function 搜索资源(关键字, 搜索模式) {
             const 内容块 = document.querySelector('.内容块');
@@ -767,78 +736,152 @@
             });
         }
 
-        // 搜索块和取消块切换逻辑
-        const 搜索块 = document.getElementById('搜索块');
-        const 搜索弹窗 = document.querySelector('.搜索弹窗');
-        const 搜索输入框 = document.querySelector('.搜索输入框');
-        const 确认按钮 = document.querySelector('.确认按钮');
-        const 取消按钮 = document.querySelector('.取消按钮');
-        const 搜索图标 = 搜索块.querySelector('img');
-        const 搜索文字 = 搜索块.querySelector('span');
-        const 弹窗蒙版 = document.querySelector('.弹窗蒙版');
+        // 替换原有的底部按钮相关代码为以下完整代码
+        function initializeBottomButtons() {
+            const 投稿块 = document.getElementById('投稿块');
+            const 搜索块 = document.getElementById('搜索块');
+            const 应用块 = document.getElementById('应用块');
+            const 搜索弹窗 = document.querySelector('.搜索弹窗');
+            const 搜索输入框 = document.querySelector('.搜索输入框');
+            const 确认按钮 = document.querySelector('.确认按钮');
+            const 取消按钮 = document.querySelector('.取消按钮');
+            const 弹窗蒙版 = document.querySelector('.弹窗蒙版');
 
-        搜索块.addEventListener('click', () => {
-            if (搜索块.id === '搜索块') {
-                搜索弹窗.classList.add('显示');
-                弹窗蒙版.classList.add('active');
-            } else {
-                // 重置搜索状态
-                当前搜索状态 = {
-                    是否搜索中: false,
-                    关键字: '',
-                    搜索模式: 'or'
+            // 修改 addMultiEventListener 函数来更好地处理事件触发
+            function addMultiEventListener(element, handler) {
+                let isProcessing = false;
+                let timeoutId;
+
+                // 创建一个包装函数来处理实际的事件
+                const processEvent = (e) => {
+                    if (isProcessing) return; // 如果正在处理中，直接返回
+                    isProcessing = true; // 设置处理标志
+
+                    handler(e); // 执行处理函数
+
+                    // 重置处理标志
+                    timeoutId = setTimeout(() => {
+                        isProcessing = false;
+                    }, 500); // 500ms 的防抖时间
                 };
-                加载资源块();
-                搜索块.id = '搜索块';
-                搜索图标.src = 'sousuo.png';
-                搜索文字.textContent = '搜索';
+
+                // 添加触摸事件监听器
+                element.addEventListener('touchstart', processEvent, { passive: true });
+
+                // 添加点击事件监听器
+                element.addEventListener('click', (e) => {
+                    // 只有在没有触发过触摸事件的情况下才处理点击事件
+                    if (!isProcessing) {
+                        processEvent(e);
+                    }
+                });
+
+                // 清理函数
+                return () => {
+                    element.removeEventListener('touchstart', processEvent);
+                    element.removeEventListener('click', processEvent);
+                    clearTimeout(timeoutId);
+                };
+            }
+
+            // 投稿块的处理代码
+            addMultiEventListener(投稿块, function (e) {
+                e.preventDefault();
+                showToast('正在跳转到投稿页面...', 'info');
+                setTimeout(() => {
+                    window.location.href = 'tougao.html';
+                }, 300);
+            });
+
+            // 应用块的处理代码
+            addMultiEventListener(应用块, function (e) {
+                e.preventDefault();
+                showToast('正在跳转到应用页面...', 'info');
+                setTimeout(() => {
+                    window.location.href = 'yingyong.html';
+                }, 300);
+            });
+
+            // 搜索/取消块处理
+            function toggleSearchState() {
+                if (搜索块.id === '搜索块') {
+                    // 切换到搜索状态
+                    搜索弹窗.classList.add('显示');
+                    弹窗蒙版.classList.add('active');
+                } else {
+                    // 切换到取消状态
+                    当前搜索状态 = {
+                        是否搜索中: false,
+                        关键字: '',
+                        搜索模式: 'or'
+                    };
+                    加载资源块();
+                    搜索块.id = '搜索块';
+                    搜索块.querySelector('img').src = 'sousuo.png';
+                    搜索块.querySelector('span').textContent = '搜索';
+                    搜索输入框.value = '';
+                }
+            }
+
+            // 搜索/取消块的事件处理
+            addMultiEventListener(搜索块, function (e) {
+                e.preventDefault();
+                toggleSearchState();
+            });
+
+            // 确认按钮处理
+            addMultiEventListener(确认按钮, function (e) {
+                e.preventDefault();
+                let 关键字 = 搜索输入框.value;
+
+                // 处理关键词替换
+                关键字 = 关键字.replace(/无效|失效|异常|错误|有问题|无用|不可以用|不可用|不能用/g, '🔴');
+                关键字 = 关键字.replace(/有效|可用|能用|可以用|有用|无问题|正常/g, '⭐️');
+
+                const 搜索模式 = 关键字.includes('，') || 关键字.includes(',') ? 'and' : 'or';
+
+                当前搜索状态 = {
+                    是否搜索中: true,
+                    关键字: 关键字,
+                    搜索模式: 搜索模式
+                };
+
+                搜索资源(关键字, 搜索模式);
+                搜索弹窗.classList.remove('显示');
+                弹窗蒙版.classList.remove('active');
+                搜索块.id = '取消块';
+                搜索块.querySelector('img').src = 'quxiao.png';
+                搜索块.querySelector('span').textContent = '取消';
+            });
+
+            // 取消按钮处理
+            addMultiEventListener(取消按钮, function (e) {
+                e.preventDefault();
+                搜索输入框.value = '';
+                搜索弹窗.classList.remove('显示');
+                弹窗蒙版.classList.remove('active');
+            });
+        }
+
+        // 确保只初始化一次
+        let isInitialized = false;
+
+        // 页面加载和准备就绪时只初始化一次
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!isInitialized) {
+                initializeBottomButtons();
+                isInitialized = true;
             }
         });
 
-        确认按钮.addEventListener('click', () => {
-            let 关键字 = 搜索输入框.value;
-
-            // 处理无效/失效/不可用/不能用 关键词
-            关键字 = 关键字.replace(/无效|失效|异常|错误|有问题|无用|不可以用|不可用|不能用/g, '🔴');
-
-            // 处理有效/可用/正常 关键词
-            关键字 = 关键字.replace(/有效|可用|能用|可以用|有用|无问题|正常/g, '⭐️');
-
-            const 搜索模式 = 关键字.includes('，') || 关键字.includes(',') ? 'and' : 'or';
-
-            // 更新搜索状态
-            当前搜索状态 = {
-                是否搜索中: true,
-                关键字: 关键字,
-                搜索模式: 搜索模式
-            };
-
-            搜索资源(关键字, 搜索模式);
-            搜索弹窗.classList.remove('显示');
-            弹窗蒙版.classList.remove('active');
-            搜索块.id = '取消块';
-            搜索图标.src = 'quxiao.png';
-            搜索文字.textContent = '取消';
+        // 页面完全加载后只初始化一次
+        window.addEventListener('load', function () {
+            if (!isInitialized) {
+                initializeBottomButtons();
+                isInitialized = true;
+            }
+            加载资源块(); // 不管是否初始化过，都需要加载资源块
         });
-
-        取消按钮.addEventListener('click', () => {
-            搜索输入框.value = '';
-            搜索弹窗.classList.remove('显示');
-            弹窗蒙版.classList.remove('active'); // 移除遮罩层
-        });
-
-        //跳转按钮
-        document.getElementById('投稿块').addEventListener('click', function () {
-            window.location.href = 'tougao.html';
-        });
-
-        document.getElementById('应用块').addEventListener('click', function () {
-            window.location.href = 'yingyong.html';
-        });
-
-        // 初始化页面
-        window.addEventListener('load', 加载资源块);
-        window.addEventListener('resize', 加载资源块);
 
     </script>
     <script src="gonggao/script.js"></script>
