@@ -100,6 +100,8 @@
             align-items: center;
             background-color: #f0f4ff;
             padding: 10px;
+            position: relative;
+            z-index: 10;
         }
 
         .功能块 {
@@ -107,6 +109,12 @@
             flex-direction: column;
             align-items: center;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+            position: relative;
+            z-index: 1;
+            padding: 8px 15px;
         }
 
         .功能块 img {
@@ -116,6 +124,12 @@
 
         .功能块 span {
             font-size: 10.5px;
+        }
+
+        /* 添加触摸反馈效果 */
+        .功能块:active {
+            opacity: 0.7;
+            transform: scale(0.95);
         }
 
         .内容块 {
@@ -508,7 +522,8 @@
                 }
             }
 
-            复制按钮.addEventListener('click', () => {
+            // 修改复制按钮的点击处理函数
+            复制按钮.addEventListener('click', async () => {
                 // 检查冷却状态
                 const 当前冷却状态 = 获取按钮冷却状态(资源数据.id);
                 if (当前冷却状态) {
@@ -519,53 +534,60 @@
                     }
                 }
 
-                // 立即更新按钮视觉状态
-                复制按钮.classList.add('冷却中');
-                let 剩余秒数 = 30;
-                复制按钮.textContent = `${剩余秒数}s`;
-                设置按钮冷却状态(资源数据.id, 30);
-
-                // 创建定时器
-                const timer = setInterval(() => {
-                    剩余秒数--;
-                    if (剩余秒数 <= 0) {
-                        clearInterval(timer);
-                        复制按钮.classList.remove('冷却中');
-                        复制按钮.textContent = '复制';
-                        移除按钮冷却状态(资源数据.id);
+                try {
+                    // 尝试使用新的异步剪贴板API
+                    if (navigator.clipboard && window.isSecureContext) {
+                        await navigator.clipboard.writeText(资源数据.url);
                     } else {
-                        复制按钮.textContent = `${剩余秒数}s`;
+                        // 降级方案：使用传统方法
+                        const textarea = document.createElement('textarea');
+                        textarea.value = 资源数据.url;
+                        textarea.style.position = 'fixed';
+                        textarea.style.opacity = '0';
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
                     }
-                }, 1000);
 
-                navigator.clipboard.writeText(资源数据.url).then(() => {
-                    const resourceRef = database.ref(`resources/${资源数据.id}`);
+                    // 立即更新按钮视觉状态
+                    复制按钮.classList.add('冷却中');
+                    let 剩余秒数 = 30;
+                    复制按钮.textContent = `${剩余秒数}s`;
+                    设置按钮冷却状态(资源数据.id, 30);
 
-                    resourceRef.child('copy').once('value', (snapshot) => {
-                        let currentCopy = snapshot.val();
-                        if (!currentCopy || isNaN(parseInt(currentCopy))) {
-                            currentCopy = "0";
+                    // 创建定时器
+                    const timer = setInterval(() => {
+                        剩余秒数--;
+                        if (剩余秒数 <= 0) {
+                            clearInterval(timer);
+                            复制按钮.classList.remove('冷却中');
+                            复制按钮.textContent = '复制';
+                            移除按钮冷却状态(资源数据.id);
+                        } else {
+                            复制按钮.textContent = `${剩余秒数}s`;
                         }
-                        const newCopy = (parseInt(currentCopy) + 1).toString();
-                        resourceRef.child('copy').set(newCopy)
-                            .then(() => {
-                                showToast('链接复制成功！', 'success');
-                            })
-                            .catch((error) => {
-                                console.error('更新复制次数失败:', error);
-                                showToast('更新复制次数失败，请重试', 'error');
-                                // 即使更新失败，也保持冷却状态，因为复制已经完成
-                            });
-                    });
-                }).catch((error) => {
+                    }, 1000);
+
+                    // 更新Firebase数据
+                    const resourceRef = database.ref(`resources/${资源数据.id}`);
+                    const snapshot = await resourceRef.child('copy').once('value');
+                    let currentCopy = snapshot.val();
+                    if (!currentCopy || isNaN(parseInt(currentCopy))) {
+                        currentCopy = "0";
+                    }
+                    const newCopy = (parseInt(currentCopy) + 1).toString();
+                    await resourceRef.child('copy').set(newCopy);
+                    showToast('链接复制成功！', 'success');
+
+                } catch (error) {
                     console.error('复制失败:', error);
                     showToast('复制失败，请重试', 'error');
                     // 如果复制失败，取消冷却状态
-                    clearInterval(timer);
                     复制按钮.classList.remove('冷却中');
                     复制按钮.textContent = '复制';
                     移除按钮冷却状态(资源数据.id);
-                });
+                }
             });
 
             // 状态按钮功能
@@ -754,31 +776,30 @@
 
                 // 创建一个包装函数来处理实际的事件
                 const processEvent = (e) => {
-                    if (isProcessing) return; // 如果正在处理中，直接返回
-                    isProcessing = true; // 设置处理标志
+                    if (isProcessing) return;
+                    isProcessing = true;
 
-                    handler(e); // 执行处理函数
+                    // 阻止默认行为和冒泡
+                    e.preventDefault();
+                    e.stopPropagation();
 
-                    // 重置处理标志
+                    handler(e);
+
                     timeoutId = setTimeout(() => {
                         isProcessing = false;
-                    }, 500); // 500ms 的防抖时间
+                    }, 300); // 减少防抖时间以提高响应速度
                 };
 
-                // 添加触摸事件监听器
-                element.addEventListener('touchstart', processEvent, { passive: true });
-
-                // 添加点击事件监听器
+                // 使用 pointerdown以更好地处理跨浏览器兼容性
+                element.addEventListener('pointerdown', processEvent);
                 element.addEventListener('click', (e) => {
-                    // 只有在没有触发过触摸事件的情况下才处理点击事件
                     if (!isProcessing) {
                         processEvent(e);
                     }
                 });
 
-                // 清理函数
                 return () => {
-                    element.removeEventListener('touchstart', processEvent);
+                    element.removeEventListener('pointerdown', processEvent);
                     element.removeEventListener('click', processEvent);
                     clearTimeout(timeoutId);
                 };
