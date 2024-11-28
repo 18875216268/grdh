@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>源投稿网站</title>
+    <title>您好！源星人。</title>
     <link rel="stylesheet" href="styles.css">
     <!-- Firebase Scripts -->
     <script type="module">
@@ -687,9 +687,22 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="gonggao/styles.css">
 </head>
 
 <body>
+    <div class="overlay">
+        <div class="公告弹窗">
+            <h2>您好，源星人(,,･∀･)ﾉ゛</h2>
+            <div class="公告弹窗内容">
+                <p>请勿投稿违规、失效资源！投稿请尊重创作人知识产权，请注明来源，所有投稿都将被审核，只有审核通过的资源才能被分享。</p>
+            </div>
+            <div class="公告弹窗按钮块">
+                <button class="公告弹窗按钮 公告弹窗取消按钮">取消</button>
+                <button class="公告弹窗按钮 公告弹窗确认按钮">确认</button>
+            </div>
+        </div>
+    </div>
     <div class="container">
         <h1>→"源"来如此(,,·‿·)ﾉ</h1>
         <form id="submissionForm">
@@ -808,12 +821,16 @@
                     <span>通用</span>
                 </label>
             </div>
+
+
+            
             <div class="dialog-buttons">
                 <button class="dialog-cancel" id="dialogCancel">取消</button>
                 <button class="dialog-confirm" id="dialogConfirm">确认</button>
             </div>
         </div>
     </div>
+    <script src="gonggao/tanchuang.js"></script>
 </body>
 
 </html>
