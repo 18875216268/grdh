@@ -1,0 +1,352 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    min-height: 100vh;
+    background: #1a1a2e;
+    position: relative;
+    overflow-x: hidden;
+    /* 添加 flex 布局实现完全居中 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 自然夜空背景 */
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+    z-index: -2;
+}
+
+/* 粒子效果 */
+.particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+/* 粒子效果 */
+.particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: float 20s infinite linear;
+}
+
+@keyframes float {
+    from {
+        transform: translateY(100vh);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-10vh) translateX(50px);
+        opacity: 0;
+    }
+}
+
+/* 登录按钮 */
+.login-btn {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.login-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+}
+
+/* 登录弹窗 */
+.login-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.login-modal.show {
+    display: flex;
+}
+
+.login-form {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 40px;
+    width: 400px;
+    max-width: 90vw;
+    position: relative;
+    backdrop-filter: blur(20px);
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+    color: #fff;
+}
+
+.login-title {
+    text-align: center;
+    color: #fff;
+    font-size: 24px;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.form-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.error-message {
+    color: #ff6b6b;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 15px;
+    display: none;
+}
+
+/* 主容器 - 调整居中方式 */
+.container {
+    max-width: 520px;
+    width: 100%;
+    padding: 15px;
+    position: relative;
+    z-index: 10;
+}
+
+/* 头像样式 */
+.avatar {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+/* 标题样式 */
+.site-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.site-subtitle {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 300;
+}
+
+/* 链接列表 */
+.link-list {
+    list-style: none;
+    margin-bottom: 20px;
+}
+
+.link-item {
+    margin-bottom: 15px;
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+.link-item a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 35px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50px;
+    text-decoration: none;
+    color: #fff;
+    transition: all 0.3s ease;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.link-item a:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgb(255, 255, 255,0.8);
+}
+
+.link-icon {
+    position: absolute;
+    left: 20px;
+    width: 24px;
+    height: 24px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.link-text {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.link-arrow {
+    position: absolute;
+    right: 20px;
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.6);
+    transition: transform 0.3s ease;
+}
+
+.link-item a:hover .link-arrow {
+    transform: translateX(3px);
+}
+
+/* 底部链接 */
+.footer-link {
+    text-align: center;
+}
+
+.footer-link a {
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.3s ease;
+}
+
+.footer-link a:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+    .container {
+        padding: 20px 15px;
+    }
+
+    .site-title {
+        font-size: 24px;
+    }
+
+    .link-item a {
+        padding: 15px 30px;
+    }
+
+    .link-text {
+        font-size: 14px;
+    }
+
+    .login-form {
+        padding: 30px 20px;
+    }
+
+    .avatar {
+        width: 100px;
+        height: 100px;
+    }
+}

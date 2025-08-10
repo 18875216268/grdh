@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识·中心</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>">
+    <!-- 引入外部样式 -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- 引入Lucide图标库 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <!-- 动态背景 -->
+    <div class="background"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- 登录按钮 -->
+    <button class="login-btn" id="loginBtn">
+        <span id="loginBtnText">登录</span>
+    </button>
+
+    <!-- 登录弹窗 -->
+    <div class="login-modal" id="loginModal">
+        <div class="login-form">
+            <button class="close-btn" id="closeModal">&times;</button>
+            <h2 class="login-title">用户登录</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="username">账号</label>
+                    <input type="text" id="username" class="form-input" placeholder="请输入账号" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="password">密码</label>
+                    <input type="password" id="password" class="form-input" placeholder="请输入密码" required>
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn">登录</button>
+                <div class="error-message" id="errorMessage"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 头像 -->
+        <div class="avatar" id="avatar"></div>
+
+        <!-- 标题 -->
+        <h1 class="site-title" id="siteTitle">正在加载...</h1>
+        <p class="site-subtitle" id="siteSubtitle"></p>
+
+        <!-- 链接列表 -->
+        <ul class="link-list" id="linkList">
+            <!-- 动态加载链接列表 -->
+        </ul>
+
+        <!-- 底部链接 -->
+        <div class="footer-link">
+            <a href="#" target="_blank" id="footerLink">正在加载...</a>
+        </div>
+    </div>
+
+    <!-- Firebase模块 -->
+    <script type="module" src="firebase.js"></script>
+    <!-- 主要脚本 -->
+    <script src="script.js"></script>
+</body>
+</html>
