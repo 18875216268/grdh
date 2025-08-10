@@ -1,0 +1,307 @@
+/* 投稿按钮 */
+.contribute-btn {
+    background-color: #4a4a4a;
+    color: white;
+    border: 1px solid #6a6a6a;
+    border-radius: 20px;
+    padding: 0 14px;  /* 从16px改为14px */
+    height: 28px;  /* 从32px改为28px */
+    font-size: 12px;  /* 从13px改为12px */
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    margin-left: 15px;
+}
+
+.contribute-btn:hover {
+    background-color: #5a5a5a;
+    border-color: #7a7a7a;
+}
+
+/* 投稿弹窗 */
+.tg-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.tg-modal.show {
+    display: flex;
+}
+
+.tg-modal-box {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    width: 500px;
+    height: 360px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* 弹窗头部 */
+.tg-modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.tg-modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text-primary);
+}
+
+.tg-modal-close {
+    font-size: 24px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tg-modal-close:hover {
+    color: var(--text-primary);
+}
+
+/* 页面容器 */
+.tg-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow: hidden;
+    height: calc(100% - 60px);
+}
+
+.tg-page-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.tg-page-footer {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* 表单字段 */
+.tg-field {
+    margin-bottom: 20px;
+}
+
+.tg-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.tg-field input {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.tg-field input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.tg-field input[type="url"] {
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+/* 第二页左右布局 */
+.tg-split-layout {
+    flex: 1;
+    display: flex;
+    gap: 15px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.tg-left-panel {
+    width: 33.33%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.tg-right-panel {
+    width: 66.67%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.tg-lanmu-list {
+    flex: 1;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+}
+
+.tg-lanmu-item {
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 14px;
+    transition: all var(--transition-fast);
+}
+
+.tg-lanmu-item:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.tg-lanmu-item.active {
+    background-color: var(--accent);
+    color: white;
+}
+
+.tg-app-tags {
+    flex: 1;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 8px;
+    min-height: 0;
+}
+
+.tg-app-tag {
+    padding: 6px 14px;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    height: fit-content;
+    transition: all var(--transition-fast);
+    user-select: none;
+}
+
+.tg-app-tag:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
+.tg-app-tag.active {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+.tg-placeholder {
+    color: var(--text-secondary);
+    font-size: 13px;
+    text-align: center;
+    width: 100%;
+}
+
+/* 按钮样式 */
+.tg-btn {
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex: 1;
+}
+
+.tg-btn-full {
+    width: 100%;
+}
+
+.tg-btn-primary {
+    background-color: var(--accent);
+    color: white;
+}
+
+.tg-btn-primary:hover {
+    background-color: var(--accent-hover);
+}
+
+.tg-btn-default {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.tg-btn-default:hover {
+    background-color: var(--border);
+}
+
+.tg-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 特定滚动条样式（优先级更高） */
+.tg-lanmu-list::-webkit-scrollbar,
+.tg-app-tags::-webkit-scrollbar {
+    width: 4px;
+}
+
+.tg-lanmu-list::-webkit-scrollbar-track,
+.tg-app-tags::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.tg-lanmu-list::-webkit-scrollbar-thumb,
+.tg-app-tags::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.tg-lanmu-list::-webkit-scrollbar-thumb:hover,
+.tg-app-tags::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .contribute-btn {
+        padding: 0 10px;
+        font-size: 11px;
+    }
+    
+    .tg-modal-box {
+        width: 90%;
+        max-width: 500px;
+    }
+}
