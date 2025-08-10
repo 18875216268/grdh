@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据库初始化工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #667eea;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section h3 {
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            color: #22c55e;
+        }
+
+        .status.error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.4);
+            color: #ff6b6b;
+        }
+
+        .status.info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            color: #3b82f6;
+        }
+
+        .code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+
+        .warning {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 数据库初始化工具</h1>
+        
+        <div class="warning">
+            <strong>⚠️ 注意：</strong>此工具会修改数据库结构，请谨慎操作！
+        </div>
+
+        <div class="section">
+            <h3>1. 连接状态检查</h3>
+            <button class="btn" onclick="checkConnection()">检查Firebase连接</button>
+            <div id="connectionStatus"></div>
+        </div>
+
+        <div class="section">
+            <h3>2. 数据库当前状态</h3>
+            <button class="btn" onclick="checkCurrentData()">查看listurl节点状态</button>
+            <div id="dataStatus"></div>
+        </div>
+
+        <div class="section">
+            <h3>3. 初始化操作</h3>
+            <button class="btn" onclick="initializeListUrl()">初始化listurl节点</button>
+            <button class="btn" onclick="addSampleData()">添加示例数据</button>
+            <div id="initStatus"></div>
+        </div>
+
+        <div class="section">
+            <h3>4. 验证结果</h3>
+            <button class="btn" onclick="verifyStructure()">验证数据结构</button>
+            <div id="verifyStatus"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase配置和导入
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+        import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+        // Firebase配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3ioWABsutPeZ9LboagtxLLgo2kyi9Xnw",
+            authDomain: "zhuye-fb0a6.firebaseapp.com",
+            databaseURL: "https://zhuye-fb0a6-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "zhuye-fb0a6",
+            storageBucket: "zhuye-fb0a6.firebasestorage.app",
+            messagingSenderId: "5341756226",
+            appId: "1:5341756226:web:1df340a043774db92326db",
+            measurementId: "G-BG1920BDX0"
+        };
+
+        // 初始化Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // 显示状态消息
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // 检查Firebase连接
+        window.checkConnection = async function() {
+            try {
+                showStatus('connectionStatus', '正在检查连接...', 'info');
+                
+                const testRef = ref(database, '.info/connected');
+                const snapshot = await get(testRef);
+                
+                if (snapshot.exists()) {
+                    showStatus('connectionStatus', '✅ Firebase连接成功！', 'success');
+                } else {
+                    showStatus('connectionStatus', '⚠️ Firebase连接状态未知', 'info');
+                }
+            } catch (error) {
+                showStatus('connectionStatus', `❌ 连接失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 检查当前数据状态
+        window.checkCurrentData = async function() {
+            try {
+                showStatus('dataStatus', '正在检查数据状态...', 'info');
+                
+                const listUrlRef = ref(database, 'listurl');
+                const snapshot = await get(listUrlRef);
+                
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const type = typeof data;
+                    const isArray = Array.isArray(data);
+                    
+                    let message = `📊 当前数据状态：<br>`;
+                    message += `类型: ${type}<br>`;
+                    message += `是否为数组: ${isArray}<br>`;
+                    message += `值: <div class="code">${JSON.stringify(data, null, 2)}</div>`;
+                    
+                    if (type === 'string' || isArray || type !== 'object') {
+                        message += `<br>⚠️ 数据格式不正确，需要初始化！`;
+                        showStatus('dataStatus', message, 'error');
+                    } else {
+                        message += `<br>✅ 数据格式正确`;
+                        showStatus('dataStatus', message, 'success');
+                    }
+                } else {
+                    showStatus('dataStatus', '📭 listurl节点不存在，需要初始化', 'info');
+                }
+            } catch (error) {
+                showStatus('dataStatus', `❌ 检查失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 初始化listurl节点
+        window.initializeListUrl = async function() {
+            try {
+                showStatus('initStatus', '正在初始化listurl节点...', 'info');
+                
+                const listUrlRef = ref(database, 'listurl');
+                await set(listUrlRef, {});
+                
+                showStatus('initStatus', '✅ listurl节点初始化成功！现在是一个空对象{}', 'success');
+            } catch (error) {
+                showStatus('initStatus', `❌ 初始化失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 添加示例数据
+        window.addSampleData = async function() {
+            try {
+                showStatus('initStatus', '正在添加示例数据...', 'info');
+                
+                const sampleData = {
+                    'link_sample_1': {
+                        icon: 'sparkles',
+                        text: '精选资源库',
+                        url: 'https://example.com'
+                    },
+                    'link_sample_2': {
+                        icon: 'code-2',
+                        text: '开发工具箱',
+                        url: 'https://github.com'
+                    },
+                    'link_sample_3': {
+                        icon: 'palette',
+                        text: '设计灵感站',
+                        url: 'https://dribbble.com'
+                    }
+                };
+                
+                const listUrlRef = ref(database, 'listurl');
+                await set(listUrlRef, sampleData);
+                
+                showStatus('initStatus', '✅ 示例数据添加成功！', 'success');
+            } catch (error) {
+                showStatus('initStatus', `❌ 添加示例数据失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 验证数据结构
+        window.verifyStructure = async function() {
+            try {
+                showStatus('verifyStatus', '正在验证数据结构...', 'info');
+                
+                const listUrlRef = ref(database, 'listurl');
+                const snapshot = await get(listUrlRef);
+                
+                if (!snapshot.exists()) {
+                    showStatus('verifyStatus', '❌ listurl节点不存在', 'error');
+                    return;
+                }
+                
+                const data = snapshot.val();
+                
+                // 检查数据类型
+                if (typeof data !== 'object' || Array.isArray(data)) {
+                    showStatus('verifyStatus', '❌ 数据类型错误，应该是对象类型', 'error');
+                    return;
+                }
+                
+                // 检查数据结构
+                let isValid = true;
+                let message = '✅ 数据结构验证通过！<br><br>📋 数据详情：<br>';
+                
+                const keys = Object.keys(data);
+                if (keys.length === 0) {
+                    message += '- 空对象，可以开始添加链接<br>';
+                } else {
+                    message += `- 包含 ${keys.length} 个链接<br>`;
+                    
+                    keys.forEach(key => {
+                        const item = data[key];
+                        if (item && typeof item === 'object' && item.icon && item.text && item.url) {
+                            message += `- ${key}: ✅ 结构正确<br>`;
+                        } else {
+                            message += `- ${key}: ❌ 结构错误<br>`;
+                            isValid = false;
+                        }
+                    });
+                }
+                
+                message += `<div class="code">${JSON.stringify(data, null, 2)}</div>`;
+                
+                showStatus('verifyStatus', message, isValid ? 'success' : 'error');
+                
+            } catch (error) {
+                showStatus('verifyStatus', `❌ 验证失败: ${error.message}`, 'error');
+            }
+        };
+
+        // 页面加载时自动检查连接
+        window.addEventListener('load', () => {
+            setTimeout(checkConnection, 1000);
+        });
+    </script>
+</body>
+</html>

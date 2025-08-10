@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 · Admin Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="houtai.css">
+    <link rel="stylesheet" href="../tongzhi/tongzhi.css">
+</head>
+<body>
+    <!-- 动态背景 -->
+    <div class="background"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- 顶部导航 -->
+    <nav class="top-nav">
+        <div class="nav-title">您好！管理员~</div>
+        <div class="nav-actions">
+            <a href="../index.html" class="nav-btn">返回首页</a>
+            <button class="nav-btn" onclick="logout()">退出登录</button>
+        </div>
+    </nav>
+
+    <!-- 主布局 -->
+    <div class="admin-layout">
+        <!-- 左侧导航 -->
+        <aside class="sidebar">
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" data-section="stats">
+                        <i class="nav-icon" data-lucide="bar-chart-3"></i>
+                        流量统计
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-section="basic">
+                        <i class="nav-icon" data-lucide="info"></i>
+                        基础信息
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-section="links">
+                        <i class="nav-icon" data-lucide="link"></i>
+                        链接管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-section="account">
+                        <i class="nav-icon" data-lucide="shield"></i>
+                        账户安全
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- 右侧内容区 -->
+        <main class="content-area">
+            <!-- 流量统计 -->
+            <section class="content-section active" id="stats">
+                <div class="stats-overview">
+                    <div class="stat-card">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">今日访客</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">本月访客</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">总访客数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">0%</div>
+                        <div class="stat-label">月增长率</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="chart-header">
+                        <div class="chart-title-section">
+                            <h3 class="card-title">访客趋势</h3>
+                            <input type="date" id="datePicker" class="date-picker">
+                        </div>
+                        <div class="view-switcher">
+                            <button class="view-btn active" data-view="hourly">每小时</button>
+                            <button class="view-btn" data-view="daily">每日</button>
+                            <button class="view-btn" data-view="monthly">每月</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="visitorChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 基础信息 -->
+            <section class="content-section" id="basic">
+                <!-- 头像及标题 -->
+                <div class="card">
+                    <h3 class="card-title basic-section-title">-头像及标题</h3>
+                    <div class="form-group">
+                        <label class="form-label">1. 头像URL：</label>
+                        <input type="url" class="form-input" id="avatarUrl" placeholder="请输入头像URL地址">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">2. 主页标题：</label>
+                        <input type="text" class="form-input" id="siteTitle" placeholder="请输入网站标题">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">3. 主页副标题：</label>
+                        <input type="text" class="form-input" id="siteSubtitle" placeholder="请输入副标题">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveBasicSettings()">保存设置</button>
+                </div>
+                
+                <!-- 底部文字及超链接 -->
+                <div class="card">
+                    <h3 class="card-title basic-section-title">-底部文字及超链接</h3>
+                    <div class="form-group">
+                        <label class="form-label">1. 显示文字：</label>
+                        <input type="text" class="form-input" id="footerText" placeholder="请输入链接显示文字">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">2. 显示文字超链接：</label>
+                        <input type="url" class="form-input" id="footerLink" placeholder="请输入跳转链接地址">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveBasicSettings()">保存设置</button>
+                </div>
+            </section>
+
+            <!-- 链接管理 -->
+            <section class="content-section" id="links">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">链接列表</h3>
+                        <button class="add-btn" id="addLinkBtn">
+                            <i data-lucide="plus"></i>
+                        </button>
+                    </div>
+                    <div class="link-list-container">
+                        <ul class="link-list" id="linkList">
+                            <!-- 动态加载链接列表 -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 链接编辑弹窗 -->
+                <div class="link-edit-modal" id="linkEditModal">
+                    <div class="link-edit-content">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="form-label">1. 请输入显示名称：</label>
+                                <input type="text" class="form-input" id="linkNameInput" placeholder="请输入链接显示名称">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">2. 请输入跳转链接：</label>
+                                <input type="url" class="form-input" id="linkUrlInput" placeholder="请输入跳转链接地址">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">3. 请选择显示图标：</label>
+                                <div class="icon-grid" id="iconGrid">
+                                    <!-- 动态加载图标 -->
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+                                <button class="btn btn-secondary" onclick="closeLinkEditModal()">取消</button>
+                                <button class="btn btn-primary" id="saveLinkBtn" onclick="saveLinkFromModal()">保存</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 账户安全 -->
+            <section class="content-section" id="account">
+                <!-- 账号 -->
+                <div class="card">
+                    <h3 class="card-title basic-section-title">-账号</h3>
+                    <div class="form-group">
+                        <label class="form-label">1. 当前账号：</label>
+                        <input type="text" class="form-input" id="currentUsername" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">2. 请输入新的账号：</label>
+                        <input type="text" class="form-input" id="newUsername" placeholder="输入新账号">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveAccountInfo()">保存设置</button>
+                </div>
+                
+                <!-- 密码 -->
+                <div class="card">
+                    <h3 class="card-title basic-section-title">-密码</h3>
+                    <div class="form-group">
+                        <label class="form-label">1. 当前密码：</label>
+                        <input type="text" class="form-input" id="currentPassword" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">2. 请输入新的密码：</label>
+                        <input type="password" class="form-input" id="newPassword" placeholder="输入新密码">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveAccountInfo()">保存设置</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="../firebase.js"></script>
+    <script src="../tongzhi/tongzhi.js"></script>
+    <script src="icon.js"></script>
+    <script src="houtai.js"></script>
+</body>
+</html>
