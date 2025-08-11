@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>o_o星球 - 后台管理</title>
+    <link rel="stylesheet" href="ht.css">
+    <!-- Firebase SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+</head>
+<body>
+    <!-- 顶部栏 -->
+    <header class="header">
+        <div>
+            <span class="site-title">欢迎您！星主(●'◡'●)</span>
+        </div>
+        <div>
+            <button class="btn-home" onclick="window.open('../yxq.html', '_blank')">
+                主页
+            </button>
+        </div>
+    </header>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 侧边栏 -->
+        <nav class="sidebar">
+            <div class="admin-nav">
+                <!-- 顶部区域 - 项目管理 -->
+                <div class="nav-section nav-section-top">
+                    <div class="admin-nav-item active" data-section="lanmu">
+                        <span class="admin-nav-icon">📂</span>
+                        <span>栏目管理</span>
+                    </div>
+                </div>
+
+                <!-- 中间区域 - 内容管理 -->
+                <div class="nav-section nav-section-middle">
+                    <div class="admin-nav-item" data-section="resources">
+                        <span class="admin-nav-icon">📄</span>
+                        <span>资源管理</span>
+                    </div>
+                    <div class="admin-nav-item" data-section="apps">
+                        <span class="admin-nav-icon">📱</span>
+                        <span>应用管理</span>
+                    </div>
+                    <div class="admin-nav-item" data-section="tansuo">
+                        <span class="admin-nav-icon">🔍</span>
+                        <span>探索管理</span>
+                    </div>
+                </div>
+
+                <!-- 底部区域 - 审核管理 -->
+                <div class="nav-section nav-section-bottom">
+                    <div class="admin-nav-item" data-section="audit">
+                        <span class="admin-nav-icon">✅</span>
+                        <span>状态管理</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 内容区 -->
+        <main class="content">
+            <!-- 栏目管理 -->
+            <div id="lanmu-section" class="content-section">
+                <div class="content-header">
+                    <div class="content-header-text">
+                        <h1 class="content-title">栏目管理</h1>
+                        <p class="content-desc">管理网站左侧导航中间的栏目项</p>
+                    </div>
+                    <button class="add-circle-btn" onclick="showAddLanmuModal()">+</button>
+                </div>
+
+                <div class="cards-container">
+                    <div class="cards-grid" id="lanmuCardsGrid">
+                        <div class="loading-card">加载中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 资源管理 -->
+            <div id="resources-section" class="content-section" style="display: none;">
+                <div class="content-header">
+                    <div class="content-header-text">
+                        <h1 class="content-title">资源管理</h1>
+                        <p class="content-desc">管理各栏目下的资源内容</p>
+                    </div>
+                    <div class="header-controls">
+                        <select class="control-select" id="resource-lanmu-filter">
+                            <option value="">选择栏目</option>
+                        </select>
+                        <button class="add-circle-btn" data-add="resource">+</button>
+                    </div>
+                </div>
+
+                <div class="cards-container">
+                    <div class="cards-grid" id="resourceCardsGrid">
+                        <div class="loading-card">请先选择栏目</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- App管理 -->
+            <div id="apps-section" class="content-section" style="display: none;">
+                <div class="content-header">
+                    <div class="content-header-text">
+                        <h1 class="content-title">应用管理</h1>
+                        <p class="content-desc">管理App下载内容</p>
+                    </div>
+                    <div class="header-controls">
+                        <select class="control-select" id="app-lanmu-filter">
+                            <option value="">选择栏目</option>
+                        </select>
+                        <button class="add-circle-btn" data-add="app">+</button>
+                    </div>
+                </div>
+
+                <div class="cards-container">
+                    <div class="cards-grid" id="appCardsGrid">
+                        <div class="loading-card">请先选择栏目</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 探索管理 -->
+            <div id="tansuo-section" class="content-section" style="display: none;">
+                <div class="content-header">
+                    <div class="content-header-text">
+                        <h1 class="content-title">探索管理</h1>
+                        <p class="content-desc">管理探索内容</p>
+                    </div>
+                    <button class="add-circle-btn" data-add="tansuo">+</button>
+                </div>
+
+                <div class="cards-container">
+                    <div class="cards-grid" id="tansuoCardsGrid">
+                        <div class="loading-card">加载中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 状态管理 -->
+            <div id="audit-section" class="content-section" style="display: none;">
+                <div class="content-header">
+                    <div class="content-header-text">
+                        <h1 class="content-title">状态管理</h1>
+                        <p class="content-desc">管理所有资源的显示和状态</p>
+                    </div>
+                </div>
+
+                <div class="cards-container">
+                    <div class="cards-grid" id="auditCardsGrid">
+                        <div class="loading-card">加载中...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast 容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 统一弹窗 -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">标题</h3>
+                <span class="modal-close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 动态内容 -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="modalSubmit">应用</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="ht.js"></script>
+    <script src="tc.js"></script>
+    <script src="xm/lanmu.js"></script>
+    <script src="xm/ziyuan.js"></script>
+    <script src="xm/yingyong.js"></script>
+    <script src="xm/tansuo.js"></script>
+    <script src="xm/zhuangtai.js"></script>
+</body>
+</html>
