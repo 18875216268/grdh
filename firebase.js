@@ -1,6 +1,6 @@
 // Firebase配置和认证模块
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+import { getDatabase, ref, get, set, onValue, off } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
 // Firebase配置
 const firebaseConfig = {
@@ -18,6 +18,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
+// 存储监听器引用
+const listeners = {
+    settings: null,
+    links: null,
+    sites: null
+};
+
 // 验证用户登录 - 基于用户输入去数据库验证
 async function validateLogin(inputUsername, inputPassword) {
     try {
@@ -26,7 +33,6 @@ async function validateLogin(inputUsername, inputPassword) {
         
         if (snapshot.exists()) {
             const userData = snapshot.val();
-            // 比较用户输入的账号密码与数据库中的数据
             return userData.username === inputUsername && userData.password === inputPassword;
         } else {
             console.log('数据库中未找到用户数据');
@@ -85,15 +91,12 @@ async function updateUserInfo(newUsername, newPassword) {
         if (snapshot.exists()) {
             const userData = snapshot.val();
             
-            // 构建更新对象
             const updates = {};
             if (newUsername) updates.username = newUsername;
             if (newPassword) updates.password = newPassword;
             
-            // 合并现有数据和更新
             const updatedData = { ...userData, ...updates };
             
-            // 更新数据库
             await set(userRef, updatedData);
             
             return true;
@@ -122,7 +125,35 @@ function logout() {
     localStorage.removeItem('isLoggedIn');
 }
 
-// 获取网站设置
+// 监听网站设置（实时）
+function listenToSettings(callback) {
+    // 清理旧监听器
+    if (listeners.settings) {
+        off(listeners.settings);
+    }
+    
+    const settingsRef = ref(database, 'settings');
+    listeners.settings = settingsRef;
+    
+    onValue(settingsRef, (snapshot) => {
+        if (snapshot.exists()) {
+            callback(snapshot.val());
+        } else {
+            // 返回默认设置
+            callback({
+                avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=NavigationHub&backgroundColor=b6e3f4,c0aede,d1d4f9&size=120',
+                siteTitle: '导航中心',
+                siteSubtitle: '探索 · 发现 · 连接无限可能',
+                footerText: '加入社区交流群 (´▽`)ﾉ',
+                footerLink: '#'
+            });
+        }
+    }, (error) => {
+        console.error('监听设置失败:', error);
+    });
+}
+
+// 获取网站设置（一次性，用于后台初始加载）
 async function getSettings() {
     try {
         const settingsRef = ref(database, 'settings');
@@ -131,7 +162,6 @@ async function getSettings() {
         if (snapshot.exists()) {
             return snapshot.val();
         } else {
-            // 返回默认设置
             return {
                 avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=NavigationHub&backgroundColor=b6e3f4,c0aede,d1d4f9&size=120',
                 siteTitle: '导航中心',
@@ -158,7 +188,33 @@ async function saveSettings(settings) {
     }
 }
 
-// 获取链接列表
+// 监听链接列表（实时）
+function listenToLinks(callback) {
+    // 清理旧监听器
+    if (listeners.links) {
+        off(listeners.links);
+    }
+    
+    const linksRef = ref(database, 'listurl');
+    listeners.links = linksRef;
+    
+    onValue(linksRef, (snapshot) => {
+        if (snapshot.exists()) {
+            const links = snapshot.val();
+            const linksArray = Object.keys(links).map(key => ({
+                id: key,
+                ...links[key]
+            }));
+            callback(linksArray);
+        } else {
+            callback([]);
+        }
+    }, (error) => {
+        console.error('监听链接失败:', error);
+    });
+}
+
+// 获取链接列表（一次性，用于后台初始加载）
 async function getLinks() {
     try {
         const linksRef = ref(database, 'listurl');
@@ -166,7 +222,6 @@ async function getLinks() {
         
         if (snapshot.exists()) {
             const links = snapshot.val();
-            // 转换为数组格式
             return Object.keys(links).map(key => ({
                 id: key,
                 ...links[key]
@@ -177,30 +232,6 @@ async function getLinks() {
     } catch (error) {
         console.error('获取链接列表失败:', error);
         return [];
-    }
-}
-
-// 保存链接列表
-async function saveLinks(links) {
-    try {
-        const linksRef = ref(database, 'listurl');
-        
-        // 转换数组为对象格式
-        const linksObject = {};
-        links.forEach((link, index) => {
-            const id = link.id || `link_${Date.now()}_${index}`;
-            linksObject[id] = {
-                icon: link.icon,
-                text: link.text,
-                url: link.url
-            };
-        });
-        
-        await set(linksRef, linksObject);
-        return true;
-    } catch (error) {
-        console.error('保存链接列表失败:', error);
-        return false;
     }
 }
 
@@ -255,7 +286,105 @@ async function deleteLink(linkId) {
     }
 }
 
-// 记录访客访问 - 使用扁平结构
+// 监听站点列表（实时）
+function listenToSites(callback) {
+    // 清理旧监听器
+    if (listeners.sites) {
+        off(listeners.sites);
+    }
+    
+    const sitesRef = ref(database, 'zdfw');
+    listeners.sites = sitesRef;
+    
+    onValue(sitesRef, (snapshot) => {
+        if (snapshot.exists()) {
+            const sites = snapshot.val();
+            const sitesArray = Object.keys(sites).map(key => ({
+                id: key,
+                ...sites[key]
+            }));
+            callback(sitesArray);
+        } else {
+            callback([]);
+        }
+    }, (error) => {
+        console.error('监听站点失败:', error);
+    });
+}
+
+// 获取站点列表（一次性，用于后台初始加载）
+async function getSites() {
+    try {
+        const sitesRef = ref(database, 'zdfw');
+        const snapshot = await get(sitesRef);
+        
+        if (snapshot.exists()) {
+            const sites = snapshot.val();
+            return Object.keys(sites).map(key => ({
+                id: key,
+                ...sites[key]
+            }));
+        } else {
+            return [];
+        }
+    } catch (error) {
+        console.error('获取站点列表失败:', error);
+        return [];
+    }
+}
+
+// 添加单个站点
+async function addSite(siteData) {
+    try {
+        const sitesRef = ref(database, 'zdfw');
+        const snapshot = await get(sitesRef);
+        
+        const sites = snapshot.exists() ? snapshot.val() : {};
+        const newId = `site_${Date.now()}`;
+        
+        sites[newId] = {
+            icon: siteData.icon,
+            text: siteData.text,
+            url: siteData.url
+        };
+        
+        await set(sitesRef, sites);
+        return newId;
+    } catch (error) {
+        console.error('添加站点失败:', error);
+        return null;
+    }
+}
+
+// 更新单个站点
+async function updateSite(siteId, siteData) {
+    try {
+        const siteRef = ref(database, `zdfw/${siteId}`);
+        await set(siteRef, {
+            icon: siteData.icon,
+            text: siteData.text,
+            url: siteData.url
+        });
+        return true;
+    } catch (error) {
+        console.error('更新站点失败:', error);
+        return false;
+    }
+}
+
+// 删除单个站点
+async function deleteSite(siteId) {
+    try {
+        const siteRef = ref(database, `zdfw/${siteId}`);
+        await set(siteRef, null);
+        return true;
+    } catch (error) {
+        console.error('删除站点失败:', error);
+        return false;
+    }
+}
+
+// 记录访客访问
 async function recordVisit() {
     try {
         const now = new Date();
@@ -264,14 +393,11 @@ async function recordVisit() {
         const day = String(now.getDate()).padStart(2, '0');
         const hour = String(now.getHours()).padStart(2, '0');
         
-        // 使用横杠分隔的扁平结构
         const timeNode = `${year}-${month}-${day} ${hour}`;
         
-        // 获取该时间节点的引用
         const timeRef = ref(database, `number/${timeNode}`);
         const snapshot = await get(timeRef);
         
-        // 如果节点存在，值+1；否则创建并设为1
         const currentCount = snapshot.exists() ? snapshot.val() : 0;
         await set(timeRef, currentCount + 1);
         
@@ -282,7 +408,7 @@ async function recordVisit() {
     }
 }
 
-// 获取访客统计数据 - 使用新的数据结构
+// 获取访客统计数据
 async function getVisitorStats() {
     try {
         const numberRef = ref(database, 'number');
@@ -300,50 +426,65 @@ async function getVisitorStats() {
         
         const allData = snapshot.val();
         const now = new Date();
-        const todayStr = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
-        const thisMonthStr = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const thisMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1);
-        const lastMonthStr = `${lastMonthDate.getFullYear()}/${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
+        const lastMonthStr = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
         
         let todayVisitors = 0;
         let monthVisitors = 0;
         let totalVisitors = 0;
         let lastMonthVisitors = 0;
         
-        // 遍历所有时间节点进行统计
         Object.entries(allData).forEach(([timeNode, count]) => {
             totalVisitors += count;
             
-            // 检查是否是今天的数据
             if (timeNode.startsWith(todayStr)) {
                 todayVisitors += count;
             }
             
-            // 检查是否是本月的数据
             if (timeNode.startsWith(thisMonthStr)) {
                 monthVisitors += count;
             }
             
-            // 检查是否是上月的数据
             if (timeNode.startsWith(lastMonthStr)) {
                 lastMonthVisitors += count;
             }
         });
         
-        // 计算月增长率
-        const monthGrowthRate = lastMonthVisitors === 0 ? 0 : 
-            ((monthVisitors - lastMonthVisitors) / lastMonthVisitors * 100).toFixed(1);
+        let monthGrowthRate;
+        if (lastMonthVisitors === 0) {
+            monthGrowthRate = monthVisitors > 0 ? 100 : 0;
+        } else {
+            monthGrowthRate = ((monthVisitors - lastMonthVisitors) / lastMonthVisitors * 100).toFixed(1);
+        }
         
         return {
             todayVisitors,
             monthVisitors,
             totalVisitors,
             monthGrowthRate,
-            rawData: allData // 返回原始数据供图表使用
+            rawData: allData
         };
     } catch (error) {
         console.error('获取访客统计失败:', error);
         return null;
+    }
+}
+
+// 清理所有监听器
+function cleanupListeners() {
+    if (listeners.settings) {
+        off(listeners.settings);
+        listeners.settings = null;
+    }
+    if (listeners.links) {
+        off(listeners.links);
+        listeners.links = null;
+    }
+    if (listeners.sites) {
+        off(listeners.sites);
+        listeners.sites = null;
     }
 }
 
@@ -359,10 +500,17 @@ window.FirebaseAuth = {
     getSettings,
     saveSettings,
     getLinks,
-    saveLinks,
     addLink,
     updateLink,
     deleteLink,
+    getSites,
+    addSite,
+    updateSite,
+    deleteSite,
     recordVisit,
-    getVisitorStats
+    getVisitorStats,
+    listenToSettings,
+    listenToLinks,
+    listenToSites,
+    cleanupListeners
 };

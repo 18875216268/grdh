@@ -22,24 +22,19 @@ function showEditModal(type, data = null) {
     currentEditType = type;
     currentEditData = data || {};
     
-    // 设置标题
-    const title = data ? '编辑' : '添加';
-    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalTitle').textContent = data ? '编辑' : '添加';
     
-    // 生成表单
     const modalBody = document.getElementById('modalBody');
-    modalBody.innerHTML = generateEditForm(type, data);
+    modalBody.innerHTML = `<form class="form" id="editForm">${generateEditForm(type, data)}</form>`;
     
     // 初始化特殊控件
-    if (type === 'resource') {
-        initResourceAppInput();
-    } else if (type === 'app') {
-        initAppSelect();
-    } else if (type === 'lanmu') {
-        initLanmuForm();
-    }
+    const initFunctions = {
+        'resource': initResourceAppInput,
+        'app': initAppSelect,
+        'lanmu': initLanmuForm
+    };
+    initFunctions[type]?.();
     
-    // 绑定提交事件
     document.getElementById('modalSubmit').onclick = () => saveEditForm();
     
     showModal();
@@ -54,10 +49,10 @@ function generateEditForm(type, data) {
         tansuo: generateTansuoForm(data)
     };
     
-    return `<form class="form" id="editForm">${forms[type] || ''}</form>`;
+    return forms[type] || '';
 }
 
-// 栏目表单
+// 栏目表单 - 添加正确的ID
 function generateLanmuForm(data) {
     return `
         <div class="form-group">
@@ -72,9 +67,7 @@ function generateLanmuForm(data) {
         </div>
         <div class="form-group">
             <label class="form-label">3. 图标</label>
-            <div class="icon-grid" id="iconGrid">
-                <!-- 图标将通过JS动态生成 -->
-            </div>
+            <div class="icon-grid" id="iconGrid"></div>
         </div>
     `;
 }
@@ -160,7 +153,7 @@ function generateAppForm(data) {
     `;
 }
 
-// 探索表单 - 添加投稿人字段
+// 探索表单
 function generateTansuoForm(data) {
     return `
         <div class="form-group">
@@ -222,7 +215,6 @@ function updateResourceAppInput() {
         return;
     }
     
-    // 从applist读取应用列表
     if (currentLanmuData[lanmu]?.applist) {
         resourceAvailableApps = currentLanmuData[lanmu].applist.split('|').filter(app => app.trim());
         
@@ -278,7 +270,6 @@ function updateAppSelect() {
     
     appSelect.innerHTML = '<option value="">请先选择栏目</option>';
     
-    // 从applist读取应用列表
     if (lanmu && currentLanmuData[lanmu]?.applist) {
         const apps = currentLanmuData[lanmu].applist.split('|').filter(app => app.trim());
         apps.forEach(app => {
@@ -301,17 +292,15 @@ async function saveEditForm() {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     
-    // 根据类型调用不同的保存函数
     try {
-        if (currentEditType === 'lanmu') {
-            await saveLanmuForm(data);
-        } else if (currentEditType === 'resource') {
-            await saveResourceForm(data);
-        } else if (currentEditType === 'app') {
-            await saveAppForm(data);
-        } else if (currentEditType === 'tansuo') {
-            await saveTansuoForm(data);
-        }
+        const saveFunctions = {
+            'lanmu': saveLanmuForm,
+            'resource': saveResourceForm,
+            'app': saveAppForm,
+            'tansuo': saveTansuoForm
+        };
+        
+        await saveFunctions[currentEditType]?.(data);
         
         showToast('保存成功', 'success');
         closeModal();
@@ -357,7 +346,7 @@ async function saveResourceForm(data) {
         url: data.url,
         yingyong: resourceSelectedApps.join('|'),
         yuanshuliang: data.yuanshuliang || '未知',
-        tougaoren: data.tougaoren || '木小匣',  // 用户未输入时默认为木小匣
+        tougaoren: data.tougaoren || '木小匣',
         shijian: currentDate,
         fuzhishu: currentEditData.fuzhishu || '0',
         shenhe: currentEditData.shenhe || '已审核',
@@ -371,7 +360,7 @@ async function saveResourceForm(data) {
     await database.ref(`lanmu/${data.lanmu}/neirong/${id}`).set(saveData);
 }
 
-// 保存应用 - 处理投稿人默认值
+// 保存应用
 async function saveAppForm(data) {
     if (!data.lanmu || !data.appName || !data.mingc || !data.url) {
         showToast('请填写必填项', 'error');
@@ -388,19 +377,17 @@ async function saveAppForm(data) {
         wangpan: autoDetectWangpan(data.url),
         riqi: currentDate,
         yihuoqu: currentEditData.yihuoqu || '0',
-        tougaoren: data.tougaoren || '木小匣'  // 用户未输入时默认为木小匣
+        tougaoren: data.tougaoren || '木小匣'
     };
     
-    // 如果是编辑且栏目或应用改变，需要删除旧记录
     if (currentEditData.id && (currentEditData.lanmu !== data.lanmu || currentEditData.appName !== data.appName)) {
         await database.ref(`lanmu/${currentEditData.lanmu}/app/${currentEditData.appName}/${id}`).remove();
     }
     
-    // 保存到新位置（Firebase会自动创建不存在的路径）
     await database.ref(`lanmu/${data.lanmu}/app/${data.appName}/${id}`).set(saveData);
 }
 
-// 保存探索 - 添加投稿人处理
+// 保存探索
 async function saveTansuoForm(data) {
     if (!data.mingcheng || !data.wangzhi || !data.miaoshu) {
         showToast('请填写所有必填字段', 'error');
@@ -415,7 +402,7 @@ async function saveTansuoForm(data) {
         wangzhi: data.wangzhi,
         miaoshu: data.miaoshu,
         riqi: currentDate,
-        tougaoren: data.tougaoren || '木小匣'  // 用户未输入时默认为木小匣
+        tougaoren: data.tougaoren || '木小匣'
     };
     
     await database.ref(`tansuo/${id}`).set(saveData);

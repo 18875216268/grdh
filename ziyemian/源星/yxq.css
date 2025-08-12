@@ -101,9 +101,9 @@ body {
     height: calc(100vh - 60px);
 }
 
-/* 侧边栏 */
+/* 侧边栏 - 宽度调整 */
 .sidebar {
-    width: 200px;
+    width: 170px;
     background-color: var(--bg-secondary);
     border-right: 1px solid var(--border);
     position: fixed;
@@ -120,8 +120,6 @@ body {
     position: relative;
     z-index: 2;
 }
-
-/* 侧边栏分隔线 */
 
 .sidebar-header::after {
     content: '';
@@ -168,7 +166,7 @@ body {
 .nav-item {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
+    padding: 12px 15px;
     cursor: pointer;
     transition: all var(--transition);
     border-left: 3px solid transparent;
@@ -185,7 +183,7 @@ body {
 
 .nav-icon {
     font-size: 18px;
-    margin-right: 12px;
+    margin-right: 10px;
 }
 
 .nav-text {
@@ -199,10 +197,10 @@ body {
     color: var(--text-primary);
 }
 
-/* 内容区 */
+/* 内容区 - 调整左边距 */
 .content {
     flex: 1;
-    margin-left: 200px;
+    margin-left: 170px;
     padding: 20px;
     overflow-y: auto;
 }
@@ -213,119 +211,14 @@ body {
     gap: 20px;
 }
 
-/* 通用卡片样式 */
-.resource-card {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
-    position: relative;
-}
-
-.resource-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-}
-
-.resource-title {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text-primary);
-    flex: 1;
-    margin-right: 10px;
-    display: flex;
-    align-items: center;
-}
-
-/* 状态图标 */
-.status-icon {
-    font-size: 12px;
-    cursor: pointer;
-    margin-right: 6px;
-    user-select: none;
-}
-
-.status-icon.valid { color: var(--success); }
-.status-icon.invalid { color: var(--error); }
-
-/* 通用按钮样式 */
-.copy-btn,
-.get-btn,
-.explore-btn {
-    font-size: 12px;
-    color: var(--text-secondary);
-    background: transparent;
-    border: 1px solid var(--text-secondary);
-    border-radius: 4px;
-    padding: 2px 8px;
-    cursor: pointer;
-    transition: opacity var(--transition);
-}
-
-.copy-btn:hover,
-.get-btn:hover,
-.explore-btn:hover {
-    opacity: 0.8;
-}
-
-.resource-meta {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 12px;
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.resource-tag {
-    background-color: var(--bg-tertiary);
-    padding: 2px 8px;
-    border-radius: 4px;
-}
-
-.resource-date {
-    opacity: 0.8;
-}
-
-/* 通用URL区域 */
-.resource-url {
-    background-color: var(--bg-primary);
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 12px;
-    font-family: monospace;
-    font-size: 13px;
-    color: var(--accent);
-    white-space: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-.resource-url::-webkit-scrollbar { display: none; }
-
-.resource-footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-.resource-info {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-/* 主页按钮 */
-
+/* 主页按钮 - 统一风格 */
 .home-btn {
-    background-color: #4a4a4a;
-    color: #ffffff;
-    border: 1px solid #6a6a6a;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
     border-radius: 50%;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     cursor: pointer;
     transition: all var(--transition);
@@ -333,18 +226,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .home-btn:hover {
-    background-color: #5a5a5a;
-    border-color: #7a7a7a;
-    color: #c0c0c0;
+    background-color: var(--bg-tertiary);
+    color: var(--accent);
+    transform: scale(1.05);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }
 
-.home-icon {
-    width: 18px;  /* 从16px改为18px，图标更大更粗 */
-    height: 18px;
-    font-weight: bold;  /* 加粗 */
+.home-btn svg {
+    width: 16px;
+    height: 16px;
 }
 
 /* 空状态 */
@@ -357,10 +251,10 @@ body {
     font-size: 14px;
 }
 
-/* Toast */
+/* Toast - 右下角显示 */
 .toast-container {
     position: fixed;
-    top: 80px;
+    bottom: 20px;
     right: 20px;
     z-index: 300;
 }
@@ -370,20 +264,52 @@ body {
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 12px 20px;
-    margin-bottom: 10px;
+    margin-top: 10px;
     display: flex;
     align-items: center;
     min-width: 250px;
-    animation: slideIn 0.3s ease;
+    animation: slideInUp 0.3s ease;
 }
 
 .toast.success { border-left: 4px solid var(--success); }
 .toast.error { border-left: 4px solid var(--error); }
 .toast.info { border-left: 4px solid var(--accent); }
 
-@keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+@keyframes slideInUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* 固定投稿按钮 - 更小更简洁 */
+.fixed-contribute-btn {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all var(--transition);
+    z-index: 200;
+}
+
+.fixed-contribute-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--accent);
+    transform: scale(1.05);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.fixed-contribute-btn svg {
+    width: 18px;
+    height: 18px;
 }
 
 /* 滚动条 */
@@ -397,7 +323,24 @@ body {
     .sidebar { width: 60px; }
     .nav-text { display: none; }
     .nav-icon { margin-right: 0; }
+    .nav-item { padding: 12px 0; justify-content: center; }
     .content { margin-left: 60px; }
     .resource-grid { grid-template-columns: 1fr; }
     .search-input { width: 120px; }
+    .home-btn {
+        width: 28px;
+        height: 28px;
+    }
+    .home-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+    .fixed-contribute-btn {
+        width: 36px;
+        height: 36px;
+    }
+    .fixed-contribute-btn svg {
+        width: 16px;
+        height: 16px;
+    }
 }

@@ -1,0 +1,192 @@
+/* ========================================
+   信息模块 - 卡片样式和悬浮提示
+   ======================================== */
+
+/* 通用卡片样式 */
+.resource-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+}
+
+.resource-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 10px;
+}
+
+/* 标题容器和截断 */
+.resource-title-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.resource-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    position: relative;
+}
+
+/* 状态图标 */
+.status-icon {
+    font-size: 12px;
+    cursor: pointer;
+    margin-right: 6px;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.status-icon.valid { 
+    color: var(--success); 
+}
+
+.status-icon.invalid { 
+    color: var(--error); 
+}
+
+/* 按钮样式 */
+.copy-btn,
+.get-btn,
+.explore-btn {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid var(--text-secondary);
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: opacity var(--transition);
+    flex-shrink: 0;
+}
+
+.copy-btn:hover,
+.get-btn:hover,
+.explore-btn:hover {
+    opacity: 0.8;
+}
+
+/* 元信息截断 */
+.resource-meta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.resource-tag {
+    background-color: var(--bg-tertiary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.resource-date {
+    opacity: 0.8;
+}
+
+/* URL区域 */
+.resource-url {
+    background-color: var(--bg-primary);
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-family: monospace;
+    font-size: 13px;
+    color: var(--accent);
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.resource-url::-webkit-scrollbar { 
+    display: none; 
+}
+
+.resource-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* 信息区域截断 */
+.resource-info {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+/* 探索卡片描述 - 双行显示 */
+.tansuo-description {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    max-height: 36px;
+    overflow: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    display: block;
+    position: relative;
+}
+
+/* 悬浮提示框 */
+.resource-tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.85);
+    color: #ffffff;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    max-width: 350px;
+    width: max-content;
+    backdrop-filter: blur(3px);
+}
+
+.resource-tooltip.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.tooltip-line {
+    margin-bottom: 8px;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.tooltip-line:last-child {
+    margin-bottom: 0;
+}
+
+.tooltip-label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 11px;
+    display: block;
+    margin-bottom: 2px;
+}

@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理后台 · Admin Dashboard</title>
+    <title>管理后台</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- CSS文件 -->
     <link rel="stylesheet" href="houtai.css">
+    <link rel="stylesheet" href="htcss/components.css">
+    <link rel="stylesheet" href="htcss/modules.css">
     <link rel="stylesheet" href="../tongzhi/tongzhi.css">
 </head>
 <body>
@@ -45,6 +48,12 @@
                     <a class="nav-link" data-section="links">
                         <i class="nav-icon" data-lucide="link"></i>
                         链接管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-section="sites">
+                        <i class="nav-icon" data-lucide="globe"></i>
+                        站点访问
                     </a>
                 </li>
                 <li class="nav-item">
@@ -114,7 +123,7 @@
                         <label class="form-label">3. 主页副标题：</label>
                         <input type="text" class="form-input" id="siteSubtitle" placeholder="请输入副标题">
                     </div>
-                    <button class="btn btn-primary" onclick="saveBasicSettings()">保存设置</button>
+                    <button class="btn btn-primary" onclick="Settings.saveBasic()">保存设置</button>
                 </div>
                 
                 <!-- 底部文字及超链接 -->
@@ -128,16 +137,16 @@
                         <label class="form-label">2. 显示文字超链接：</label>
                         <input type="url" class="form-input" id="footerLink" placeholder="请输入跳转链接地址">
                     </div>
-                    <button class="btn btn-primary" onclick="saveBasicSettings()">保存设置</button>
+                    <button class="btn btn-primary" onclick="Settings.saveBasic()">保存设置</button>
                 </div>
             </section>
 
             <!-- 链接管理 -->
             <section class="content-section" id="links">
-                <div class="card">
+                <div class="card link-card">
                     <div class="card-header">
                         <h3 class="card-title">链接列表</h3>
-                        <button class="add-btn" id="addLinkBtn">
+                        <button class="add-btn" onclick="LinkManager.openModal('add')">
                             <i data-lucide="plus"></i>
                         </button>
                     </div>
@@ -166,9 +175,52 @@
                                     <!-- 动态加载图标 -->
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
-                                <button class="btn btn-secondary" onclick="closeLinkEditModal()">取消</button>
-                                <button class="btn btn-primary" id="saveLinkBtn" onclick="saveLinkFromModal()">保存</button>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" onclick="LinkManager.closeModal()">取消</button>
+                                <button class="btn btn-primary" onclick="LinkManager.save()">保存</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 站点访问 -->
+            <section class="content-section" id="sites">
+                <div class="card link-card">
+                    <div class="card-header">
+                        <h3 class="card-title">站点列表</h3>
+                        <button class="add-btn" onclick="SiteManager.openModal('add')">
+                            <i data-lucide="plus"></i>
+                        </button>
+                    </div>
+                    <div class="link-list-container">
+                        <ul class="link-list" id="siteList">
+                            <!-- 动态加载站点列表 -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 站点编辑弹窗 -->
+                <div class="link-edit-modal" id="siteEditModal">
+                    <div class="link-edit-content">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="form-label">1. 请输入显示名称：</label>
+                                <input type="text" class="form-input" id="siteNameInput" placeholder="请输入站点显示名称">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">2. 请输入跳转链接：</label>
+                                <input type="url" class="form-input" id="siteUrlInput" placeholder="请输入跳转链接地址">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">3. 请选择显示图标：</label>
+                                <div class="icon-grid" id="siteIconGrid">
+                                    <!-- 动态加载图标 -->
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" onclick="SiteManager.closeModal()">取消</button>
+                                <button class="btn btn-primary" onclick="SiteManager.save()">保存</button>
                             </div>
                         </div>
                     </div>
@@ -188,7 +240,7 @@
                         <label class="form-label">2. 请输入新的账号：</label>
                         <input type="text" class="form-input" id="newUsername" placeholder="输入新账号">
                     </div>
-                    <button class="btn btn-primary" onclick="saveAccountInfo()">保存设置</button>
+                    <button class="btn btn-primary" onclick="Settings.saveAccount()">保存设置</button>
                 </div>
                 
                 <!-- 密码 -->
@@ -202,7 +254,7 @@
                         <label class="form-label">2. 请输入新的密码：</label>
                         <input type="password" class="form-input" id="newPassword" placeholder="输入新密码">
                     </div>
-                    <button class="btn btn-primary" onclick="saveAccountInfo()">保存设置</button>
+                    <button class="btn btn-primary" onclick="Settings.saveAccount()">保存设置</button>
                 </div>
             </section>
         </main>
@@ -211,6 +263,9 @@
     <script type="module" src="../firebase.js"></script>
     <script src="../tongzhi/tongzhi.js"></script>
     <script src="icon.js"></script>
+    <script src="htjs/links.js"></script>
+    <script src="htjs/sites.js"></script>
+    <script src="htjs/settings.js"></script>
     <script src="houtai.js"></script>
 </body>
 </html>

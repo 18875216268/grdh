@@ -22,11 +22,9 @@ const state = {
     allAppDownloads: [],
     allTansuoData: [],
     searchKeyword: '',
-    lanmuData: {}
+    lanmuData: {},
+    resourceListeners: {} // 存储资源监听器引用
 };
-
-// 栏目图标映射
-const iconMap = { '影视': '🎬', '小说': '📖', '漫画': '🎨', '音乐': '🎵', '广告': '📢', '其它': '📌' };
 
 // DOM缓存
 const elements = {};
@@ -60,83 +58,6 @@ function filterData(data, keyword, isApp = false, isTansuo = false) {
     });
 }
 
-// 通用卡片创建函数
-function createCard(item, type) {
-    const card = document.createElement('div');
-    card.className = 'resource-card';
-    card.dataset.id = item.id;
-    card.dataset.type = type;
-    
-    if (type === 'resource') {
-        const statusClass = item.zhuangtai === "有效" ? "valid" : "invalid";
-        card.innerHTML = `
-            <div class="resource-header">
-                <h3 class="resource-title"><span class="status-icon ${statusClass}">●</span>${item.mingcheng}</h3>
-                <button class="copy-btn">复制</button>
-            </div>
-            <div class="resource-meta">
-                <span class="resource-tag">${item.lanmu}</span>
-                <span class="resource-date">${item.shijian}</span>
-                ${item.tougaoren ? `<span>by ${item.tougaoren}</span>` : ''}
-            </div>
-            <div class="resource-url">${item.url}</div>
-            <div class="resource-footer">
-                <div class="resource-info">
-                    ${item.yingyong ? `适用: ${item.yingyong} | ` : ''}
-                    ${item.yuanshuliang ? `源数量: ${item.yuanshuliang} | ` : ''}
-                    已复制: ${item.fuzhishu || '0'}次
-                </div>
-            </div>
-        `;
-    } else if (type === 'app') {
-        card.innerHTML = `
-            <div class="resource-header">
-                <h3 class="resource-title">${item.mingc}</h3>
-                <button class="get-btn">获取</button>
-            </div>
-            <div class="resource-meta">
-                <span class="resource-tag">${item.lanmu}</span>
-                <span class="resource-date">${item.riqi}</span>
-            </div>
-            <div class="resource-url">${item.url}</div>
-            <div class="resource-footer">
-                <div class="resource-info">
-                    ${item.appName} | ${item.wangpan} | 已获取: ${item.yihuoqu}次
-                </div>
-            </div>
-        `;
-    } else if (type === 'tansuo') {
-        card.innerHTML = `
-            <div class="resource-header">
-                <h3 class="resource-title">${item.mingcheng}</h3>
-                <button class="explore-btn">探索</button>
-            </div>
-            <div class="resource-meta">
-                <span class="resource-date">${item.riqi}</span>
-            </div>
-            <div class="resource-url">${item.wangzhi}</div>
-            <div class="resource-footer">
-                <div class="resource-info">
-                    ${item.miaoshu}
-                </div>
-            </div>
-        `;
-    }
-    return card;
-}
-
-// 通用渲染函数
-function renderContent(data, type) {
-    if (data.length === 0) {
-        elements.content.innerHTML = '<div class="empty-container">请等待更新......</div>';
-        return;
-    }
-    
-    elements.content.innerHTML = '<div class="resource-grid" id="resourceGrid"></div>';
-    const grid = document.getElementById('resourceGrid');
-    data.forEach(item => grid.appendChild(createCard(item, type)));
-}
-
 // 页面初始化
 document.addEventListener('DOMContentLoaded', function() {
     // 缓存DOM元素
@@ -148,9 +69,14 @@ document.addEventListener('DOMContentLoaded', function() {
         searchBtn: document.getElementById('searchBtn')
     });
     
-    // 初始显示加载中 - 两个区域
+    // 初始显示加载中
     elements.content.innerHTML = '<div class="empty-container">正在加载中......</div>';
     elements.navList.innerHTML = '<li style="padding:20px;text-align:center;color:#a0a0a0;font-size:12px;">正在加载中......</li>';
+    
+    // 初始化信息模块
+    if (window.InfoModule) {
+        window.InfoModule.init();
+    }
     
     initEvents();
     loadData();
@@ -182,9 +108,9 @@ function initEvents() {
         }
     });
     
-    // 主页按钮点击事件 - 添加这部分
+    // 主页按钮点击事件
     document.getElementById('homeBtn').addEventListener('click', () => {
-        window.location.href = '../../index.html';
+        window.location.href = 'https://www.quruanpu.cn';
     });
 }
 
@@ -277,45 +203,39 @@ function performSearch() {
 
 // 更新显示
 function updateDisplay() {
+    if (!window.InfoModule) return;
+    
     if (state.currentTag === 'app-download') {
         const filtered = filterData(state.allAppDownloads, state.searchKeyword, true);
-        renderContent(filtered, 'app');
+        window.InfoModule.renderContent(filtered, 'app', elements.content);
     } else if (state.currentTag === 'explore') {
         const filtered = filterData(state.allTansuoData, state.searchKeyword, false, true);
-        renderContent(filtered, 'tansuo');
+        window.InfoModule.renderContent(filtered, 'tansuo', elements.content);
     } else {
         let filtered = state.currentTag === 'all' 
             ? [...state.allResources]
             : state.allResources.filter(r => r.lanmu === state.currentTag);
         filtered = filterData(filtered, state.searchKeyword);
-        renderContent(filtered, 'resource');
+        window.InfoModule.renderContent(filtered, 'resource', elements.content);
     }
 }
 
-// 优化的数据加载
-function loadData() {
-    // 监听栏目结构变化
-    database.ref('lanmu').on('value', snapshot => {
-        const data = snapshot.val();
-        if (data) {
-            state.lanmuData = data;
-            generateNavigation(data);
-            loadLimitedResources();
-            loadLimitedApps();
-        }
-    }, error => {
-        console.error("数据加载错误:", error);
-        showToast('数据加载失败，请刷新页面重试', 'error');
-    });
+// 更新导航选中状态
+function updateNavActiveState() {
+    // 移除所有active类
+    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
     
-    loadLimitedTansuo();
+    // 设置当前选中的导航项
+    const activeNav = document.querySelector(`.nav-item[data-tag="${state.currentTag}"]`);
+    if (activeNav) {
+        activeNav.classList.add('active');
+    }
 }
 
-// 生成导航 - 按xuhao排序并使用自定义图标
+// 生成导航
 function generateNavigation(lanmuData) {
     elements.navList.innerHTML = '';
     
-    // 转换为数组并按xuhao排序
     const sortedLanmu = Object.entries(lanmuData)
         .sort(([,a], [,b]) => (a.xuhao || 999999) - (b.xuhao || 999999));
     
@@ -323,52 +243,44 @@ function generateNavigation(lanmuData) {
         const navItem = document.createElement('li');
         navItem.className = 'nav-item';
         navItem.dataset.tag = lanmuName;
+        
+        // 如果当前选中的是这个栏目，添加active类
+        if (state.currentTag === lanmuName) {
+            navItem.classList.add('active');
+        }
+        
         navItem.innerHTML = `
-            <span class="nav-icon">${lanmu.tubiao || iconMap[lanmuName] || '📂'}</span>
+            <span class="nav-icon">${lanmu.tubiao || '📂'}</span>
             <span class="nav-text">${lanmuName}</span>
         `;
         elements.navList.appendChild(navItem);
     });
+    
+    // 更新固定导航项的选中状态
+    updateNavActiveState();
 }
 
-// 加载有限的资源数据
-function loadLimitedResources() {
-    state.allResources = [];
-    const lanmuNames = Object.keys(state.lanmuData);
-    let loadedCount = 0;
+// 处理资源更新
+function processResourceUpdate() {
+    // 合并所有栏目的资源并排序
+    const allResourcesMap = new Map();
     
-    if (lanmuNames.length === 0) {
-        updateDisplay();
-        return;
+    for (const lanmuName in state.lanmuData) {
+        const resources = state.lanmuData[lanmuName].resources || [];
+        resources.forEach(resource => {
+            allResourcesMap.set(resource.id, resource);
+        });
     }
     
-    const maxPerLanmu = Math.ceil(1000 / lanmuNames.length);
+    state.allResources = Array.from(allResourcesMap.values())
+        .sort((a, b) => new Date(b.shijian || 0) - new Date(a.shijian || 0))
+        .slice(0, 1000);
     
-    lanmuNames.forEach(lanmuName => {
-        database.ref(`lanmu/${lanmuName}/neirong`)
-            .orderByChild('shijian')
-            .limitToLast(maxPerLanmu)
-            .once('value', snapshot => {
-                const data = snapshot.val() || {};
-                Object.entries(data).forEach(([id, resource]) => {
-                    if (resource.shenhe === '已审核') {
-                        state.allResources.push({...resource, id, lanmu: lanmuName});
-                    }
-                });
-                
-                loadedCount++;
-                if (loadedCount === lanmuNames.length) {
-                    state.allResources = state.allResources
-                        .sort((a, b) => new Date(b.shijian || 0) - new Date(a.shijian || 0))
-                        .slice(0, 1000);
-                    updateDisplay();
-                }
-            });
-    });
+    updateDisplay();
 }
 
-// 加载有限的应用数据
-function loadLimitedApps() {
+// 处理应用数据
+function processAppData() {
     const flattened = [];
     const lanmuNames = Object.keys(state.lanmuData);
     
@@ -393,7 +305,8 @@ function loadLimitedApps() {
                             riqi: versionData.riqi,
                             yihuoqu: versionData.yihuoqu || '0',
                             wangpan: versionData.wangpan || '其它',
-                            updatePath: `lanmu/${lanmuName}/app/${appName}/${versionId}/yihuoqu`
+                            updatePath: `lanmu/${lanmuName}/app/${appName}/${versionId}/yihuoqu`,
+                            tougaoren: versionData.tougaoren || '匿名'
                         });
                     }
                 });
@@ -404,10 +317,74 @@ function loadLimitedApps() {
     state.allAppDownloads = flattened
         .sort((a, b) => new Date(b.riqi || 0) - new Date(a.riqi || 0))
         .slice(0, 500);
+    
+    if (state.currentTag === 'app-download') {
+        updateDisplay();
+    }
 }
 
-// 加载有限的探索数据
-function loadLimitedTansuo() {
+// 清理旧的资源监听器
+function cleanupResourceListeners() {
+    Object.values(state.resourceListeners).forEach(listener => {
+        if (listener) listener.off();
+    });
+    state.resourceListeners = {};
+}
+
+// 设置资源监听器
+function setupResourceListeners(lanmuNames) {
+    cleanupResourceListeners();
+    
+    const maxPerLanmu = Math.ceil(1000 / lanmuNames.length);
+    
+    lanmuNames.forEach(lanmuName => {
+        const ref = database.ref(`lanmu/${lanmuName}/neirong`)
+            .orderByChild('shijian')
+            .limitToLast(maxPerLanmu);
+        
+        state.resourceListeners[lanmuName] = ref;
+        
+        ref.on('value', snapshot => {
+            const data = snapshot.val() || {};
+            const resources = [];
+            
+            Object.entries(data).forEach(([id, resource]) => {
+                if (resource.shenhe === '已审核') {
+                    resources.push({...resource, id, lanmu: lanmuName});
+                }
+            });
+            
+            // 更新该栏目的资源
+            state.lanmuData[lanmuName].resources = resources;
+            
+            // 处理所有资源更新
+            processResourceUpdate();
+        });
+    });
+}
+
+// 数据加载 - 统一实时监听
+function loadData() {
+    // 监听栏目数据变化
+    database.ref('lanmu').on('value', snapshot => {
+        const data = snapshot.val();
+        if (data) {
+            state.lanmuData = data;
+            generateNavigation(data);
+            
+            // 设置资源实时监听
+            const lanmuNames = Object.keys(data);
+            setupResourceListeners(lanmuNames);
+            
+            // 处理应用数据
+            processAppData();
+        }
+    }, error => {
+        console.error("数据加载错误:", error);
+        showToast('数据加载失败，请刷新页面重试', 'error');
+    });
+    
+    // 监听探索数据变化
     database.ref('tansuo')
         .orderByChild('riqi')
         .limitToLast(200)
@@ -427,3 +404,10 @@ function loadLimitedTansuo() {
             }
         });
 }
+
+// 页面卸载时清理监听器
+window.addEventListener('beforeunload', () => {
+    cleanupResourceListeners();
+    database.ref('lanmu').off();
+    database.ref('tansuo').off();
+});

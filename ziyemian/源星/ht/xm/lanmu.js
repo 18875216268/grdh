@@ -21,7 +21,7 @@ const elements = {
     get iconGrid() { return document.getElementById('iconGrid'); }
 };
 
-// 统计资源数据 - 改为统计无效资源
+// 统计资源数据
 function calculateStats(lanmu) {
     const resources = lanmu.neirong || {};
     const resourceValues = Object.values(resources);
@@ -43,7 +43,6 @@ function renderLanmuCards() {
         return;
     }
 
-    // 按序号排序并渲染
     elements.grid.innerHTML = lanmuEntries
         .sort(([,a], [,b]) => (a.xuhao || 999999) - (b.xuhao || 999999))
         .map(([lanmuName, lanmu]) => {
@@ -86,7 +85,6 @@ function renderLanmuCards() {
             `;
         }).join('');
 
-    // 初始化拖拽功能
     initCardDragAndDrop();
 }
 
@@ -111,7 +109,6 @@ const dragHandlers = {
             const draggedIndex = allCards.indexOf(draggedCard);
             const targetIndex = allCards.indexOf(this);
             
-            // 重新排序DOM
             if (draggedIndex < targetIndex) {
                 this.parentNode.insertBefore(draggedCard, this.nextSibling);
             } else {
@@ -143,11 +140,9 @@ async function saveCardOrder() {
         const cards = elements.grid.querySelectorAll('.draggable');
         const updates = {};
         
-        // 批量更新序号
         cards.forEach((card, index) => {
             const newSequence = index + 1;
             updates[`lanmu/${card.dataset.id}/xuhao`] = newSequence;
-            // 实时更新显示的序号
             card.querySelector('.card-sequence').textContent = newSequence;
         });
         
@@ -160,19 +155,11 @@ async function saveCardOrder() {
 }
 
 // 图标选择功能
-function initIconGrid() {
-    elements.iconGrid.innerHTML = emojiIcons.map(icon => 
-        `<div class="icon-item${icon === selectedIcon ? ' active' : ''}" onclick="selectIcon('${icon}', this)">${icon}</div>`
-    ).join('');
-}
-
 function selectIcon(icon, element) {
-    // 移除所有active类
     elements.iconGrid.querySelectorAll('.icon-item').forEach(item => {
         item.classList.remove('active');
     });
     
-    // 添加active类并设置选中图标
     element.classList.add('active');
     selectedIcon = icon;
 }
@@ -196,7 +183,7 @@ function editLanmu(lanmuName) {
     });
 }
 
-// 保存栏目 - 使用applist方式
+// 保存栏目
 async function saveLanmu() {
     const name = document.getElementById('lanmuName').value.trim();
     const apps = document.getElementById('lanmuApps').value.trim();
@@ -249,7 +236,7 @@ async function saveLanmu() {
     }
 }
 
-// 获取下一个序号 - 基于当前数据计算
+// 获取下一个序号
 function getNextSequenceNumber() {
     const sequences = Object.values(currentLanmuData)
         .map(lanmu => lanmu.xuhao)

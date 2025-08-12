@@ -20,7 +20,7 @@ let currentLanmuData = {};
 let currentTansuoData = {};
 let tooltipElement = null;
 
-// 工具函数
+// ==================== 工具函数 ====================
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -43,6 +43,11 @@ function formatDate(dateStr) {
     return new Date(dateStr).toLocaleDateString('zh-CN');
 }
 
+function formatUrl(url) {
+    if (!url) return '';
+    return url.match(/^https?:\/\//) ? url : `https://${url}`;
+}
+
 function autoDetectWangpan(url) {
     const wangpanMap = {
         'baidu': '百度网盘', 'quark': '夸克网盘', 'lanzou': '蓝奏云',
@@ -55,7 +60,7 @@ function autoDetectWangpan(url) {
     return Object.entries(wangpanMap).find(([key]) => lowerUrl.includes(key))?.[1] || '其它';
 }
 
-// 初始化悬浮提示
+// ==================== 悬浮提示 ====================
 function initTooltip() {
     if (!tooltipElement) {
         tooltipElement = document.createElement('div');
@@ -64,56 +69,163 @@ function initTooltip() {
     }
 }
 
-// 显示悬浮提示
 function showTooltip(element, content) {
     if (!tooltipElement) initTooltip();
     
     tooltipElement.innerHTML = content;
-    
-    // 计算位置
     const rect = element.getBoundingClientRect();
-    const tooltipHeight = 100; // 预估高度
+    const tooltipHeight = 100;
     
-    // 设置位置（在元素上方）
     tooltipElement.style.left = rect.left + 'px';
     tooltipElement.style.top = (rect.top - tooltipHeight - 10) + 'px';
-    
-    // 显示
     tooltipElement.classList.add('show');
 }
 
-// 隐藏悬浮提示
 function hideTooltip() {
     if (tooltipElement) {
         tooltipElement.classList.remove('show');
     }
 }
 
-// 初始化实时监听器
+// ==================== 通用卡片渲染函数 ====================
+function createCard(data, type) {
+    const formattedUrl = formatUrl(data.url || data.wangzhi);
+    const contributor = data.tougaoren || '匿名';
+    
+    let metaContent, statsContent, titleRow, actions;
+    
+    if (type === 'resource' || type === 'audit') {
+        const statusDotClass = data.zhuangtai === '有效' ? 'valid' : 'invalid';
+        metaContent = `${data.lanmu} | ${formatDate(data.shijian)} | by ${contributor}`;
+        statsContent = `${data.yingyong || '通用'}|源数量：${data.yuanshuliang || '未知'}|已复制：${data.fuzhishu || '0'}`;
+        
+        titleRow = type === 'resource' 
+            ? `<span class="status-dot ${statusDotClass}">●</span><span class="resource-title">${data.mingcheng}</span>`
+            : `<span class="resource-title">${data.mingcheng}</span>`;
+        
+        if (type === 'audit') {
+            const displayText = data.shenhe === '已审核' ? '已显示' : '已隐藏';
+            const displayClass = data.shenhe === '已审核' ? 'action-edit' : 'action-delete';
+            const statusText = data.zhuangtai === '有效' ? '有效' : '无效';
+            const statusClass = data.zhuangtai === '有效' ? 'action-edit' : 'action-delete';
+            
+            actions = `
+                <button class="action-btn-small ${displayClass}" data-action="toggle-display" data-id="${data.id}" data-lanmu="${data.lanmu}">${displayText}</button>
+                <button class="action-btn-small ${statusClass}" data-action="toggle-status" data-id="${data.id}" data-lanmu="${data.lanmu}">${statusText}</button>
+            `;
+        } else {
+            actions = `
+                <button class="action-btn-small action-edit" data-action="edit" data-id="${data.id}" data-type="${type}">编辑</button>
+                <button class="action-btn-small action-delete" data-action="delete" data-id="${data.id}" data-type="${type}">删除</button>
+            `;
+        }
+    } else if (type === 'app') {
+        metaContent = `${data.lanmu} | ${formatDate(data.riqi)} | by ${contributor}`;
+        statsContent = `${data.appName || '应用'}|${data.wangpan || '其它'}|已获取：${data.yihuoqu || '0'}`;
+        titleRow = `<span class="resource-title">${data.mingc}</span>`;
+        actions = `
+            <button class="action-btn-small action-edit" data-action="edit" data-id="${data.id}" data-type="${type}">编辑</button>
+            <button class="action-btn-small action-delete" data-action="delete" data-id="${data.id}" data-type="${type}">删除</button>
+        `;
+    } else if (type === 'tansuo') {
+        metaContent = `${formatDate(data.riqi)} | by ${contributor}`;
+        statsContent = data.miaoshu || '暂无描述';
+        titleRow = `<span class="resource-title">${data.mingcheng}</span>`;
+        actions = `
+            <button class="action-btn-small action-edit" data-action="edit" data-id="${data.id}" data-type="${type}">编辑</button>
+            <button class="action-btn-small action-delete" data-action="delete" data-id="${data.id}" data-type="${type}">删除</button>
+        `;
+    }
+    
+    const tooltipContent = `
+        <div class="tooltip-line">
+            <span class="tooltip-label">标题</span>
+            ${data.mingcheng || data.mingc}
+        </div>
+        <div class="tooltip-line">
+            <span class="tooltip-label">信息</span>
+            ${metaContent}
+        </div>
+        <div class="tooltip-line">
+            <span class="tooltip-label">${type === 'tansuo' ? '描述' : '统计'}</span>
+            ${statsContent}
+        </div>
+    `;
+    
+    return `
+        <div class="content-card" data-id="${data.id}" data-type="${type}" ${data.lanmu ? `data-lanmu="${data.lanmu}"` : ''}>
+            <div class="card-display">
+                <div class="resource-header">
+                    <div class="resource-title-row">
+                        ${titleRow}
+                        <div class="resource-tooltip">${tooltipContent}</div>
+                    </div>
+                    <div class="resource-actions">${actions}</div>
+                </div>
+                
+                <div class="resource-meta">
+                    ${data.lanmu ? `<span class="resource-tag">${data.lanmu}</span>` : ''}
+                    <span>${formatDate(data.shijian || data.riqi)}</span>
+                    <span>by ${contributor}</span>
+                </div>
+                
+                <div class="resource-url">
+                    <a href="${formattedUrl}" target="_blank">${data.url || data.wangzhi}</a>
+                </div>
+                
+                <div class="${type === 'tansuo' ? 'tansuo-description' : 'resource-stats'}">
+                    ${statsContent}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ==================== 数据查找函数 ====================
+function findResourceData(id, type) {
+    if (type === 'resource') {
+        for (const [lanmuName, lanmuData] of Object.entries(currentLanmuData)) {
+            if (lanmuData.neirong?.[id]) {
+                return { id, lanmu: lanmuName, ...lanmuData.neirong[id] };
+            }
+        }
+    } else if (type === 'app') {
+        for (const [lanmuName, lanmuData] of Object.entries(currentLanmuData)) {
+            if (lanmuData.app) {
+                for (const [appName, appVersions] of Object.entries(lanmuData.app)) {
+                    if (appVersions[id]) {
+                        return { id, lanmu: lanmuName, appName, ...appVersions[id] };
+                    }
+                }
+            }
+        }
+    } else if (type === 'tansuo') {
+        if (currentTansuoData[id]) {
+            return { id, ...currentTansuoData[id] };
+        }
+    }
+    return null;
+}
+
+// ==================== 实时监听器 ====================
 function initRealtimeListeners() {
-    // 监听栏目数据变化
     database.ref('lanmu').on('value', (snapshot) => {
         currentLanmuData = snapshot.val() || {};
         updateLanmuSelectors();
         
-        // 根据当前页面自动更新相应的UI
         const currentSection = document.querySelector('.admin-nav-item.active')?.dataset.section;
-        if (currentSection === 'lanmu') {
-            renderLanmuCards?.();
-        } else if (currentSection === 'resources') {
-            renderResourceCards?.();
-        } else if (currentSection === 'apps') {
-            renderAppCards?.();
-        } else if (currentSection === 'audit') {
-            renderAuditCards?.();
-        }
+        const renderFunctions = {
+            'lanmu': renderLanmuCards,
+            'resources': renderResourceCards,
+            'apps': renderAppCards,
+            'audit': renderAuditCards
+        };
+        renderFunctions[currentSection]?.();
     });
     
-    // 监听探索数据变化
     database.ref('tansuo').on('value', (snapshot) => {
         currentTansuoData = snapshot.val() || {};
         
-        // 如果当前在探索页面，自动更新UI
         const currentSection = document.querySelector('.admin-nav-item.active')?.dataset.section;
         if (currentSection === 'tansuo') {
             renderTansuoCards?.();
@@ -138,7 +250,7 @@ function updateLanmuSelectors() {
     });
 }
 
-// 页面导航
+// ==================== 页面导航 ====================
 const sectionHandlers = {
     'lanmu': () => renderLanmuCards?.(),
     'resources': () => renderResourceCards?.(),
@@ -148,123 +260,37 @@ const sectionHandlers = {
 };
 
 function switchSection(section) {
-    // 更新导航状态
     document.querySelectorAll('.admin-nav-item').forEach(item => {
         item.classList.toggle('active', item.dataset.section === section);
     });
 
-    // 切换内容区
     document.querySelectorAll('.content-section').forEach(sec => {
         sec.style.display = sec.id === `${section}-section` ? 'block' : 'none';
     });
 
-    // 渲染当前页面
     sectionHandlers[section]?.();
 }
 
-// 统一事件处理
-document.addEventListener('click', function(e) {
-    const target = e.target;
-    
-    // 导航点击
-    const navItem = target.closest('.admin-nav-item');
-    if (navItem) {
-        switchSection(navItem.dataset.section);
-        return;
-    }
-    
-    // 添加按钮
-    if (target.dataset.add) {
-        const addHandlers = { 
-            'resource': () => showEditModal('resource'),
-            'app': () => showEditModal('app'),
-            'tansuo': () => showEditModal('tansuo')
-        };
-        addHandlers[target.dataset.add]?.();
-        return;
-    }
-    
-    // 卡片操作
-    if (target.dataset.action) {
-        const { action, id, type, lanmu } = target.dataset;
-        const actionHandlers = {
-            'edit': () => type === 'lanmu' ? editLanmu(id) : handleEdit(id, type),
-            'delete': () => handleDelete(id, type),
-            'toggle-display': () => toggleResourceDisplay(id, lanmu),
-            'toggle-status': () => toggleResourceStatus(id, lanmu)
-        };
-        actionHandlers[action]?.();
-    }
-});
-
-// 为标题添加悬浮事件
-document.addEventListener('mouseover', function(e) {
-    if (e.target.classList.contains('resource-title')) {
-        const card = e.target.closest('.content-card');
-        const tooltipContent = e.target.nextElementSibling?.innerHTML;
-        if (tooltipContent) {
-            showTooltip(e.target, tooltipContent);
-        }
-    }
-});
-
-document.addEventListener('mouseout', function(e) {
-    if (e.target.classList.contains('resource-title')) {
-        hideTooltip();
-    }
-});
-
+// ==================== 事件处理 ====================
 function handleEdit(id, type) {
-    let data = null;
-    
-    if (type === 'resource') {
-        // 查找资源数据
-        for (const [lanmuName, lanmuData] of Object.entries(currentLanmuData)) {
-            if (lanmuData.neirong && lanmuData.neirong[id]) {
-                data = { id, lanmu: lanmuName, ...lanmuData.neirong[id] };
-                break;
-            }
-        }
-    } else if (type === 'app') {
-        // 查找应用数据
-        for (const [lanmuName, lanmuData] of Object.entries(currentLanmuData)) {
-            if (lanmuData.app) {
-                for (const [appName, appVersions] of Object.entries(lanmuData.app)) {
-                    if (appVersions[id]) {
-                        data = { id, lanmu: lanmuName, appName, ...appVersions[id] };
-                        break;
-                    }
-                }
-            }
-            if (data) break;
-        }
-    } else if (type === 'tansuo') {
-        // 从全局数据获取探索数据
-        if (currentTansuoData[id]) {
-            data = { id, ...currentTansuoData[id] };
-        }
-    }
-    
+    const data = findResourceData(id, type);
     if (data) {
         showEditModal(type, data);
     }
 }
 
-// 统一删除处理 - 完全依赖监听器
 async function handleDelete(id, type) {
     try {
         if (type === 'lanmu') {
             await database.ref(`lanmu/${id}`).remove();
         } else if (type === 'resource') {
-            // 查找并删除资源
             for (const [lanmuName, lanmuData] of Object.entries(currentLanmuData)) {
-                if (lanmuData.neirong && lanmuData.neirong[id]) {
+                if (lanmuData.neirong?.[id]) {
                     await database.ref(`lanmu/${lanmuName}/neirong/${id}`).remove();
                     break;
                 }
             }
         } else if (type === 'app') {
-            // 查找并删除应用
             for (const [lanmuName, lanmuData] of Object.entries(currentLanmuData)) {
                 if (lanmuData.app) {
                     for (const appName of Object.keys(lanmuData.app)) {
@@ -286,13 +312,54 @@ async function handleDelete(id, type) {
     }
 }
 
-// 筛选器事件
+// ==================== 统一事件监听 ====================
+document.addEventListener('click', function(e) {
+    const target = e.target;
+    
+    const navItem = target.closest('.admin-nav-item');
+    if (navItem) {
+        switchSection(navItem.dataset.section);
+        return;
+    }
+    
+    if (target.dataset.add) {
+        showEditModal(target.dataset.add);
+        return;
+    }
+    
+    if (target.dataset.action) {
+        const { action, id, type, lanmu } = target.dataset;
+        const actionHandlers = {
+            'edit': () => type === 'lanmu' ? editLanmu(id) : handleEdit(id, type),
+            'delete': () => handleDelete(id, type),
+            'toggle-display': () => toggleResourceDisplay(id, lanmu),
+            'toggle-status': () => toggleResourceStatus(id, lanmu)
+        };
+        actionHandlers[action]?.();
+    }
+});
+
+document.addEventListener('mouseover', function(e) {
+    if (e.target.classList.contains('resource-title')) {
+        const tooltipContent = e.target.nextElementSibling?.innerHTML;
+        if (tooltipContent) {
+            showTooltip(e.target, tooltipContent);
+        }
+    }
+});
+
+document.addEventListener('mouseout', function(e) {
+    if (e.target.classList.contains('resource-title')) {
+        hideTooltip();
+    }
+});
+
 document.addEventListener('change', function(e) {
     if (e.target.id === 'resource-lanmu-filter') renderResourceCards?.();
     else if (e.target.id === 'app-lanmu-filter') renderAppCards?.();
 });
 
-// 页面初始化
+// ==================== 页面初始化 ====================
 document.addEventListener('DOMContentLoaded', () => {
     initTooltip();
     initRealtimeListeners();

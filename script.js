@@ -117,8 +117,8 @@ function initLogin() {
     }
 }
 
-// 加载网站设置
-async function loadSiteSettings() {
+// 监听网站设置（实时更新）
+async function listenToSiteSettings() {
     try {
         // 等待Firebase模块加载
         if (!window.FirebaseAuth) {
@@ -132,41 +132,41 @@ async function loadSiteSettings() {
             });
         }
 
-        if (window.FirebaseAuth && window.FirebaseAuth.getSettings) {
-            const settings = await window.FirebaseAuth.getSettings();
-            
-            if (settings) {
-                // 更新头像
-                const avatar = document.getElementById('avatar');
-                if (settings.avatarUrl) {
-                    avatar.style.backgroundImage = `url('${settings.avatarUrl}')`;
+        if (window.FirebaseAuth && window.FirebaseAuth.listenToSettings) {
+            window.FirebaseAuth.listenToSettings((settings) => {
+                if (settings) {
+                    // 更新头像
+                    const avatar = document.getElementById('avatar');
+                    if (settings.avatarUrl) {
+                        avatar.style.backgroundImage = `url('${settings.avatarUrl}')`;
+                    }
+                    
+                    // 更新标题
+                    const siteTitle = document.getElementById('siteTitle');
+                    if (settings.siteTitle) {
+                        siteTitle.textContent = settings.siteTitle;
+                        document.title = settings.siteTitle;
+                    }
+                    
+                    // 更新副标题
+                    const siteSubtitle = document.getElementById('siteSubtitle');
+                    if (settings.siteSubtitle) {
+                        siteSubtitle.textContent = settings.siteSubtitle;
+                    }
+                    
+                    // 更新底部链接
+                    const footerLink = document.getElementById('footerLink');
+                    if (settings.footerText) {
+                        footerLink.textContent = settings.footerText;
+                    }
+                    if (settings.footerLink) {
+                        footerLink.href = settings.footerLink;
+                    }
                 }
-                
-                // 更新标题
-                const siteTitle = document.getElementById('siteTitle');
-                if (settings.siteTitle) {
-                    siteTitle.textContent = settings.siteTitle;
-                    document.title = settings.siteTitle + ' · Navigation Hub';
-                }
-                
-                // 更新副标题
-                const siteSubtitle = document.getElementById('siteSubtitle');
-                if (settings.siteSubtitle) {
-                    siteSubtitle.textContent = settings.siteSubtitle;
-                }
-                
-                // 更新底部链接
-                const footerLink = document.getElementById('footerLink');
-                if (settings.footerText) {
-                    footerLink.textContent = settings.footerText;
-                }
-                if (settings.footerLink) {
-                    footerLink.href = settings.footerLink;
-                }
-            }
+            });
         }
     } catch (error) {
-        console.error('加载网站设置失败:', error);
+        console.error('监听网站设置失败:', error);
         // 使用默认值
         document.getElementById('siteTitle').textContent = '导航中心';
         document.getElementById('siteSubtitle').textContent = '探索 · 发现 · 连接无限可能';
@@ -174,8 +174,8 @@ async function loadSiteSettings() {
     }
 }
 
-// 加载链接列表
-async function loadLinksList() {
+// 监听链接列表（实时更新）
+async function listenToLinksList() {
     try {
         // 等待Firebase模块加载
         if (!window.FirebaseAuth) {
@@ -189,38 +189,38 @@ async function loadLinksList() {
             });
         }
 
-        if (window.FirebaseAuth && window.FirebaseAuth.getLinks) {
-            const links = await window.FirebaseAuth.getLinks();
-            
-            // 清空现有列表
-            const linkList = document.getElementById('linkList');
-            linkList.innerHTML = '';
-            
-            // 添加链接项，带有动画延迟
-            links.forEach((link, index) => {
-                const li = document.createElement('li');
-                li.className = 'link-item';
-                li.style.animationDelay = `${0.1 * (index + 1)}s`;
+        if (window.FirebaseAuth && window.FirebaseAuth.listenToLinks) {
+            window.FirebaseAuth.listenToLinks((links) => {
+                // 清空现有列表
+                const linkList = document.getElementById('linkList');
+                linkList.innerHTML = '';
                 
-                const a = document.createElement('a');
-                a.href = link.url || '#';
-                a.target = '_blank';
+                // 添加链接项，带有动画延迟
+                links.forEach((link, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'link-item';
+                    li.style.animationDelay = `${0.1 * (index + 1)}s`;
+                    
+                    const a = document.createElement('a');
+                    a.href = link.url || '#';
+                    a.target = '_blank';
+                    
+                    a.innerHTML = `
+                        <i class="link-icon" data-lucide="${link.icon || 'link'}"></i>
+                        <span class="link-text">${link.text || '未命名链接'}</span>
+                        <span class="link-arrow">></span>
+                    `;
+                    
+                    li.appendChild(a);
+                    linkList.appendChild(li);
+                });
                 
-                a.innerHTML = `
-                    <i class="link-icon" data-lucide="${link.icon || 'link'}"></i>
-                    <span class="link-text">${link.text || '未命名链接'}</span>
-                    <span class="link-arrow">></span>
-                `;
-                
-                li.appendChild(a);
-                linkList.appendChild(li);
+                // 重新初始化图标
+                lucide.createIcons();
             });
-            
-            // 重新初始化图标
-            lucide.createIcons();
         }
     } catch (error) {
-        console.error('加载链接列表失败:', error);
+        console.error('监听链接列表失败:', error);
         // 显示加载失败提示
         const linkList = document.getElementById('linkList');
         linkList.innerHTML = '<li class="link-item"><span style="color: rgba(255,255,255,0.6); text-align: center; display: block;">链接加载失败</span></li>';
@@ -280,6 +280,15 @@ function initVisibilityListener() {
     });
 }
 
+// 页面卸载时清理监听器
+function cleanupOnUnload() {
+    window.addEventListener('beforeunload', () => {
+        if (window.FirebaseAuth && window.FirebaseAuth.cleanupListeners) {
+            window.FirebaseAuth.cleanupListeners();
+        }
+    });
+}
+
 // 页面加载完成后执行
 document.addEventListener('DOMContentLoaded', function() {
     createParticles();
@@ -299,12 +308,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // 监听页面可见性变化
     initVisibilityListener();
     
-    // 加载网站设置
-    loadSiteSettings();
+    // 监听网站设置（实时）
+    listenToSiteSettings();
     
-    // 加载链接列表
-    loadLinksList();
+    // 监听链接列表（实时）
+    listenToLinksList();
     
     // 记录访客访问
     recordVisitorAccess();
+    
+    // 页面卸载时清理
+    cleanupOnUnload();
 });

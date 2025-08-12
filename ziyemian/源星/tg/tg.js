@@ -1,50 +1,28 @@
-// 投稿功能模块（使用IIFE避免全局变量冲突）
+// 投稿功能模块
 (function() {
-    let currentPage = 1;
     let selectedLanmu = '';
     let selectedApps = [];
     let tgLanmuData = {};
-
-    // 页面验证配置
-    const validators = {
-        1: () => {
-            const name = document.getElementById('tgName').value.trim();
-            const url = document.getElementById('tgUrl').value.trim();
-            if (!name) return { valid: false, message: '请输入资源名称' };
-            if (!url) return { valid: false, message: '请输入资源地址' };
-            return { valid: true };
-        },
-        2: () => {
-            if (!selectedLanmu) return { valid: false, message: '请选择栏目' };
-            return { valid: true };
-        }
-    };
+    let availableApps = [];
 
     // DOM加载完成后初始化
     document.addEventListener('DOMContentLoaded', initTG);
 
     function initTG() {
         // 事件绑定
-        const events = [
-            ['contributeBtn', 'click', openModal],
-            ['tgModalClose', 'click', closeModal],
-            ['tgModal', 'click', e => e.target.id === 'tgModal' && closeModal()],
-            ['tgNext1', 'click', () => navigatePage(2)],
-            ['tgPrev2', 'click', () => navigatePage(1)],
-            ['tgNext2', 'click', () => navigatePage(3)],
-            ['tgPrev3', 'click', () => navigatePage(2)],
-            ['tgSubmit', 'click', submitForm],
-            ['tgNumber', 'input', e => e.target.value = e.target.value.replace(/[^0-9]/g, '')]
-        ];
-
-        events.forEach(([id, event, handler]) => {
-            document.getElementById(id).addEventListener(event, handler);
+        document.getElementById('contributeBtn').addEventListener('click', openModal);
+        document.getElementById('tgModalClose').addEventListener('click', closeModal);
+        document.getElementById('tgModal').addEventListener('click', e => {
+            if (e.target.id === 'tgModal') closeModal();
         });
+        document.getElementById('tgSubmit').addEventListener('click', submitForm);
+        
+        // 栏目选择变化事件
+        document.getElementById('tgLanmu').addEventListener('change', updateAppTags);
     }
 
     function openModal() {
         document.getElementById('tgModal').classList.add('show');
-        showPage(1);
         loadLanmuData();
     }
 
@@ -53,126 +31,135 @@
         resetForm();
     }
 
-    function navigatePage(pageNum) {
-        const validation = validators[currentPage];
-        if (validation) {
-            const result = validation();
-            if (!result.valid) {
-                window.showToast(result.message, 'error');
-                return;
-            }
-        }
-        showPage(pageNum);
-    }
-
-    function showPage(pageNum) {
-        // 隐藏所有页面
-        [1, 2, 3].forEach(num => {
-            document.getElementById(`tgPage${num}`).style.display = 'none';
-        });
-        
-        // 显示目标页面
-        document.getElementById(`tgPage${pageNum}`).style.display = 'flex';
-        currentPage = pageNum;
-    }
-
     function loadLanmuData() {
         database.ref('lanmu').once('value', snapshot => {
             const data = snapshot.val();
             if (data) {
                 tgLanmuData = data;
-                renderLanmuList();
+                updateLanmuSelect();
             }
         });
     }
 
-    function renderLanmuList() {
-        const container = document.getElementById('tgLanmuList');
-        container.innerHTML = '';
+    function updateLanmuSelect() {
+        const select = document.getElementById('tgLanmu');
+        select.innerHTML = '<option value="">请选择栏目</option>';
         
         // 转换为数组并按xuhao排序
         const sortedLanmu = Object.entries(tgLanmuData)
             .sort(([,a], [,b]) => (a.xuhao || 999999) - (b.xuhao || 999999));
         
-        sortedLanmu.forEach(([lanmuName, lanmu]) => {
-            const item = document.createElement('div');
-            item.className = 'tg-lanmu-item';
-            item.textContent = lanmuName;
-            
-            item.addEventListener('click', () => {
-                // 更新选中状态
-                document.querySelectorAll('.tg-lanmu-item').forEach(el => 
-                    el.classList.remove('active'));
-                item.classList.add('active');
-                selectedLanmu = lanmuName;
-                renderAppTags(lanmuName);
-            });
-            
-            container.appendChild(item);
+        sortedLanmu.forEach(([lanmuName]) => {
+            const option = document.createElement('option');
+            option.value = lanmuName;
+            option.textContent = lanmuName;
+            select.appendChild(option);
         });
     }
 
-    function renderAppTags(lanmuName) {
-        const container = document.getElementById('tgAppTags');
-        const applist = tgLanmuData[lanmuName]?.applist || '';  // 从applist字段读取
+    function updateAppTags() {
+        const lanmu = document.getElementById('tgLanmu').value;
+        const inputField = document.getElementById('tgAppInput');
         
-        container.innerHTML = '';
-        selectedApps = [];
-        
-        if (applist) {
-            const appNames = applist.split('|').filter(app => app.trim());
-            if (appNames.length > 0) {
-                appNames.forEach(appName => {
-                    const tag = document.createElement('div');
-                    tag.className = 'tg-app-tag';
-                    tag.textContent = appName;
-                    
-                    tag.addEventListener('click', () => {
-                        const isActive = tag.classList.contains('active');
-                        if (isActive) {
-                            tag.classList.remove('active');
-                            selectedApps = selectedApps.filter(app => app !== appName);
-                        } else {
-                            tag.classList.add('active');
-                            selectedApps.push(appName);
-                        }
-                    });
-                    
-                    container.appendChild(tag);
-                });
-            } else {
-                container.innerHTML = '<div class="tg-placeholder">该栏目暂无应用</div>';
-            }
-        } else {
-            container.innerHTML = '<div class="tg-placeholder">该栏目暂无应用</div>';
+        if (!lanmu) {
+            inputField.innerHTML = '<span class="tg-tag-placeholder">请先选择栏目</span>';
+            availableApps = [];
+            selectedApps = [];
+            return;
         }
+        
+        selectedLanmu = lanmu;
+        
+        if (tgLanmuData[lanmu]?.applist) {
+            availableApps = tgLanmuData[lanmu].applist.split('|').filter(app => app.trim());
+            selectedApps = [];
+        } else {
+            availableApps = [];
+            selectedApps = [];
+        }
+        
+        renderAppTags();
     }
 
+    function renderAppTags() {
+        const inputField = document.getElementById('tgAppInput');
+        
+        if (availableApps.length === 0) {
+            inputField.innerHTML = '<span class="tg-tag-placeholder">该栏目暂无应用</span>';
+            return;
+        }
+        
+        const tags = availableApps.map(app => {
+            const isSelected = selectedApps.includes(app);
+            return `<span class="tg-mini-tag ${isSelected ? 'selected' : ''}" 
+                onclick="toggleApp('${app}')">${app}</span>`;
+        }).join('');
+        
+        inputField.innerHTML = tags;
+    }
+
+    // 全局函数，供onclick使用
+    window.toggleApp = function(appName) {
+        const index = selectedApps.indexOf(appName);
+        if (index > -1) {
+            selectedApps.splice(index, 1);
+        } else {
+            selectedApps.push(appName);
+        }
+        renderAppTags();
+    };
+
     async function submitForm() {
+        // 验证必填项
+        const mingcheng = document.getElementById('tgName').value.trim();
+        const url = document.getElementById('tgUrl').value.trim();
+        const lanmu = document.getElementById('tgLanmu').value;
+        
+        if (!mingcheng) {
+            window.showToast('请输入资源名称', 'error');
+            return;
+        }
+        
+        if (!url) {
+            window.showToast('请输入资源地址', 'error');
+            return;
+        }
+        
+        if (!lanmu) {
+            window.showToast('请选择栏目', 'error');
+            return;
+        }
+        
+        if (selectedApps.length === 0 && availableApps.length > 0) {
+            window.showToast('请选择至少一个应用', 'error');
+            return;
+        }
+        
         const btn = document.getElementById('tgSubmit');
         btn.disabled = true;
         btn.textContent = '提交中...';
 
         try {
             const formData = {
-                mingcheng: document.getElementById('tgName').value.trim(),
-                url: document.getElementById('tgUrl').value.trim(),
-                lanmu: selectedLanmu,
+                mingcheng: mingcheng,
+                url: url,
+                lanmu: lanmu,
                 yingyong: selectedApps.join('|') || '通用',
-                yuanshuliang: document.getElementById('tgNumber').value || '0',
-                tougaoren: document.getElementById('tgUser').value.trim() || '匿名',
+                yuanshuliang: document.getElementById('tgYuanshuliang').value || '未知',
+                tougaoren: document.getElementById('tgTougaoren').value.trim() || '匿名',
                 shijian: new Date().toISOString().split('T')[0],
                 fuzhishu: '0',
-                shenhe: '未审核',
+                shenhe: '未审核',  // 前台投稿默认未审核
                 zhuangtai: '有效'
             };
 
             const id = Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-            await database.ref(`lanmu/${selectedLanmu}/neirong/${id}`).set(formData);
+            await database.ref(`lanmu/${lanmu}/neirong/${id}`).set(formData);
             
             window.showToast('投稿成功！等待管理员审核', 'success');
             closeModal();
         } catch (error) {
+            console.error('投稿失败:', error);
             window.showToast('投稿失败，请重试', 'error');
         } finally {
             btn.disabled = false;
@@ -181,16 +168,15 @@
     }
 
     function resetForm() {
-        // 重置表单字段
-        ['tgName', 'tgUrl', 'tgNumber', 'tgUser'].forEach(id => {
-            document.getElementById(id).value = '';
-        });
+        // 重置表单
+        document.getElementById('tgForm').reset();
         
         // 重置选择状态
-        document.getElementById('tgLanmuList').innerHTML = '';
-        document.getElementById('tgAppTags').innerHTML = '<div class="tg-placeholder">请先选择栏目</div>';
         selectedLanmu = '';
         selectedApps = [];
-        currentPage = 1;
+        availableApps = [];
+        
+        // 重置应用标签显示
+        document.getElementById('tgAppInput').innerHTML = '<span class="tg-tag-placeholder">请先选择栏目</span>';
     }
 })();
