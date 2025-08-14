@@ -104,36 +104,39 @@ function createCard(data, type) {
             : `<span class="resource-title">${data.mingcheng}</span>`;
         
         if (type === 'audit') {
+            // 状态管理界面：显示所有控制按钮
+            const dataType = data.dataType || 'resource';
             const displayText = data.shenhe === '已审核' ? '已显示' : '已隐藏';
             const displayClass = data.shenhe === '已审核' ? 'action-edit' : 'action-delete';
             const statusText = data.zhuangtai === '有效' ? '有效' : '无效';
             const statusClass = data.zhuangtai === '有效' ? 'action-edit' : 'action-delete';
             
             actions = `
-                <button class="action-btn-small ${displayClass}" data-action="toggle-display" data-id="${data.id}" data-lanmu="${data.lanmu}">${displayText}</button>
-                <button class="action-btn-small ${statusClass}" data-action="toggle-status" data-id="${data.id}" data-lanmu="${data.lanmu}">${statusText}</button>
+                <button class="action-btn-small ${displayClass}" data-action="toggle-display" data-id="${data.id}" data-lanmu="${data.lanmu}" data-type="${dataType}">${displayText}</button>
+                <button class="action-btn-small ${statusClass}" data-action="toggle-status" data-id="${data.id}" data-lanmu="${data.lanmu}" data-type="${dataType}">${statusText}</button>
+                <button class="action-btn-small action-delete" data-action="delete" data-id="${data.id}" data-type="${dataType}">删除</button>
             `;
         } else {
+            // 资源管理界面：只显示编辑按钮
             actions = `
                 <button class="action-btn-small action-edit" data-action="edit" data-id="${data.id}" data-type="${type}">编辑</button>
-                <button class="action-btn-small action-delete" data-action="delete" data-id="${data.id}" data-type="${type}">删除</button>
             `;
         }
     } else if (type === 'app') {
         metaContent = `${data.lanmu} | ${formatDate(data.riqi)} | by ${contributor}`;
         statsContent = `${data.appName || '应用'}|${data.wangpan || '其它'}|已获取：${data.yihuoqu || '0'}`;
         titleRow = `<span class="resource-title">${data.mingc}</span>`;
+        // 应用管理界面：只显示编辑按钮
         actions = `
             <button class="action-btn-small action-edit" data-action="edit" data-id="${data.id}" data-type="${type}">编辑</button>
-            <button class="action-btn-small action-delete" data-action="delete" data-id="${data.id}" data-type="${type}">删除</button>
         `;
     } else if (type === 'tansuo') {
         metaContent = `${formatDate(data.riqi)} | by ${contributor}`;
         statsContent = data.miaoshu || '暂无描述';
         titleRow = `<span class="resource-title">${data.mingcheng}</span>`;
+        // 探索管理界面：只显示编辑按钮
         actions = `
             <button class="action-btn-small action-edit" data-action="edit" data-id="${data.id}" data-type="${type}">编辑</button>
-            <button class="action-btn-small action-delete" data-action="delete" data-id="${data.id}" data-type="${type}">删除</button>
         `;
     }
     
@@ -229,6 +232,8 @@ function initRealtimeListeners() {
         const currentSection = document.querySelector('.admin-nav-item.active')?.dataset.section;
         if (currentSection === 'tansuo') {
             renderTansuoCards?.();
+        } else if (currentSection === 'audit') {
+            renderAuditCards?.();
         }
     });
 }
@@ -332,8 +337,8 @@ document.addEventListener('click', function(e) {
         const actionHandlers = {
             'edit': () => type === 'lanmu' ? editLanmu(id) : handleEdit(id, type),
             'delete': () => handleDelete(id, type),
-            'toggle-display': () => toggleResourceDisplay(id, lanmu),
-            'toggle-status': () => toggleResourceStatus(id, lanmu)
+            'toggle-display': () => toggleResourceDisplay(id, lanmu, type),
+            'toggle-status': () => toggleResourceStatus(id, lanmu, type)
         };
         actionHandlers[action]?.();
     }
@@ -357,6 +362,7 @@ document.addEventListener('mouseout', function(e) {
 document.addEventListener('change', function(e) {
     if (e.target.id === 'resource-lanmu-filter') renderResourceCards?.();
     else if (e.target.id === 'app-lanmu-filter') renderAppCards?.();
+    else if (e.target.id === 'audit-type-filter') renderAuditCards?.();
 });
 
 // ==================== 页面初始化 ====================

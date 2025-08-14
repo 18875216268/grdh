@@ -231,11 +231,3 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
-
-/* 响应式 */
-@media (max-width: 768px) {
-    .tg-modal-content {
-        width: 95%;
-        margin: 10px;
-    }
-}

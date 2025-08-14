@@ -1,59 +1,160 @@
 // ==================== 状态管理模块 ====================
 
+// 渲染状态管理卡片
 function renderAuditCards() {
     const grid = document.getElementById('auditCardsGrid');
+    if (!grid) return;
     
-    let allResources = [];
-    for (const [lanmuName, lanmu] of Object.entries(currentLanmuData)) {
-        const resources = lanmu.neirong || {};
-        Object.entries(resources).forEach(([id, resource]) => {
-            allResources.push({ id, lanmu: lanmuName, ...resource });
+    const filterType = document.getElementById('audit-type-filter')?.value || '';
+    
+    // 收集所有数据
+    const allData = [];
+    
+    // 收集资源数据
+    if (!filterType || filterType === 'resource') {
+        for (const [lanmuName, lanmuData] of Object.entries(currentLanmuData)) {
+            if (lanmuData.neirong) {
+                Object.entries(lanmuData.neirong).forEach(([id, resource]) => {
+                    allData.push({
+                        ...resource,
+                        id,
+                        lanmu: lanmuName,
+                        dataType: 'resource',
+                        sortDate: resource.shijian,
+                        // 确保有状态字段
+                        shenhe: resource.shenhe || '已审核',
+                        zhuangtai: resource.zhuangtai || '有效'
+                    });
+                });
+            }
+        }
+    }
+    
+    // 收集应用数据
+    if (!filterType || filterType === 'app') {
+        for (const [lanmuName, lanmuData] of Object.entries(currentLanmuData)) {
+            if (lanmuData.app) {
+                Object.entries(lanmuData.app).forEach(([appName, appVersions]) => {
+                    Object.entries(appVersions).forEach(([id, appData]) => {
+                        allData.push({
+                            ...appData,
+                            id,
+                            lanmu: lanmuName,
+                            appName,
+                            dataType: 'app',
+                            sortDate: appData.riqi,
+                            // 转换字段名以匹配资源卡片格式
+                            mingcheng: appData.mingc,
+                            url: appData.url,
+                            shijian: appData.riqi,
+                            yuanshuliang: appData.wangpan,
+                            fuzhishu: appData.yihuoqu,
+                            // 确保有状态字段
+                            shenhe: appData.shenhe || '已审核',
+                            zhuangtai: appData.zhuangtai || '有效'
+                        });
+                    });
+                });
+            }
+        }
+    }
+    
+    // 收集探索数据
+    if (!filterType || filterType === 'tansuo') {
+        Object.entries(currentTansuoData).forEach(([id, tansuoData]) => {
+            allData.push({
+                ...tansuoData,
+                id,
+                dataType: 'tansuo',
+                sortDate: tansuoData.riqi,
+                // 转换字段名以匹配资源卡片格式
+                url: tansuoData.wangzhi,
+                shijian: tansuoData.riqi,
+                yuanshuliang: '',
+                fuzhishu: '',
+                yingyong: tansuoData.miaoshu,
+                // 确保有状态字段
+                shenhe: tansuoData.shenhe || '已审核',
+                zhuangtai: tansuoData.zhuangtai || '有效'
+            });
         });
     }
     
-    if (allResources.length === 0) {
-        grid.innerHTML = '<div class="empty-card">暂无资源数据</div>';
-        return;
-    }
+    // 按日期排序
+    allData.sort((a, b) => new Date(b.sortDate || 0) - new Date(a.sortDate || 0));
     
-    allResources.sort((a, b) => new Date(b.shijian || 0) - new Date(a.shijian || 0));
-    grid.innerHTML = allResources.map(data => createCard(data, 'audit')).join('');
-}
-
-// 切换资源显示状态
-async function toggleResourceDisplay(id, lanmu) {
-    try {
-        const resource = currentLanmuData[lanmu]?.neirong?.[id];
-        if (!resource) {
-            showToast('资源不存在', 'error');
-            return;
-        }
-        
-        const newStatus = resource.shenhe === '已审核' ? '未审核' : '已审核';
-        
-        await database.ref(`lanmu/${lanmu}/neirong/${id}/shenhe`).set(newStatus);
-        showToast('显示状态更新成功', 'success');
-    } catch (error) {
-        console.error('更新显示状态失败:', error);
-        showToast('更新失败', 'error');
+    // 渲染卡片
+    if (allData.length === 0) {
+        grid.innerHTML = '<div class="empty-card">暂无数据</div>';
+    } else {
+        grid.innerHTML = allData.map(data => createCard(data, 'audit')).join('');
     }
 }
 
-// 切换资源有效状态
-async function toggleResourceStatus(id, lanmu) {
+// 切换显示状态
+async function toggleResourceDisplay(id, lanmu, type) {
     try {
-        const resource = currentLanmuData[lanmu]?.neirong?.[id];
-        if (!resource) {
-            showToast('资源不存在', 'error');
-            return;
+        let ref;
+        if (type === 'resource') {
+            ref = database.ref(`lanmu/${lanmu}/neirong/${id}/shenhe`);
+        } else if (type === 'app') {
+            // 找到应用的完整路径
+            for (const [appName, appVersions] of Object.entries(currentLanmuData[lanmu]?.app || {})) {
+                if (appVersions[id]) {
+                    ref = database.ref(`lanmu/${lanmu}/app/${appName}/${id}/shenhe`);
+                    break;
+                }
+            }
+        } else if (type === 'tansuo') {
+            ref = database.ref(`tansuo/${id}/shenhe`);
         }
         
-        const newStatus = resource.zhuangtai === '有效' ? '无效' : '有效';
+        if (!ref) {
+            throw new Error('找不到数据路径');
+        }
         
-        await database.ref(`lanmu/${lanmu}/neirong/${id}/zhuangtai`).set(newStatus);
-        showToast('有效状态更新成功', 'success');
+        const snapshot = await ref.once('value');
+        const currentStatus = snapshot.val() || '已审核';
+        const newStatus = currentStatus === '已审核' ? '未审核' : '已审核';
+        
+        await ref.set(newStatus);
+        showToast(`已切换为${newStatus === '已审核' ? '显示' : '隐藏'}状态`, 'success');
     } catch (error) {
-        console.error('更新有效状态失败:', error);
-        showToast('更新失败', 'error');
+        console.error('切换显示状态失败:', error);
+        showToast('操作失败，请重试', 'error');
+    }
+}
+
+// 切换有效状态
+async function toggleResourceStatus(id, lanmu, type) {
+    try {
+        let ref;
+        if (type === 'resource') {
+            ref = database.ref(`lanmu/${lanmu}/neirong/${id}/zhuangtai`);
+        } else if (type === 'app') {
+            // 找到应用的完整路径
+            for (const [appName, appVersions] of Object.entries(currentLanmuData[lanmu]?.app || {})) {
+                if (appVersions[id]) {
+                    ref = database.ref(`lanmu/${lanmu}/app/${appName}/${id}/zhuangtai`);
+                    break;
+                }
+            }
+        } else if (type === 'tansuo') {
+            ref = database.ref(`tansuo/${id}/zhuangtai`);
+        }
+        
+        if (!ref) {
+            throw new Error('找不到数据路径');
+        }
+        
+        const snapshot = await ref.once('value');
+        const currentStatus = snapshot.val() || '有效';
+        const newStatus = currentStatus === '有效' ? '无效' : '有效';
+        
+        await ref.set(newStatus);
+        showToast(`已切换为${newStatus}状态`, 'success');
+    } catch (error) {
+        console.error('切换状态失败:', error);
+        showToast('操作失败，请重试', 'error');
     }
 }

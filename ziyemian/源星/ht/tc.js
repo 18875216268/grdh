@@ -377,7 +377,10 @@ async function saveAppForm(data) {
         wangpan: autoDetectWangpan(data.url),
         riqi: currentDate,
         yihuoqu: currentEditData.yihuoqu || '0',
-        tougaoren: data.tougaoren || '木小匣'
+        tougaoren: data.tougaoren || '木小匣',
+        // 添加状态字段
+        shenhe: currentEditData.shenhe || '已审核',
+        zhuangtai: currentEditData.zhuangtai || '有效'
     };
     
     if (currentEditData.id && (currentEditData.lanmu !== data.lanmu || currentEditData.appName !== data.appName)) {
@@ -402,7 +405,10 @@ async function saveTansuoForm(data) {
         wangzhi: data.wangzhi,
         miaoshu: data.miaoshu,
         riqi: currentDate,
-        tougaoren: data.tougaoren || '木小匣'
+        tougaoren: data.tougaoren || '木小匣',
+        // 添加状态字段
+        shenhe: currentEditData.shenhe || '已审核',
+        zhuangtai: currentEditData.zhuangtai || '有效'
     };
     
     await database.ref(`tansuo/${id}`).set(saveData);

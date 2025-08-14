@@ -1,0 +1,695 @@
+/* ========================================
+   移动端适配模块 - yd.css
+   断点：768px, 480px, 375px
+   ======================================== */
+
+/* ========================================
+   平板端适配 (768px)
+   ======================================== */
+@media (max-width: 768px) {
+    /* 侧边栏收缩 */
+    .sidebar {
+        width: 60px;
+        transition: width 0.3s ease;
+    }
+    
+    /* 导航项图标化 */
+    .nav-item {
+        padding: 12px 0;
+        justify-content: center;
+    }
+    
+    .nav-icon {
+        margin-right: 0;
+        font-size: 20px;
+    }
+    
+    .nav-text {
+        display: none;
+    }
+    
+    /* 内容区调整 */
+    .content {
+        margin-left: 60px;
+        padding: 15px;
+    }
+    
+    /* 网格布局 - 修复超出问题 */
+    .resource-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+        width: 100%;
+        overflow-x: hidden;
+    }
+    
+    /* 卡片宽度自适应 */
+    .resource-card {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding: 15px;
+        overflow: hidden;
+    }
+    
+    /* 顶部栏优化 */
+    .header {
+        padding: 0 15px;
+        height: 50px;
+    }
+    
+    .site-title {
+        font-size: 18px;
+        max-width: 150px;
+    }
+    
+    .search-input {
+        width: 120px;
+        font-size: 13px;
+        padding: 5px 10px;
+    }
+    
+    .home-btn {
+        width: 28px;
+        height: 28px;
+        margin-left: 8px;
+    }
+    
+    .home-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    /* 主容器高度调整 */
+    .main-container {
+        margin-top: 50px;
+        height: calc(100vh - 50px);
+    }
+    
+    /* 固定按钮优化 */
+    .fixed-contribute-btn {
+        width: 36px;
+        height: 36px;
+        bottom: 15px;
+        right: 15px;
+    }
+    
+    .fixed-contribute-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* 投稿弹窗适配 */
+    .tg-modal-content {
+        width: 95%;
+        margin: 10px;
+        height: auto;
+        max-height: 90vh;
+    }
+    
+    /* 侧边栏分区 */
+    .sidebar-header,
+    .sidebar-footer {
+        padding: 3px 0;
+    }
+    
+    .sidebar-header::after,
+    .sidebar-footer::before {
+        width: 60%;
+    }
+    
+    .sidebar-content {
+        padding: 5px 0;
+    }
+    
+    /* Toast位置调整 */
+    .toast-container {
+        bottom: 20px;
+        right: 15px;
+    }
+    
+    /* 悬浮提示移动端隐藏 */
+    .resource-tooltip {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   手机端适配 (480px)
+   ======================================== */
+@media (max-width: 480px) {
+    /* 进一步收缩侧边栏 */
+    .sidebar {
+        width: 50px;
+    }
+    
+    .content {
+        margin-left: 50px;
+        padding: 10px;
+    }
+    
+    /* 卡片内部元素优化 */
+    .resource-header {
+        flex-direction: row;
+        gap: 8px;
+    }
+    
+    .resource-title {
+        font-size: 14px;
+        max-width: calc(100% - 60px);
+    }
+    
+    .copy-btn,
+    .get-btn,
+    .explore-btn {
+        font-size: 11px;
+        padding: 2px 6px;
+        white-space: nowrap;
+    }
+    
+    .resource-meta {
+        gap: 8px;
+        font-size: 11px;
+        flex-wrap: wrap;
+    }
+    
+    .resource-tag {
+        padding: 2px 6px;
+        font-size: 11px;
+    }
+    
+    /* URL区域优化 */
+    .resource-url {
+        font-size: 12px;
+        padding: 8px;
+        word-break: break-all;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+    
+    .resource-info {
+        font-size: 11px;
+        line-height: 1.4;
+    }
+    
+    /* 探索卡片描述适配 */
+    .tansuo-description {
+        font-size: 11px;
+        max-height: 32px;
+        line-height: 1.45;
+    }
+    
+    /* 网格间距缩小 */
+    .resource-grid {
+        gap: 10px;
+    }
+    
+    /* 顶部标题进一步调整 */
+    .site-title {
+        font-size: 16px;
+        max-width: 120px;
+    }
+    
+    /* 搜索框进一步缩小 */
+    .search-input {
+        width: 100px;
+    }
+    
+    /* Toast位置调整 */
+    .toast-container {
+        bottom: 60px;
+        right: 10px;
+        left: 60px;
+    }
+    
+    .toast {
+        min-width: auto;
+        width: 100%;
+        font-size: 13px;
+        padding: 10px 15px;
+    }
+    
+    /* 空状态文字 */
+    .empty-container {
+        font-size: 13px;
+        padding: 0 20px;
+        text-align: center;
+    }
+    
+    /* 导航图标调整 */
+    .nav-icon {
+        font-size: 18px;
+    }
+}
+
+/* ========================================
+   小屏手机适配 (375px)
+   ======================================== */
+@media (max-width: 375px) {
+    /* 极简导航栏 */
+    .sidebar {
+        width: 45px;
+    }
+    
+    .nav-icon {
+        font-size: 18px;
+    }
+    
+    .content {
+        margin-left: 45px;
+        padding: 8px;
+    }
+    
+    /* 顶部栏紧凑布局 */
+    .header {
+        padding: 0 10px;
+    }
+    
+    .site-title {
+        font-size: 15px;
+        max-width: 100px;
+    }
+    
+    .header-search {
+        padding: 0 3px;
+    }
+    
+    .search-input {
+        width: 90px;
+        padding: 4px 8px;
+    }
+    
+    .search-btn {
+        padding: 4px;
+    }
+    
+    .search-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* 卡片极简化 */
+    .resource-card {
+        padding: 12px;
+    }
+    
+    .resource-title {
+        font-size: 13px;
+    }
+    
+    .status-icon {
+        font-size: 10px;
+    }
+    
+    /* 投稿弹窗全屏化 */
+    .tg-modal-content {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        border-radius: 0;
+        max-height: 100vh;
+    }
+    
+    .tg-modal-body {
+        padding: 15px;
+    }
+    
+    .tg-form-group {
+        gap: 4px;
+    }
+    
+    .tg-form-label {
+        font-size: 12px;
+    }
+    
+    .tg-form-input,
+    .tg-form-select {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+    
+    /* 标签输入优化 */
+    .tg-tag-input-field {
+        min-height: 36px;
+        padding: 2px 10px;
+    }
+    
+    .tg-mini-tag {
+        padding: 4px 5px;
+        font-size: 11px;
+    }
+    
+    .tg-tag-placeholder {
+        font-size: 13px;
+    }
+    
+    /* 按钮优化 */
+    .tg-btn {
+        font-size: 13px;
+        height: 36px;
+    }
+    
+    /* 主页按钮 */
+    .home-btn {
+        width: 26px;
+        height: 26px;
+    }
+    
+    .home-btn svg {
+        width: 13px;
+        height: 13px;
+    }
+    
+    /* 投稿按钮 */
+    .fixed-contribute-btn {
+        width: 34px;
+        height: 34px;
+        bottom: 12px;
+        right: 12px;
+    }
+    
+    .fixed-contribute-btn svg {
+        width: 15px;
+        height: 15px;
+    }
+}
+
+/* ========================================
+   横屏优化
+   ======================================== */
+@media (max-width: 768px) and (orientation: landscape) {
+    .sidebar {
+        width: 50px;
+    }
+    
+    .content {
+        margin-left: 50px;
+    }
+    
+    .resource-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .fixed-contribute-btn {
+        bottom: 10px;
+        right: 10px;
+    }
+    
+    /* 横屏时减小顶部栏高度 */
+    .header {
+        height: 45px;
+    }
+    
+    .main-container {
+        margin-top: 45px;
+        height: calc(100vh - 45px);
+    }
+    
+    /* 弹窗高度限制 */
+    .tg-modal-content {
+        max-height: 85vh;
+    }
+}
+
+/* ========================================
+   触摸设备优化
+   ======================================== */
+@media (hover: none) and (pointer: coarse) {
+    /* 增大点击区域 */
+    .nav-item {
+        min-height: 44px;
+    }
+    
+    .copy-btn,
+    .get-btn,
+    .explore-btn {
+        min-height: 32px;
+        min-width: 44px;
+    }
+    
+    .status-icon {
+        padding: 4px;
+        margin-right: 8px;
+    }
+    
+    /* 禁用hover效果，改用active */
+    .nav-item:hover {
+        background-color: transparent;
+    }
+    
+    .nav-item:active {
+        background-color: var(--bg-tertiary);
+    }
+    
+    .copy-btn:hover,
+    .get-btn:hover,
+    .explore-btn:hover {
+        opacity: 1;
+    }
+    
+    .copy-btn:active,
+    .get-btn:active,
+    .explore-btn:active {
+        opacity: 0.8;
+    }
+    
+    /* 搜索按钮触摸优化 */
+    .search-btn {
+        min-width: 32px;
+        min-height: 32px;
+    }
+    
+    .search-btn:hover {
+        color: var(--text-secondary);
+    }
+    
+    .search-btn:active {
+        color: var(--text-primary);
+    }
+    
+    /* 主页按钮触摸优化 */
+    .home-btn:hover {
+        transform: none;
+        background-color: var(--bg-secondary);
+    }
+    
+    .home-btn:active {
+        background-color: var(--bg-tertiary);
+        transform: scale(0.95);
+    }
+    
+    /* 投稿按钮触摸优化 */
+    .fixed-contribute-btn:hover {
+        transform: none;
+        background-color: var(--bg-secondary);
+    }
+    
+    .fixed-contribute-btn:active {
+        background-color: var(--bg-tertiary);
+        transform: scale(0.95);
+    }
+    
+    /* 滚动优化 */
+    .sidebar-content,
+    .content,
+    .resource-url,
+    .tg-modal-body {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+    
+    /* 表单元素触摸优化 */
+    .tg-form-input,
+    .tg-form-select {
+        min-height: 40px;
+    }
+    
+    .tg-mini-tag {
+        min-height: 32px;
+        display: inline-flex;
+        align-items: center;
+    }
+}
+
+/* ========================================
+   性能优化 - 减少移动端动画
+   ======================================== */
+@media (max-width: 768px) and (prefers-reduced-motion: no-preference) {
+    * {
+        animation-duration: 0.1s !important;
+        transition-duration: 0.1s !important;
+    }
+    
+    /* 保留关键动画 */
+    .toast {
+        animation-duration: 0.2s !important;
+    }
+    
+    .tg-modal {
+        transition-duration: 0.2s !important;
+    }
+}
+
+/* ========================================
+   高对比度模式
+   ======================================== */
+@media (prefers-contrast: high) {
+    .nav-item.active {
+        border-left-width: 4px;
+    }
+    
+    .resource-card {
+        border-width: 2px;
+    }
+    
+    .search-input:focus,
+    .tg-form-input:focus,
+    .tg-form-select:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+    }
+}
+
+/* ========================================
+   暗色模式优化（系统级）
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    /* 已经是暗色主题，可以微调 */
+    .resource-tooltip {
+        background: rgba(0, 0, 0, 0.95);
+    }
+}
+
+/* ========================================
+   打印样式
+   ======================================== */
+@media print {
+    /* 隐藏不必要的元素 */
+    .sidebar,
+    .header,
+    .fixed-contribute-btn,
+    .toast-container,
+    .tg-modal {
+        display: none !important;
+    }
+    
+    /* 内容区全宽 */
+    .content {
+        margin-left: 0 !important;
+        padding: 10px !important;
+    }
+    
+    /* 单列布局 */
+    .resource-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    
+    /* 简化卡片样式 */
+    .resource-card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+    
+    /* 隐藏交互按钮 */
+    .copy-btn,
+    .get-btn,
+    .explore-btn,
+    .status-icon {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   安全区域适配 (iPhone X+)
+   ======================================== */
+@supports (padding: max(0px)) {
+    .header {
+        padding-top: max(0px, env(safe-area-inset-top));
+        height: calc(60px + env(safe-area-inset-top));
+    }
+    
+    @media (max-width: 768px) {
+        .header {
+            height: calc(50px + env(safe-area-inset-top));
+        }
+    }
+    
+    @media (max-width: 768px) and (orientation: landscape) {
+        .header {
+            height: calc(45px + env(safe-area-inset-top));
+        }
+    }
+    
+    .main-container {
+        margin-top: calc(60px + env(safe-area-inset-top));
+    }
+    
+    @media (max-width: 768px) {
+        .main-container {
+            margin-top: calc(50px + env(safe-area-inset-top));
+        }
+    }
+    
+    .sidebar {
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+    
+    .fixed-contribute-btn {
+        bottom: max(10px, calc(env(safe-area-inset-bottom) + 10px));
+        right: max(10px, calc(env(safe-area-inset-right) + 10px));
+    }
+    
+    @media (max-width: 480px) {
+        .fixed-contribute-btn {
+            bottom: max(15px, calc(env(safe-area-inset-bottom) + 15px));
+            right: max(15px, calc(env(safe-area-inset-right) + 15px));
+        }
+    }
+    
+    @media (max-width: 375px) {
+        .fixed-contribute-btn {
+            bottom: max(12px, calc(env(safe-area-inset-bottom) + 12px));
+            right: max(12px, calc(env(safe-area-inset-right) + 12px));
+        }
+    }
+    
+    .toast-container {
+        bottom: max(20px, calc(env(safe-area-inset-bottom) + 20px));
+        right: max(20px, calc(env(safe-area-inset-right) + 20px));
+    }
+    
+    @media (max-width: 480px) {
+        .toast-container {
+            bottom: max(60px, calc(env(safe-area-inset-bottom) + 60px));
+            left: max(60px, calc(env(safe-area-inset-left) + 60px));
+        }
+    }
+}
+
+/* ========================================
+   特殊设备适配
+   ======================================== */
+/* iPad Pro 12.9" */
+@media only screen 
+    and (min-device-width: 1024px) 
+    and (max-device-width: 1366px) 
+    and (-webkit-min-device-pixel-ratio: 2) {
+    .resource-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+}
+
+/* Surface Duo 双屏 */
+@media (min-width: 540px) and (max-width: 719px) {
+    .resource-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 720px) and (max-width: 768px) {
+    .resource-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
