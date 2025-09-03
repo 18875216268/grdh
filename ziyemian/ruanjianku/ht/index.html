@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网盘管理-后台</title>
+    <link rel="stylesheet" href="gonggong/gg.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="tongzhi/tongzhi.css">
+    <link rel="stylesheet" href="daohang/toubu.css">
+    <link rel="stylesheet" href="daohang/zhongjian.css">
+    <link rel="stylesheet" href="daohang/dibu.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="site-title">网盘管理-后台</div>
+        <div class="connection-status" id="connectionStatus">
+            <div class="status-dot loading"></div>
+            <span>连接中...</span>
+        </div>
+    </header>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧导航栏 -->
+        <nav class="sidebar">
+            <div class="admin-nav">
+                <!-- 顶部区域 - 动态生成 -->
+                <div class="nav-section nav-section-top"></div>
+
+                <!-- 中间区域 - 动态生成 -->
+                <div class="nav-section nav-section-middle"></div>
+
+                <!-- 底部区域 - 动态生成 -->
+                <div class="nav-section nav-section-bottom"></div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="content">
+            <!-- 域名配置管理 -->
+            <div id="domain-section" class="content-section active">
+                <div class="content-header">
+                    <div class="content-header-text">
+                        <h1 class="content-title">域名配置</h1>
+                        <p class="content-desc">配置网盘平台的识别信息，拖动卡片调整排序</p>
+                    </div>
+                    <div class="action-group">
+                        <div class="search-box">
+                            <div class="search-wrapper">
+                                <input type="text" id="domainSearchInput" class="search-input" 
+                                    placeholder="空格代表并，逗号代表或......" 
+                                    onkeyup="domainModule.handleSearch()"
+                                    title="提示：空格分隔表示并搜索，逗号分隔表示或搜索">
+                                <span class="search-clear" onclick="domainModule.clearSearch()" id="domainSearchClear">×</span>
+                            </div>
+                        </div>
+                        <button class="add-btn" onclick="domainModule.showAddModal()">+</button>
+                    </div>
+                </div>
+                <div class="cards-container" id="domainContainer">
+                    <div class="cards-grid" id="domainCardsGrid">
+                        <div class="loading-card">加载中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 过滤规则管理 -->
+            <div id="filter-section" class="content-section">
+                <div class="content-header">
+                    <div class="content-header-text">
+                        <h1 class="content-title">过滤规则</h1>
+                        <p class="content-desc">管理通用过滤规则和网盘专属过滤规则</p>
+                    </div>
+                    <div class="action-group">
+                        <div class="search-box">
+                            <div class="search-wrapper">
+                                <input type="text" id="filterSearchInput" class="search-input" 
+                                    placeholder="空格代表并，逗号代表或......" 
+                                    onkeyup="filterModule.handleSearch()"
+                                    title="提示：空格分隔表示并搜索，逗号分隔表示或搜索">
+                                <span class="search-clear" onclick="filterModule.clearSearch()" id="filterSearchClear">×</span>
+                            </div>
+                        </div>
+                        <button class="add-btn" onclick="filterModule.showAddModal()">+</button>
+                    </div>
+                </div>
+                <div class="cards-container" id="filterContainer">
+                    <div class="cards-grid" id="filterCardsGrid">
+                        <div class="loading-card">加载中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 链接管理 -->
+            <div id="links-section" class="content-section">
+                <div class="content-header">
+                    <div class="content-header-text">
+                        <h1 class="content-title">链接管理</h1>
+                        <p class="content-desc">管理软件库链接资源</p>
+                    </div>
+                    <div class="action-group">
+                        <div class="search-box">
+                            <div class="search-wrapper">
+                                <input type="text" id="linksSearchInput" class="search-input" 
+                                    placeholder="空格代表并，逗号代表或......" 
+                                    onkeyup="linksModule.handleSearch()"
+                                    title="提示：空格分隔表示并搜索，逗号分隔表示或搜索">
+                                <span class="search-clear" onclick="linksModule.clearSearch()" id="linksSearchClear">×</span>
+                            </div>
+                        </div>
+                        <button class="add-btn" onclick="linksModule.showAddModal()">+</button>
+                    </div>
+                </div>
+                <div class="cards-container" id="linksContainer">
+                    <div class="cards-grid" id="linksCardsGrid">
+                        <div class="loading-card">加载中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 状态管理 -->
+            <div id="status-section" class="content-section">
+                <div class="content-header">
+                    <div class="content-header-text">
+                        <h1 class="content-title">状态管理</h1>
+                        <p class="content-desc">管理链接的审核状态和有效性</p>
+                    </div>
+                    <div class="action-group">
+                        <div class="search-box">
+                            <div class="search-wrapper">
+                                <input type="text" id="statusSearchInput" class="search-input" 
+                                    placeholder="空格代表并，逗号代表或......" 
+                                    onkeyup="statusModule.handleSearch()"
+                                    title="提示：空格分隔表示并搜索，逗号分隔表示或搜索">
+                                <span class="search-clear" onclick="statusModule.clearSearch()" id="statusSearchClear">×</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="cards-container" id="statusContainer">
+                    <div class="cards-grid" id="statusCardsGrid">
+                        <div class="loading-card">加载中...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 域名配置弹窗 -->
+    <div id="addNetdiskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">添加新网盘</h3>
+                <span class="modal-close" onclick="domainModule.hideModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group-numbered">
+                    <label class="form-label">1. 网盘名称</label>
+                    <input type="text" id="modalNetdiskName" class="form-input" placeholder="输入网盘名称，如：百度网盘">
+                </div>
+                <div class="form-group-numbered">
+                    <label class="form-label">2. 域名关键字</label>
+                    <textarea id="modalNetdiskDomain" class="form-textarea" placeholder="输入域名关键字，多个关键字用逗号分隔&#10;例如：baidu,pan.baidu,yun.baidu"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="domainModule.hideModal()">取消</button>
+                <button class="btn btn-primary" id="confirmNetdiskBtn">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 过滤规则弹窗 -->
+    <div id="addRuleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">添加过滤规则</h3>
+                <span class="modal-close" onclick="filterModule.hideModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group-numbered" id="ruleNetdiskGroup">
+                    <label class="form-label">1. 选择网盘</label>
+                    <select id="ruleNetdiskSelect" class="form-select">
+                        <option value="">请选择网盘</option>
+                    </select>
+                </div>
+                <div class="form-group-numbered">
+                    <label class="form-label">2. 过滤规则</label>
+                    <div class="filter-input-group">
+                        <div class="filter-input-wrapper">
+                            <textarea id="ruleValidKeywords" class="form-textarea" placeholder="有效关键字&#10;&#10;输入需要保留的关键字，用逗号分隔&#10;例如：资源,下载,分享"></textarea>
+                        </div>
+                        <div class="filter-input-wrapper">
+                            <textarea id="ruleInvalidKeywords" class="form-textarea" placeholder="无效关键字&#10;&#10;输入需要过滤的关键字，用逗号分隔&#10;例如：广告,推广,违规"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="filterModule.hideModal()">取消</button>
+                <button class="btn btn-primary" id="confirmRuleBtn">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 链接管理弹窗 -->
+    <div id="addLinkModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">添加新链接</h3>
+                <span class="modal-close" onclick="linksModule.hideModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group-numbered">
+                    <label class="form-label">1. 网站名称</label>
+                    <input type="text" id="modalLinkName" class="form-input" placeholder="输入网站名称">
+                </div>
+                <div class="form-group-numbered">
+                    <label class="form-label">2. 网站链接</label>
+                    <input type="text" id="modalLinkUrl" class="form-input" placeholder="输入完整网址，如：https://example.com">
+                </div>
+                <div class="form-group-numbered">
+                    <label class="form-label">3. 投稿人（选填）</label>
+                    <input type="text" id="modalLinkContributor" class="form-input" placeholder="输入投稿人名称，默认为：木小匣">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="linksModule.hideModal()">取消</button>
+                <button class="btn btn-primary" id="confirmLinkBtn">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, onValue, set, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        
+        const firebaseConfig = {
+            databaseURL: "https://ruanjianku-a031b-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        window.firebaseDB = {
+            database,
+            ref,
+            onValue,
+            set,
+            update,
+            remove
+        };
+    </script>
+
+    <script src="tongzhi/tongzhi.js"></script>
+    <script src="gonggong/gg.js"></script>
+    <script src="firebase.js"></script>
+    <script src="daohang/toubu.js"></script>
+    <script src="daohang/zhongjian.js"></script>
+    <script src="daohang/dibu.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

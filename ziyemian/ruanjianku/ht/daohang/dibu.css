@@ -1,0 +1,132 @@
+/* 底部导航独有样式 */
+.nav-section-bottom {
+    flex-shrink: 0;
+    padding: 10px 0;
+    margin-top: auto;
+    position: relative;
+}
+
+.nav-section-bottom::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
+/* 状态管理卡片样式 */
+.status-card {
+    background: #2d2d2d;
+    border: 1px solid #3a3a3a;
+    border-radius: 8px;
+    padding: 18px;
+    transition: all 0.2s ease;
+    position: relative;
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+}
+
+.status-card:hover {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(74, 158, 255, 0.3);
+}
+
+.status-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.status-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e0e0e0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    margin-right: 10px;
+}
+
+.status-card-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.status-toggle-btn {
+    padding: 3px 8px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+}
+
+.status-toggle-btn.active-valid {
+    background: rgba(74, 158, 255, 0.15);
+    color: #4a9eff;
+}
+
+.status-toggle-btn.active-invalid {
+    background: rgba(244, 67, 54, 0.15);
+    color: #f44336;
+}
+
+.status-toggle-btn.active-reviewed {
+    background: rgba(74, 158, 255, 0.15);
+    color: #4a9eff;
+}
+
+.status-toggle-btn.active-pending {
+    background: rgba(244, 67, 54, 0.15);
+    color: #f44336;
+}
+
+.status-toggle-btn:hover {
+    opacity: 0.8;
+}
+
+.status-card-info {
+    font-size: 12px;
+    color: #a0a0a0;
+    margin-bottom: 10px;
+}
+
+.status-card-url {
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.status-card-url a {
+    font-size: 12px;
+    font-family: monospace;
+    color: #4a9eff;
+    text-decoration: underline;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.status-card-url a:hover {
+    color: #6bb4ff;
+}
+
+.status-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #a0a0a0;
+    margin-top: auto;
+}

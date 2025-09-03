@@ -1,0 +1,138 @@
+/* 顶部导航独有样式 */
+.nav-section-top {
+    flex-shrink: 0;
+    padding: 10px 0;  /* 从20px改为10px */
+    position: relative;
+}
+
+.nav-section-top::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
+/* 域名配置卡片内容区域 */
+.domain-content-area {
+    flex: 1;
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #e0e0e0;
+    overflow-y: auto;
+    word-break: break-all;
+    line-height: 1.4;
+    min-height: 0;
+}
+
+.domain-content-area::-webkit-scrollbar {
+    width: 4px;
+}
+
+.domain-content-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.domain-content-area::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+/* 过滤规则卡片内容区域 */
+.filter-content-area {
+    flex: 1;
+    display: flex;
+    gap: 1px;
+    min-height: 0;
+}
+
+.filter-section {
+    flex: 1;
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.filter-section:first-child {
+    border-radius: 6px 0 0 6px;
+}
+
+.filter-section:last-child {
+    border-radius: 0 6px 6px 0;
+}
+
+.filter-section-header {
+    background: #242424;
+    padding: 6px 10px;
+    border-bottom: 1px solid #3a3a3a;
+    font-size: 11px;
+    font-weight: 500;
+    color: #a0a0a0;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.filter-section-content {
+    flex: 1;
+    padding: 8px;
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #e0e0e0;
+    word-break: break-all;
+    min-height: 0;
+}
+
+.filter-section-content::-webkit-scrollbar {
+    width: 3px;
+}
+
+.filter-section-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.filter-section-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+/* 拖拽状态 */
+.unified-card.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.unified-card.drag-over {
+    background: rgba(74, 158, 255, 0.1);
+    border-color: #4a9eff;
+}
+
+/* 过滤规则表单样式 */
+.filter-input-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.filter-input-wrapper {
+    position: relative;
+}
+
+.filter-input-wrapper .form-textarea {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .filter-input-group {
+        grid-template-columns: 1fr;
+    }
+}
