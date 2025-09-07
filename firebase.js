@@ -25,7 +25,7 @@ const listeners = {
     sites: null
 };
 
-// 验证用户登录 - 基于用户输入去数据库验证
+// 验证用户登录
 async function validateLogin(inputUsername, inputPassword) {
     try {
         const userRef = ref(database, 'users');
@@ -34,10 +34,8 @@ async function validateLogin(inputUsername, inputPassword) {
         if (snapshot.exists()) {
             const userData = snapshot.val();
             return userData.username === inputUsername && userData.password === inputPassword;
-        } else {
-            console.log('数据库中未找到用户数据');
-            return false;
         }
+        return false;
     } catch (error) {
         console.error('验证登录失败:', error);
         return false;
@@ -53,10 +51,8 @@ async function getCurrentAccount() {
         if (snapshot.exists()) {
             const userData = snapshot.val();
             return userData.username;
-        } else {
-            console.log('数据库中未找到用户数据');
-            return null;
         }
+        return null;
     } catch (error) {
         console.error('获取账号失败:', error);
         return null;
@@ -72,10 +68,8 @@ async function getCurrentPassword() {
         if (snapshot.exists()) {
             const userData = snapshot.val();
             return userData.password;
-        } else {
-            console.log('数据库中未找到用户数据');
-            return null;
         }
+        return null;
     } catch (error) {
         console.error('获取密码失败:', error);
         return null;
@@ -100,10 +94,8 @@ async function updateUserInfo(newUsername, newPassword) {
             await set(userRef, updatedData);
             
             return true;
-        } else {
-            console.error('用户数据不存在');
-            return false;
         }
+        return false;
     } catch (error) {
         console.error('更新用户信息失败:', error);
         return false;
@@ -127,7 +119,6 @@ function logout() {
 
 // 监听网站设置（实时）
 function listenToSettings(callback) {
-    // 清理旧监听器
     if (listeners.settings) {
         off(listeners.settings);
     }
@@ -139,7 +130,6 @@ function listenToSettings(callback) {
         if (snapshot.exists()) {
             callback(snapshot.val());
         } else {
-            // 返回默认设置
             callback({
                 avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=NavigationHub&backgroundColor=b6e3f4,c0aede,d1d4f9&size=120',
                 siteTitle: '导航中心',
@@ -153,7 +143,7 @@ function listenToSettings(callback) {
     });
 }
 
-// 获取网站设置（一次性，用于后台初始加载）
+// 获取网站设置
 async function getSettings() {
     try {
         const settingsRef = ref(database, 'settings');
@@ -190,7 +180,6 @@ async function saveSettings(settings) {
 
 // 监听链接列表（实时）
 function listenToLinks(callback) {
-    // 清理旧监听器
     if (listeners.links) {
         off(listeners.links);
     }
@@ -205,6 +194,8 @@ function listenToLinks(callback) {
                 id: key,
                 ...links[key]
             }));
+            // 按序号排序
+            linksArray.sort((a, b) => (a.xuhao || 0) - (b.xuhao || 0));
             callback(linksArray);
         } else {
             callback([]);
@@ -214,7 +205,7 @@ function listenToLinks(callback) {
     });
 }
 
-// 获取链接列表（一次性，用于后台初始加载）
+// 获取链接列表
 async function getLinks() {
     try {
         const linksRef = ref(database, 'listurl');
@@ -222,10 +213,12 @@ async function getLinks() {
         
         if (snapshot.exists()) {
             const links = snapshot.val();
-            return Object.keys(links).map(key => ({
+            const linksArray = Object.keys(links).map(key => ({
                 id: key,
                 ...links[key]
             }));
+            // 按序号排序
+            return linksArray.sort((a, b) => (a.xuhao || 0) - (b.xuhao || 0));
         } else {
             return [];
         }
@@ -244,10 +237,19 @@ async function addLink(linkData) {
         const links = snapshot.exists() ? snapshot.val() : {};
         const newId = `link_${Date.now()}`;
         
+        // 计算新序号（最大序号+1）
+        let maxXuhao = 0;
+        Object.values(links).forEach(link => {
+            if (link.xuhao && link.xuhao > maxXuhao) {
+                maxXuhao = link.xuhao;
+            }
+        });
+        
         links[newId] = {
             icon: linkData.icon,
             text: linkData.text,
-            url: linkData.url
+            url: linkData.url,
+            xuhao: maxXuhao + 1
         };
         
         await set(linksRef, links);
@@ -262,10 +264,14 @@ async function addLink(linkData) {
 async function updateLink(linkId, linkData) {
     try {
         const linkRef = ref(database, `listurl/${linkId}`);
+        const snapshot = await get(linkRef);
+        const oldData = snapshot.exists() ? snapshot.val() : {};
+        
         await set(linkRef, {
             icon: linkData.icon,
             text: linkData.text,
-            url: linkData.url
+            url: linkData.url,
+            xuhao: oldData.xuhao || 0
         });
         return true;
     } catch (error) {
@@ -274,11 +280,26 @@ async function updateLink(linkId, linkData) {
     }
 }
 
-// 删除单个链接
+// 删除单个链接并重排序号
 async function deleteLink(linkId) {
     try {
-        const linkRef = ref(database, `listurl/${linkId}`);
-        await set(linkRef, null);
+        const linksRef = ref(database, 'listurl');
+        const snapshot = await get(linksRef);
+        
+        if (!snapshot.exists()) return false;
+        
+        const links = snapshot.val();
+        const deletedXuhao = links[linkId]?.xuhao || 0;
+        delete links[linkId];
+        
+        // 重排序号：大于删除项序号的都减1
+        Object.keys(links).forEach(key => {
+            if (links[key].xuhao > deletedXuhao) {
+                links[key].xuhao--;
+            }
+        });
+        
+        await set(linksRef, links);
         return true;
     } catch (error) {
         console.error('删除链接失败:', error);
@@ -286,9 +307,33 @@ async function deleteLink(linkId) {
     }
 }
 
+// 批量更新链接序号
+async function updateLinkOrders(orderData) {
+    try {
+        const linksRef = ref(database, 'listurl');
+        const snapshot = await get(linksRef);
+        
+        if (!snapshot.exists()) return false;
+        
+        const links = snapshot.val();
+        
+        // 更新序号
+        orderData.forEach(item => {
+            if (links[item.id]) {
+                links[item.id].xuhao = item.xuhao;
+            }
+        });
+        
+        await set(linksRef, links);
+        return true;
+    } catch (error) {
+        console.error('更新链接序号失败:', error);
+        return false;
+    }
+}
+
 // 监听站点列表（实时）
 function listenToSites(callback) {
-    // 清理旧监听器
     if (listeners.sites) {
         off(listeners.sites);
     }
@@ -303,6 +348,8 @@ function listenToSites(callback) {
                 id: key,
                 ...sites[key]
             }));
+            // 按序号排序
+            sitesArray.sort((a, b) => (a.xuhao || 0) - (b.xuhao || 0));
             callback(sitesArray);
         } else {
             callback([]);
@@ -312,7 +359,7 @@ function listenToSites(callback) {
     });
 }
 
-// 获取站点列表（一次性，用于后台初始加载）
+// 获取站点列表
 async function getSites() {
     try {
         const sitesRef = ref(database, 'zdfw');
@@ -320,10 +367,12 @@ async function getSites() {
         
         if (snapshot.exists()) {
             const sites = snapshot.val();
-            return Object.keys(sites).map(key => ({
+            const sitesArray = Object.keys(sites).map(key => ({
                 id: key,
                 ...sites[key]
             }));
+            // 按序号排序
+            return sitesArray.sort((a, b) => (a.xuhao || 0) - (b.xuhao || 0));
         } else {
             return [];
         }
@@ -342,10 +391,19 @@ async function addSite(siteData) {
         const sites = snapshot.exists() ? snapshot.val() : {};
         const newId = `site_${Date.now()}`;
         
+        // 计算新序号（最大序号+1）
+        let maxXuhao = 0;
+        Object.values(sites).forEach(site => {
+            if (site.xuhao && site.xuhao > maxXuhao) {
+                maxXuhao = site.xuhao;
+            }
+        });
+        
         sites[newId] = {
             icon: siteData.icon,
             text: siteData.text,
-            url: siteData.url
+            url: siteData.url,
+            xuhao: maxXuhao + 1
         };
         
         await set(sitesRef, sites);
@@ -360,10 +418,14 @@ async function addSite(siteData) {
 async function updateSite(siteId, siteData) {
     try {
         const siteRef = ref(database, `zdfw/${siteId}`);
+        const snapshot = await get(siteRef);
+        const oldData = snapshot.exists() ? snapshot.val() : {};
+        
         await set(siteRef, {
             icon: siteData.icon,
             text: siteData.text,
-            url: siteData.url
+            url: siteData.url,
+            xuhao: oldData.xuhao || 0
         });
         return true;
     } catch (error) {
@@ -372,14 +434,54 @@ async function updateSite(siteId, siteData) {
     }
 }
 
-// 删除单个站点
+// 删除单个站点并重排序号
 async function deleteSite(siteId) {
     try {
-        const siteRef = ref(database, `zdfw/${siteId}`);
-        await set(siteRef, null);
+        const sitesRef = ref(database, 'zdfw');
+        const snapshot = await get(sitesRef);
+        
+        if (!snapshot.exists()) return false;
+        
+        const sites = snapshot.val();
+        const deletedXuhao = sites[siteId]?.xuhao || 0;
+        delete sites[siteId];
+        
+        // 重排序号：大于删除项序号的都减1
+        Object.keys(sites).forEach(key => {
+            if (sites[key].xuhao > deletedXuhao) {
+                sites[key].xuhao--;
+            }
+        });
+        
+        await set(sitesRef, sites);
         return true;
     } catch (error) {
         console.error('删除站点失败:', error);
+        return false;
+    }
+}
+
+// 批量更新站点序号
+async function updateSiteOrders(orderData) {
+    try {
+        const sitesRef = ref(database, 'zdfw');
+        const snapshot = await get(sitesRef);
+        
+        if (!snapshot.exists()) return false;
+        
+        const sites = snapshot.val();
+        
+        // 更新序号
+        orderData.forEach(item => {
+            if (sites[item.id]) {
+                sites[item.id].xuhao = item.xuhao;
+            }
+        });
+        
+        await set(sitesRef, sites);
+        return true;
+    } catch (error) {
+        console.error('更新站点序号失败:', error);
         return false;
     }
 }
@@ -503,10 +605,12 @@ window.FirebaseAuth = {
     addLink,
     updateLink,
     deleteLink,
+    updateLinkOrders,
     getSites,
     addSite,
     updateSite,
     deleteSite,
+    updateSiteOrders,
     recordVisit,
     getVisitorStats,
     listenToSettings,

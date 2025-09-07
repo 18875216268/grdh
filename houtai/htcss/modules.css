@@ -31,6 +31,32 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    cursor: move;
+    transition: all 0.3s ease;
+}
+
+.link-item.dragging {
+    opacity: 0.5;
+}
+
+.link-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* 拖拽手柄 */
+.drag-handle {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: grab;
+    margin-right: 12px;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
 }
 
 .link-info {
@@ -140,19 +166,19 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    color: rgba(255, 255, 255, 0.7);  /* 设置图标颜色 - 浅灰白色 */
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .icon-option:hover {
     background: rgba(255, 255, 255, 0.12);
     border-color: rgba(255, 255, 255, 0.25);
-    color: rgba(255, 255, 255, 0.9);  /* 悬停时更亮 */
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .icon-option.selected {
     background: rgba(102, 126, 234, 0.25);
     border-color: rgba(102, 126, 234, 0.5);
-    color: #fff;  /* 选中时纯白色 */
+    color: #fff;
 }
 
 /* 统计模块 */
@@ -247,5 +273,13 @@
     
     .view-switcher {
         justify-content: center;
+    }
+    
+    .drag-handle {
+        display: none;
+    }
+    
+    .link-item {
+        cursor: default;
     }
 }

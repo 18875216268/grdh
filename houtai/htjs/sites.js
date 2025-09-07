@@ -4,6 +4,7 @@ const SiteManager = {
     currentEditingMode: 'add',
     selectedIconName: 'plus',
     isListening: false,
+    draggedItem: null,
 
     // 初始化
     init() {
@@ -37,9 +38,12 @@ const SiteManager = {
                 const siteList = document.getElementById('siteList');
                 siteList.innerHTML = '';
                 
-                sites.forEach(site => {
-                    this.addSiteToDOM(site);
+                sites.forEach((site, index) => {
+                    this.addSiteToDOM(site, index);
                 });
+                
+                // 初始化拖拽
+                this.initDragAndDrop();
             });
         } catch (error) {
             console.error('监听站点列表失败:', error);
@@ -48,14 +52,19 @@ const SiteManager = {
     },
 
     // 添加站点到DOM
-    addSiteToDOM(siteData) {
+    addSiteToDOM(siteData, index) {
         const siteList = document.getElementById('siteList');
         const item = document.createElement('li');
         item.className = 'link-item';
         item.setAttribute('data-site-id', siteData.id);
         item.setAttribute('data-site-icon', siteData.icon);
+        item.setAttribute('data-site-index', index);
+        item.draggable = true;
         
         item.innerHTML = `
+            <div class="drag-handle">
+                <i data-lucide="grip-vertical"></i>
+            </div>
             <div class="link-info">
                 <div class="link-icon">
                     <i data-lucide="${siteData.icon}"></i>
@@ -73,6 +82,80 @@ const SiteManager = {
         `;
         siteList.appendChild(item);
         lucide.createIcons();
+    },
+
+    // 初始化拖拽功能
+    initDragAndDrop() {
+        const items = document.querySelectorAll('#siteList .link-item');
+        
+        items.forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                this.draggedItem = item;
+                item.classList.add('dragging');
+            });
+            
+            item.addEventListener('dragend', (e) => {
+                item.classList.remove('dragging');
+            });
+            
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const afterElement = this.getDragAfterElement(document.getElementById('siteList'), e.clientY);
+                if (afterElement == null) {
+                    document.getElementById('siteList').appendChild(this.draggedItem);
+                } else {
+                    document.getElementById('siteList').insertBefore(this.draggedItem, afterElement);
+                }
+            });
+            
+            item.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                await this.updateOrder();
+            });
+        });
+    },
+
+    // 获取拖拽后的位置
+    getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.link-item:not(.dragging)')];
+        
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    },
+
+    // 更新序号
+    async updateOrder() {
+        const items = document.querySelectorAll('#siteList .link-item');
+        const orderData = [];
+        
+        items.forEach((item, index) => {
+            orderData.push({
+                id: item.getAttribute('data-site-id'),
+                xuhao: index + 1
+            });
+        });
+        
+        try {
+            await waitForFirebase();
+            const success = await window.FirebaseAuth.updateSiteOrders(orderData);
+            
+            if (success) {
+                tongzhi.success('排序已更新');
+            } else {
+                tongzhi.error('排序更新失败');
+            }
+        } catch (error) {
+            console.error('更新排序失败:', error);
+            tongzhi.error('排序更新失败');
+        }
     },
 
     // 打开编辑弹窗
