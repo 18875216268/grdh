@@ -1,4 +1,4 @@
-// 表格控制模块 - 优化版（v1.13）
+// 表格控制模块 - 优化版（v1.14）
 const TableModule = (function() {
     let fieldOrder = {};
     let fieldStatus = {};
@@ -75,6 +75,24 @@ const TableModule = (function() {
         return input;
     }
     
+    // 更新单元格显示内容
+    function updateCellDisplay(cell, value, field) {
+        if (field === 'name') {
+            cell.className = 'name-cell';
+            cell.textContent = value || '未知';
+        } else if (typeof value === 'number') {
+            const className = 'number-cell' + (value > 0 ? ' positive' : value < 0 ? ' negative' : '');
+            cell.className = className;
+            cell.textContent = formatNumber(value, field);
+            cell.style.cursor = 'pointer';
+        } else {
+            cell.textContent = value || '-';
+            if (field !== 'name') {
+                cell.style.cursor = 'pointer';
+            }
+        }
+    }
+    
     // 启用单元格编辑
     function enableCellEdit(cell, operatorId, field) {
         // 检查是否处于全屏模式
@@ -91,7 +109,6 @@ const TableModule = (function() {
         originalValue = value;
         editingCell = { cell, operatorId, field };
         
-        const originalHTML = cell.innerHTML;
         const input = createEditInput(cell, value, field);
         cell.innerHTML = '';
         cell.appendChild(input);
@@ -99,27 +116,27 @@ const TableModule = (function() {
         input.focus();
         input.select();
         
-        input.addEventListener('keydown', async (e) => {
+        input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                await saveEdit(input.value);
+                saveEdit(input.value);
             } else if (e.key === 'Escape') {
                 e.preventDefault();
-                cancelEdit(cell, originalHTML);
+                cancelEdit();
             }
         });
         
         input.addEventListener('blur', () => {
             setTimeout(() => {
                 if (editingCell && editingCell.cell === cell) {
-                    cancelEdit(cell, originalHTML);
+                    cancelEdit();
                 }
             }, 200);
         });
     }
     
-    // 保存编辑 - 按照用户的简化方案
-    async function saveEdit(inputValue) {
+    // 保存编辑
+    function saveEdit(inputValue) {
         if (!editingCell) return;
         
         const { cell, operatorId, field } = editingCell;
@@ -130,33 +147,33 @@ const TableModule = (function() {
             parsedValue = parseFloat(value);
         }
         
-        try {
-            // 步骤1：保存数据（不触发biaozhi）
-            const updates = {};
-            updates[`/fuzeren/${operatorId}/jieguo/${field}`] = value === '' ? null : parsedValue;
-            
-            await database.ref().update(updates);
-            
-            // 步骤2：立即启用监听（清除编辑状态）
-            editingCell = null;
-            originalValue = null;
-            
-            // 步骤3：触发级联计算
-            await database.ref('/peizhi/biaozhi').set(Math.random());
-            
-            window.showToast('数据已更新', 'success');
-            
-        } catch (error) {
-            window.showToast('保存失败: ' + error.message, 'error');
-            // 保持编辑状态，不清除
-        }
+        // 立即恢复显示
+        updateCellDisplay(cell, value === '' ? null : parsedValue, field);
+        
+        // 清除编辑状态
+        editingCell = null;
+        originalValue = null;
+        
+        // 异步保存到数据库
+        const updates = {};
+        updates[`/fuzeren/${operatorId}/jieguo/${field}`] = value === '' ? null : parsedValue;
+        
+        database.ref().update(updates)
+            .then(() => database.ref('/peizhi/biaozhi').set(Math.random()))
+            .then(() => window.showToast('数据已更新', 'success'))
+            .catch(error => window.showToast('保存失败: ' + error.message, 'error'));
     }
     
     // 取消编辑
-    function cancelEdit(cell, originalHTML) {
-        if (!editingCell || editingCell.cell !== cell) return;
+    function cancelEdit() {
+        if (!editingCell) return;
         
-        cell.innerHTML = originalHTML;
+        const { cell, field } = editingCell;
+        
+        // 恢复原值显示
+        updateCellDisplay(cell, originalValue, field);
+        
+        // 清除编辑状态
         editingCell = null;
         originalValue = null;
     }
