@@ -77,6 +77,11 @@ const TableModule = (function() {
     
     // 启用单元格编辑
     function enableCellEdit(cell, operatorId, field) {
+        // 检查是否处于全屏模式
+        if (document.body.classList.contains('reading-mode')) {
+            return; // 全屏模式下禁止编辑
+        }
+        
         if (editingCell || field === 'name') return;
         
         const personData = currentFuzerenData[operatorId];

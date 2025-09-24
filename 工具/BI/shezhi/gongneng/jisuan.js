@@ -1,4 +1,4 @@
-// 计算模块 - 职责清晰版（v1.11）
+// 计算模块 - 支持重复定义版 (v3.0)
 const JisuanModule = (function() {
     let biaozhiRef = null;
     let isCalculating = false;
@@ -16,8 +16,6 @@ const JisuanModule = (function() {
                 });
             }
         });
-        
-        autoRecalculate();
     }
     
     function parseAndCalculate(text) {
@@ -32,14 +30,16 @@ const JisuanModule = (function() {
         if (!formulaText || isCalculating) return;
         
         isCalculating = true;
+        console.log('===== 开始计算 =====');
         
-        // 解析公式
-        const parseResult = JiexiModule.parseFormulas(formulaText);
-        if (!parseResult.success) {
+        const groupResult = JiexiModule.parseGroupedFormulas(formulaText);
+        if (!groupResult.success) {
             isCalculating = false;
-            window.showToast(parseResult.message, 'error');
+            window.showToast(groupResult.message, 'error');
             return;
         }
+        
+        console.log(`解析成功：${groupResult.groups.length}个分组`);
         
         FirebaseModule.getAllFuzerenData((fuzerenData) => {
             if (!fuzerenData) {
@@ -48,121 +48,217 @@ const JisuanModule = (function() {
                 return;
             }
             
-            // 获取现有字段
-            const existingFields = FirebaseModule.extractAllFields(fuzerenData);
-            
-            // 分析依赖并排序
-            const analysisResult = JiexiModule.analyzeAndSortFormulas(parseResult.data, existingFields);
-            
-            if (!analysisResult.success) {
-                isCalculating = false;
-                window.showToast('分析失败: ' + analysisResult.errors.join('; '), 'error');
-                return;
-            }
-            
-            // 执行计算
-            const workingData = JSON.parse(JSON.stringify(fuzerenData));
-            calculateFormulas(analysisResult.sortedFormulas, fuzerenData, workingData, 0, []);
+            console.log(`获取到${Object.keys(fuzerenData).length}个负责人数据`);
+            executeGroupedCalculation(groupResult.groups, fuzerenData);
         });
     }
     
-    function calculateFormulas(formulas, originalData, workingData, index, results) {
-        if (index >= formulas.length) {
-            // 批量保存结果
-            saveAllResults(results, originalData).then(() => {
-                isCalculating = false;
-                showCalculationResult(results);
-            });
+    function executeGroupedCalculation(groups, fuzerenData) {
+        const workingData = JSON.parse(JSON.stringify(fuzerenData));
+        const allResults = {};
+        
+        // 第1步：通用计算
+        const generalGroup = groups.find(g => g.target === '通用');
+        console.log('\n--- 通用计算开始 ---');
+        
+        const parseResult = JiexiModule.parseFormulas(generalGroup.content);
+        if (!parseResult.success) {
+            isCalculating = false;
+            window.showToast(parseResult.message, 'error');
             return;
         }
         
-        const { fieldName, expression } = formulas[index];
-        const calculationResults = {};
-        let successCount = 0;
+        const existingFields = FirebaseModule.extractAllFields(fuzerenData);
+        const analysisResult = JiexiModule.analyzeAndSortFormulas(parseResult.data, existingFields);
         
-        // 计算每个人的数据
-        Object.entries(workingData).forEach(([operatorId, personData]) => {
-            const context = {
-                name: personData.name,
-                ...(personData.jieguo || {})
-            };
+        if (!analysisResult.success) {
+            isCalculating = false;
+            window.showToast('分析失败: ' + analysisResult.errors.join('; '), 'error');
+            return;
+        }
+        
+        console.log(`通用公式：${analysisResult.sortedFormulas.length}个字段`);
+        if (analysisResult.stages > 1) {
+            console.log(`  分${analysisResult.stages}个阶段计算`);
+        }
+        
+        // 对所有负责人执行通用计算
+        Object.keys(workingData).forEach(operatorId => {
+            const results = calculateForOperator(
+                analysisResult.sortedFormulas,
+                workingData[operatorId]
+            );
             
-            const value = evaluateExpression(expression, context);
-            if (value !== null) {
-                calculationResults[operatorId] = { [fieldName]: value };
-                // 更新工作数据供后续公式使用
-                if (!workingData[operatorId].jieguo) {
-                    workingData[operatorId].jieguo = {};
+            allResults[operatorId] = results;
+            
+            if (!workingData[operatorId].jieguo) {
+                workingData[operatorId].jieguo = {};
+            }
+            Object.assign(workingData[operatorId].jieguo, results);
+        });
+        
+        console.log(`通用计算完成`);
+        
+        // 第2步：个性化计算
+        const personalGroups = groups.filter(g => g.target !== '通用');
+        
+        if (personalGroups.length > 0) {
+            console.log('\n--- 个性化计算开始 ---');
+            
+            const targetMap = {};
+            personalGroups.forEach(group => {
+                if (!targetMap[group.content]) {
+                    targetMap[group.content] = [];
                 }
-                workingData[operatorId].jieguo[fieldName] = value;
-                successCount++;
+                targetMap[group.content].push(group.target);
+            });
+            
+            Object.entries(targetMap).forEach(([content, targets]) => {
+                if (targets.length > 1) {
+                    console.log(`共享公式：${targets.join('、')}`);
+                }
+            });
+        }
+        
+        personalGroups.forEach(group => {
+            const operatorId = findOperatorByName(fuzerenData, group.target);
+            if (!operatorId) {
+                console.log(`跳过不存在的负责人: ${group.target}`);
+                return;
+            }
+            
+            console.log(`\n计算 ${group.target}:`);
+            
+            const parseResult = JiexiModule.parseFormulas(group.content);
+            if (!parseResult.success) {
+                console.error(`  解析失败: ${parseResult.message}`);
+                return;
+            }
+            
+            const personalContext = workingData[operatorId].jieguo || {};
+            const availableFields = Object.keys(personalContext).concat('name');
+            
+            const analysisResult = JiexiModule.analyzeAndSortFormulas(parseResult.data, availableFields);
+            
+            if (!analysisResult.success) {
+                console.error(`  依赖分析失败: ${analysisResult.errors.join('; ')}`);
+                return;
+            }
+            
+            console.log(`  公式数：${analysisResult.sortedFormulas.length}`);
+            if (analysisResult.stages > 1) {
+                console.log(`  分${analysisResult.stages}个阶段计算`);
+            }
+            
+            const personalResults = calculateForOperator(
+                analysisResult.sortedFormulas,
+                workingData[operatorId]
+            );
+            
+            let overrideCount = 0;
+            let newCount = 0;
+            Object.keys(personalResults).forEach(field => {
+                if (allResults[operatorId] && allResults[operatorId][field] !== undefined) {
+                    overrideCount++;
+                } else {
+                    newCount++;
+                }
+            });
+            
+            if (overrideCount > 0) console.log(`  覆盖${overrideCount}个字段`);
+            if (newCount > 0) console.log(`  新增${newCount}个字段`);
+            
+            if (!allResults[operatorId]) {
+                allResults[operatorId] = {};
+            }
+            Object.assign(allResults[operatorId], personalResults);
+            Object.assign(workingData[operatorId].jieguo, personalResults);
+        });
+        
+        saveAllResults(allResults, fuzerenData);
+    }
+    
+    function findOperatorByName(fuzerenData, name) {
+        for (const [operatorId, data] of Object.entries(fuzerenData)) {
+            if (data.name === name) {
+                return operatorId;
+            }
+        }
+        return null;
+    }
+    
+    function calculateForOperator(formulas, personData) {
+        const results = {};
+        const context = {
+            name: personData.name,
+            ...(personData.jieguo || {})
+        };
+        
+        // 按顺序执行，允许后面的公式使用前面的结果
+        formulas.forEach(({ fieldName, expression }) => {
+            // 更新context包含已计算的结果
+            Object.assign(context, results);
+            
+            const fieldMapping = JiexiModule.createFieldMapping(expression, context);
+            const requiredFields = JiexiModule.extractFields(expression);
+            
+            let allFieldsAvailable = true;
+            for (const field of requiredFields) {
+                if (fieldMapping[field] === undefined) {
+                    allFieldsAvailable = false;
+                    break;
+                }
+            }
+            
+            if (allFieldsAvailable) {
+                const evalExpression = JiexiModule.replaceFields(expression, fieldMapping);
+                const evalResult = JiexiModule.safeEvaluate(evalExpression);
+                
+                if (evalResult.success) {
+                    results[fieldName] = evalResult.result;
+                }
             }
         });
         
-        if (successCount === 0) {
-            results.push({
-                success: false,
-                fieldName,
-                message: `字段 "${fieldName}": 计算失败`
-            });
-        } else {
-            results.push({ 
-                success: true, 
-                fieldName, 
-                count: successCount,
-                data: calculationResults
-            });
-        }
-        
-        // 继续下一个公式
-        calculateFormulas(formulas, originalData, workingData, index + 1, results);
-    }
-    
-    function evaluateExpression(expression, context) {
-        // 创建字段映射
-        const fieldMapping = JiexiModule.createFieldMapping(expression, context);
-        const requiredFields = JiexiModule.extractFields(expression);
-        
-        // 检查必需字段
-        for (const field of requiredFields) {
-            if (fieldMapping[field] === undefined) {
-                return null;
-            }
-        }
-        
-        // 替换字段并求值
-        const evalExpression = JiexiModule.replaceFields(expression, fieldMapping);
-        const evalResult = JiexiModule.safeEvaluate(evalExpression);
-        
-        return evalResult.success ? evalResult.result : null;
+        return results;
     }
     
     function saveAllResults(results, originalData) {
         const updates = {};
-        const successResults = results.filter(r => r.success);
         
-        if (successResults.length === 0) {
-            return Promise.resolve();
-        }
-        
-        // 收集所有数据更新
-        successResults.forEach(({ data }) => {
-            Object.entries(data).forEach(([operatorId, fieldData]) => {
-                Object.entries(fieldData).forEach(([field, value]) => {
-                    updates[`/fuzeren/${operatorId}/jieguo/${field}`] = value;
-                });
+        Object.entries(results).forEach(([operatorId, fields]) => {
+            Object.entries(fields).forEach(([field, value]) => {
+                updates[`/fuzeren/${operatorId}/jieguo/${field}`] = value;
             });
         });
         
-        // 检查新字段
-        const existingFields = FirebaseModule.extractAllFields(originalData);
-        const newFields = successResults
-            .map(r => r.fieldName)
-            .filter(field => !existingFields.includes(field));
+        if (Object.keys(updates).length === 0) {
+            isCalculating = false;
+            console.log('无计算结果');
+            window.showToast('无计算结果', 'info');
+            return;
+        }
         
-        if (newFields.length > 0) {
-            return firebase.database().ref('/peizhi').once('value').then(snapshot => {
+        const existingFields = FirebaseModule.extractAllFields(originalData);
+        const newFields = new Set();
+        
+        Object.values(results).forEach(fields => {
+            Object.keys(fields).forEach(field => {
+                if (!existingFields.includes(field)) {
+                    newFields.add(field);
+                }
+            });
+        });
+        
+        console.log(`\n保存${Object.keys(updates).length}个更新`);
+        if (newFields.size > 0) {
+            console.log(`新增${newFields.size}个字段配置`);
+        }
+        
+        if (newFields.size > 0) {
+            firebase.database().ref('/peizhi').once('value').then(snapshot => {
                 const peizhiData = snapshot.val() || {};
+                
                 newFields.forEach(fieldName => {
                     const configUpdates = FirebaseModule.generateFieldConfig(
                         fieldName,
@@ -171,35 +267,36 @@ const JisuanModule = (function() {
                     );
                     Object.assign(updates, configUpdates);
                 });
+                
                 return firebase.database().ref().update(updates);
+            }).then(() => {
+                isCalculating = false;
+                const fieldCount = new Set();
+                Object.values(results).forEach(fields => {
+                    Object.keys(fields).forEach(field => fieldCount.add(field));
+                });
+                window.showToast(`计算完成：${fieldCount.size}个字段`, 'success');
+                console.log('===== 计算结束 =====\n');
+            }).catch(error => {
+                isCalculating = false;
+                console.error('保存失败:', error);
+                window.showToast('保存失败: ' + error.message, 'error');
             });
         } else {
-            return firebase.database().ref().update(updates);
+            firebase.database().ref().update(updates).then(() => {
+                isCalculating = false;
+                const fieldCount = new Set();
+                Object.values(results).forEach(fields => {
+                    Object.keys(fields).forEach(field => fieldCount.add(field));
+                });
+                window.showToast(`计算完成：${fieldCount.size}个字段`, 'success');
+                console.log('===== 计算结束 =====\n');
+            }).catch(error => {
+                isCalculating = false;
+                console.error('保存失败:', error);
+                window.showToast('保存失败: ' + error.message, 'error');
+            });
         }
-    }
-    
-    function showCalculationResult(results) {
-        const successCount = results.filter(r => r.success).length;
-        const errors = results.filter(r => !r.success);
-        
-        if (successCount > 0) {
-            const message = errors.length > 0 
-                ? `${successCount}个字段计算成功，${errors.length}个失败`
-                : `${successCount}个字段计算完成`;
-            window.showToast(message, 'success');
-        } else if (errors.length > 0) {
-            window.showToast('计算失败: ' + errors.map(e => e.message).join('; '), 'error');
-        }
-    }
-    
-    function autoRecalculate() {
-        FirebaseModule.getFormula((formula) => {
-            if (formula && formula.trim()) {
-                setTimeout(() => {
-                    executeCalculation(formula);
-                }, 500);
-            }
-        });
     }
     
     return { 

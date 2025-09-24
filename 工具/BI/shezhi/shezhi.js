@@ -34,7 +34,7 @@ const ShezhiModule = (function() {
                     </div>
                     <div class="shezhi-right">
                         <div class="shezhi-formula">
-                            <textarea id="formulaInput" placeholder="输入公式，例如：\n利润:收入-成本;\n利润率:利润/收入;" readonly></textarea>
+                            <textarea id="formulaInput" placeholder="输入公式，格式：\n@通用{\n  利润:收入-成本;\n  利润率:利润/收入;\n}\n@张三{\n  奖金:利润*0.1;\n}" readonly></textarea>
                             <button class="formula-btn upload-btn" id="uploadBtn" onclick="ShangchuanModule.handleUpload()" title="上传Excel">
                                 <i class="fas fa-upload"></i>
                             </button>
@@ -48,11 +48,10 @@ const ShezhiModule = (function() {
         `;
         document.body.appendChild(modal);
         
-        // ESC键监听器 - 仅退出编辑模式
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && isOpen && isEditMode) {
                 const input = document.getElementById('formulaInput');
-                input.value = currentFormula;  // 恢复原值
+                input.value = currentFormula;
                 isEditMode = false;
                 input.readOnly = true;
                 input.classList.remove('editing');
@@ -69,7 +68,6 @@ const ShezhiModule = (function() {
         const modal = document.querySelector('.shezhi-modal');
         modal.classList.add('show');
         
-        // 从数据库读取公式
         FirebaseModule.getFormula((formula) => {
             currentFormula = formula;
             const input = document.getElementById('formulaInput');
@@ -78,12 +76,10 @@ const ShezhiModule = (function() {
             input.classList.remove('editing');
         });
         
-        // 重置按钮状态
         updateButtonState(false);
     }
     
     function closeModal() {
-        // 直接关闭，丢弃所有未保存的更改
         isOpen = false;
         isEditMode = false;
         document.querySelector('.shezhi-modal').classList.remove('show');
@@ -93,14 +89,12 @@ const ShezhiModule = (function() {
         const input = document.getElementById('formulaInput');
         
         if (!isEditMode) {
-            // 进入编辑模式
             isEditMode = true;
             input.readOnly = false;
             input.classList.add('editing');
             input.focus();
             updateButtonState(true);
         } else {
-            // 保存并退出编辑模式
             saveFormula();
         }
     }
@@ -109,16 +103,13 @@ const ShezhiModule = (function() {
         const input = document.getElementById('formulaInput');
         const formula = input.value.trim();
         
-        // 禁用按钮防止重复点击
         const btn = document.getElementById('formulaBtn');
         btn.disabled = true;
         
-        // 保存公式
         FirebaseModule.saveFormula(formula)
             .then(() => {
                 currentFormula = formula;
                 
-                // 退出编辑模式
                 isEditMode = false;
                 input.readOnly = true;
                 input.classList.remove('editing');

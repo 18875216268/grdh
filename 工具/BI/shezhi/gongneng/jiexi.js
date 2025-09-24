@@ -1,278 +1,189 @@
-// 解析模块 - 职责清晰版
+// 解析模块 - 支持重复定义版 (v3.0)
 const JiexiModule = (function() {
     
-    // 支持的运算符和分隔符
+    // 支持的运算符
     const OPERATORS = ['+', '-', '*', '/', '(', ')', ' '];
-    const FIELD_PATTERN = /[\u4e00-\u9fff\w]+/g;
     
-    // 解析公式文本
-    function parseFormulas(text) {
+    // 解析分组公式文本 - 支持多负责人共享
+    function parseGroupedFormulas(text) {
         const cleanText = text.trim();
         if (!cleanText) {
             return { success: false, message: '请输入计算公式' };
         }
         
-        // 按分号分割公式
+        const groups = [];
+        const regex = /@([^{]+)\{([^}]*)\}/g;
+        let match;
+        
+        while ((match = regex.exec(cleanText)) !== null) {
+            const targetString = match[1].trim();
+            const content = match[2].trim();
+            
+            if (!content) continue;
+            
+            // 拆分多个负责人
+            const targets = targetString.split('@').map(t => t.trim()).filter(t => t);
+            
+            targets.forEach(target => {
+                groups.push({ target, content });
+            });
+        }
+        
+        if (groups.length === 0) {
+            return { 
+                success: false, 
+                message: '请使用正确格式: @通用{公式} 或 @负责人名{公式}' 
+            };
+        }
+        
+        const hasGeneral = groups.some(g => g.target === '通用');
+        if (!hasGeneral) {
+            return {
+                success: false,
+                message: '必须包含 @通用{} 分组'
+            };
+        }
+        
+        return { success: true, groups };
+    }
+    
+    // 解析单组公式 - 支持重复定义
+    function parseFormulas(text) {
+        const cleanText = text.trim();
+        if (!cleanText) {
+            return { success: false, message: '公式内容为空' };
+        }
+        
         const formulaLines = cleanText.split(';').filter(line => line.trim());
         
         if (formulaLines.length === 0) {
-            return { success: false, message: '请输入有效的计算公式' };
+            return { success: false, message: '未找到有效公式' };
         }
         
         const formulas = [];
-        const fieldNames = new Set();
         
         for (let i = 0; i < formulaLines.length; i++) {
             const line = formulaLines[i].trim();
+            const colonIndex = line.indexOf(':');
             
-            const parseResult = parseFormula(line, i + 1);
-            if (!parseResult.success) {
-                return parseResult;
-            }
-            
-            const { fieldName, expression } = parseResult.data;
-            
-            // 检查字段名重复
-            if (fieldNames.has(fieldName)) {
+            if (colonIndex === -1) {
                 return { 
                     success: false, 
-                    message: `字段名 "${fieldName}" 重复定义` 
+                    message: `第${i+1}个公式格式错误: ${line}` 
                 };
             }
-            fieldNames.add(fieldName);
             
+            const fieldName = line.substring(0, colonIndex).trim();
+            const expression = line.substring(colonIndex + 1).trim();
+            
+            if (!fieldName || !expression) {
+                return { 
+                    success: false, 
+                    message: `第${i+1}个公式不完整` 
+                };
+            }
+            
+            if (!isValidFieldName(fieldName)) {
+                return { 
+                    success: false, 
+                    message: `字段名 "${fieldName}" 格式不正确` 
+                };
+            }
+            
+            // 允许重复定义，直接添加
             formulas.push({ fieldName, expression });
         }
         
         return { success: true, data: formulas };
     }
     
-    // 解析单个公式
-    function parseFormula(line, lineNumber) {
-        const colonIndex = line.indexOf(':');
-        
-        if (colonIndex === -1) {
-            return { 
-                success: false, 
-                message: `第${lineNumber}个公式格式错误: ${line}。请使用"字段:表达式"格式` 
-            };
-        }
-        
-        const fieldName = line.substring(0, colonIndex).trim();
-        const expression = line.substring(colonIndex + 1).trim();
-        
-        // 验证字段名和表达式
-        const validation = validateFormulaComponents(fieldName, expression, lineNumber);
-        if (!validation.success) {
-            return validation;
-        }
-        
-        return { 
-            success: true, 
-            data: { fieldName, expression } 
-        };
-    }
-    
-    // 验证公式组件
-    function validateFormulaComponents(fieldName, expression, lineNumber) {
-        if (!fieldName || !expression) {
-            return { 
-                success: false, 
-                message: `第${lineNumber}个公式格式错误: 字段名或表达式不能为空` 
-            };
-        }
-        
-        // 检查字段名合法性
-        if (!isValidFieldName(fieldName)) {
-            return { 
-                success: false, 
-                message: `字段名 "${fieldName}" 格式不正确` 
-            };
-        }
-        
-        // 检查表达式语法
-        const expressionCheck = validateExpression(expression);
-        if (!expressionCheck.valid) {
-            return { 
-                success: false, 
-                message: `表达式错误: ${expressionCheck.message}` 
-            };
-        }
-        
-        return { success: true };
-    }
-    
-    // 验证字段名格式
+    // 验证字段名
     function isValidFieldName(fieldName) {
         return /^[\u4e00-\u9fff\w]+$/.test(fieldName);
     }
     
-    // 验证表达式语法
-    function validateExpression(expression) {
-        const analysis = analyzeExpression(expression);
+    // 提取表达式中的字段
+    function extractFields(expression) {
+        const fields = [];
+        const regex = /[\u4e00-\u9fff\w]+/g;
+        let match;
         
-        if (analysis.invalidChars.length > 0) {
-            return {
-                valid: false,
-                message: `包含不支持的字符: ${analysis.invalidChars.join(', ')}`
-            };
+        while ((match = regex.exec(expression)) !== null) {
+            if (!/^\d+(\.\d+)?$/.test(match[0])) {
+                fields.push(match[0]);
+            }
         }
         
-        if (analysis.fields.length === 0) {
-            return {
-                valid: false,
-                message: '表达式中未找到有效字段'
-            };
-        }
-        
-        return { valid: true };
+        return [...new Set(fields)].sort((a, b) => b.length - a.length);
     }
     
-    // 分析表达式结构
-    function analyzeExpression(expression) {
-        const tokens = tokenizeExpression(expression);
-        const fields = [];
-        const numbers = [];
-        const operators = [];
-        const invalidChars = [];
+    // 分阶段分析和排序公式
+    function analyzeAndSortFormulas(formulas, availableFields) {
+        // 将公式分组为多个阶段，每个阶段内部进行依赖排序
+        const stages = [];
+        const definedFields = new Set();
+        let currentStage = [];
         
-        tokens.forEach(token => {
-            if (token.type === 'field') {
-                fields.push(token.value);
-            } else if (token.type === 'number') {
-                numbers.push(token.value);
-            } else if (token.type === 'operator') {
-                operators.push(token.value);
-            } else if (token.type === 'invalid') {
-                invalidChars.push(token.value);
+        formulas.forEach(formula => {
+            // 如果当前字段已在之前阶段定义，开启新阶段
+            if (definedFields.has(formula.fieldName)) {
+                if (currentStage.length > 0) {
+                    stages.push(currentStage);
+                    currentStage = [];
+                }
             }
+            
+            currentStage.push(formula);
+            definedFields.add(formula.fieldName);
         });
         
-        return {
-            fields: [...new Set(fields)],
-            numbers: [...new Set(numbers)],
-            operators,
-            invalidChars: [...new Set(invalidChars)]
+        // 添加最后一个阶段
+        if (currentStage.length > 0) {
+            stages.push(currentStage);
+        }
+        
+        // 对每个阶段进行独立的依赖分析和排序
+        const allSortedFormulas = [];
+        const allAvailableFields = new Set(availableFields);
+        
+        for (let stageIndex = 0; stageIndex < stages.length; stageIndex++) {
+            const stage = stages[stageIndex];
+            const stageResult = analyzeStage(stage, Array.from(allAvailableFields));
+            
+            if (!stageResult.success) {
+                return stageResult;
+            }
+            
+            // 添加排序后的公式
+            allSortedFormulas.push(...stageResult.sortedFormulas);
+            
+            // 更新可用字段集合
+            stageResult.sortedFormulas.forEach(f => {
+                allAvailableFields.add(f.fieldName);
+            });
+        }
+        
+        return { 
+            success: true, 
+            sortedFormulas: allSortedFormulas,
+            stages: stages.length
         };
     }
     
-    // 标记化表达式
-    function tokenizeExpression(expression) {
-        const tokens = [];
-        let i = 0;
-        const chars = Array.from(expression);
-        
-        while (i < chars.length) {
-            const char = chars[i];
-            
-            if (char === ' ') {
-                i++;
-                continue;
-            }
-            
-            if (OPERATORS.includes(char)) {
-                tokens.push({ type: 'operator', value: char });
-                i++;
-            } else if (isDigitStart(chars, i)) {
-                const numberResult = extractNumber(chars, i);
-                tokens.push({ type: 'number', value: numberResult.value });
-                i = numberResult.nextIndex;
-            } else if (isFieldStart(char)) {
-                const fieldResult = extractField(chars, i);
-                tokens.push({ type: 'field', value: fieldResult.value });
-                i = fieldResult.nextIndex;
-            } else {
-                tokens.push({ type: 'invalid', value: char });
-                i++;
-            }
-        }
-        
-        return tokens;
-    }
-    
-    // 判断是否为数字开始
-    function isDigitStart(chars, index) {
-        const char = chars[index];
-        return /\d/.test(char) || (char === '.' && index + 1 < chars.length && /\d/.test(chars[index + 1]));
-    }
-    
-    // 判断是否为字段开始
-    function isFieldStart(char) {
-        return /[\u4e00-\u9fff\w]/.test(char) && !/\d/.test(char);
-    }
-    
-    // 提取数字
-    function extractNumber(chars, startIndex) {
-        let i = startIndex;
-        let number = '';
-        let hasDecimalPoint = false;
-        
-        while (i < chars.length) {
-            const char = chars[i];
-            
-            if (/\d/.test(char)) {
-                number += char;
-                i++;
-            } else if (char === '.' && !hasDecimalPoint) {
-                hasDecimalPoint = true;
-                number += char;
-                i++;
-            } else {
-                break;
-            }
-        }
-        
-        return { value: number, nextIndex: i };
-    }
-    
-    // 提取字段名
-    function extractField(chars, startIndex) {
-        let i = startIndex;
-        let field = '';
-        
-        while (i < chars.length) {
-            const char = chars[i];
-            
-            if (isFieldChar(char)) {
-                field += char;
-                i++;
-            } else {
-                break;
-            }
-        }
-        
-        return { value: field, nextIndex: i };
-    }
-    
-    // 判断是否为字段字符
-    function isFieldChar(char) {
-        return /[\u4e00-\u9fff\w]/.test(char);
-    }
-    
-    // 提取表达式中的字段
-    function extractFields(expression) {
-        const analysis = analyzeExpression(expression);
-        return analysis.fields.sort((a, b) => b.length - a.length);
-    }
-    
-    // 分析公式依赖并排序
-    function analyzeAndSortFormulas(formulas, availableFields) {
-        // 构建依赖关系
+    // 分析单个阶段
+    function analyzeStage(formulas, availableFields) {
         const dependencies = {};
         const errors = [];
         const formulaMap = {};
         
-        // 首先建立公式映射
         formulas.forEach(({ fieldName, expression }) => {
             formulaMap[fieldName] = expression;
         });
         
-        // 分析每个公式的依赖
         formulas.forEach(({ fieldName, expression }) => {
             const usedFields = extractFields(expression);
             const missingFields = [];
             
-            // 检查字段是否存在
             usedFields.forEach(field => {
                 if (!availableFields.includes(field) && !formulaMap[field]) {
                     missingFields.push(field);
@@ -280,10 +191,12 @@ const JiexiModule = (function() {
             });
             
             if (missingFields.length > 0) {
-                errors.push(`字段 "${fieldName}": 缺少字段 ${missingFields.join(', ')}`);
+                errors.push(`字段 "${fieldName}": 缺少 ${missingFields.join(', ')}`);
             } else {
-                // 只记录对其他公式字段的依赖
-                dependencies[fieldName] = usedFields.filter(field => formulaMap[field]);
+                // 只记录对本阶段内其他公式的依赖
+                dependencies[fieldName] = usedFields.filter(field => 
+                    formulaMap[field] && field !== fieldName
+                );
             }
         });
         
@@ -291,22 +204,20 @@ const JiexiModule = (function() {
             return { success: false, errors };
         }
         
-        // 检查循环依赖
+        // 检查循环依赖（不包括自引用）
         const circularCheck = checkCircularDependency(dependencies);
         if (circularCheck.hasCircular) {
             return { 
                 success: false, 
-                errors: [`发现循环依赖: ${circularCheck.cycle.join(' → ')}`]
+                errors: [`循环依赖: ${circularCheck.cycle.join(' → ')}`]
             };
         }
         
-        // 拓扑排序
         const sortedFormulas = topologicalSort(formulas, dependencies);
         
         return { 
             success: true, 
-            sortedFormulas,
-            dependencies
+            sortedFormulas
         };
     }
     
@@ -319,18 +230,15 @@ const JiexiModule = (function() {
             if (visited.has(fieldName)) return;
             visited.add(fieldName);
             
-            // 先访问依赖
             const deps = dependencies[fieldName] || [];
             deps.forEach(dep => visit(dep));
             
-            // 再添加自己
             const formula = formulas.find(f => f.fieldName === fieldName);
             if (formula) {
                 sorted.push(formula);
             }
         }
         
-        // 访问所有公式
         formulas.forEach(({ fieldName }) => visit(fieldName));
         return sorted;
     }
@@ -376,7 +284,7 @@ const JiexiModule = (function() {
         return { hasCircular: false };
     }
     
-    // 创建字段替换映射
+    // 创建字段映射
     function createFieldMapping(expression, context) {
         const fields = extractFields(expression);
         const mapping = {};
@@ -388,7 +296,6 @@ const JiexiModule = (function() {
                 continue;
             }
             
-            // 处理数值转换
             let numValue;
             if (typeof value === 'number') {
                 numValue = value;
@@ -406,81 +313,37 @@ const JiexiModule = (function() {
         return mapping;
     }
     
-    // 精确替换字段为数值
+    // 精确替换字段
     function replaceFields(expression, fieldMapping) {
         if (!expression || Object.keys(fieldMapping).length === 0) {
             return expression;
         }
         
-        return replaceByPosition(expression, fieldMapping);
-    }
-    
-    // 基于位置的精确替换算法
-    function replaceByPosition(expression, fieldMapping) {
         const fields = Object.keys(fieldMapping).sort((a, b) => b.length - a.length);
         let result = expression;
         
-        const placeholders = {};
-        let placeholderIndex = 0;
-        
-        // 第一步：将字段替换为占位符
-        fields.forEach(field => {
-            const placeholder = `__PLACEHOLDER_${placeholderIndex++}__`;
-            placeholders[placeholder] = `(${fieldMapping[field]})`;
-            result = preciseReplace(result, field, placeholder);
-        });
-        
-        // 第二步：将占位符替换为数值
-        Object.entries(placeholders).forEach(([placeholder, value]) => {
-            result = result.replace(new RegExp(placeholder, 'g'), value);
-        });
-        
-        return result;
-    }
-    
-    // 精确匹配替换
-    function preciseReplace(text, fieldName, replacement) {
-        let result = text;
-        let startIndex = 0;
-        
-        while (true) {
-            const index = result.indexOf(fieldName, startIndex);
-            if (index === -1) break;
-            
-            const endIndex = index + fieldName.length;
-            
-            const beforeChar = index > 0 ? result[index - 1] : '';
-            const afterChar = endIndex < result.length ? result[endIndex] : '';
-            
-            const isValidBefore = !beforeChar || !isFieldChar(beforeChar);
-            const isValidAfter = !afterChar || !isFieldChar(afterChar);
-            
-            if (isValidBefore && isValidAfter) {
-                result = result.substring(0, index) + replacement + result.substring(endIndex);
-                startIndex = index + replacement.length;
-            } else {
-                startIndex = endIndex;
-            }
+        for (const field of fields) {
+            const regex = new RegExp(`(?<![\\u4e00-\\u9fff\\w])${field}(?![\\u4e00-\\u9fff\\w])`, 'g');
+            result = result.replace(regex, `(${fieldMapping[field]})`);
         }
         
         return result;
     }
     
-    // 验证最终表达式安全性
-    function isSafeExpression(expression) {
-        return /^[\d\s+\-*/().]+$/.test(expression);
-    }
-    
-    // 表达式求值
+    // 安全求值
     function safeEvaluate(expression) {
         try {
-            if (!isSafeExpression(expression)) {
+            if (!/^[\d\s+\-*/().]+$/.test(expression)) {
                 return { success: false, error: '表达式包含不安全字符' };
             }
             
-            if (!isValidSyntax(expression)) {
-                return { success: false, error: '表达式语法错误' };
+            let count = 0;
+            for (const char of expression) {
+                if (char === '(') count++;
+                if (char === ')') count--;
+                if (count < 0) return { success: false, error: '括号不匹配' };
             }
+            if (count !== 0) return { success: false, error: '括号不匹配' };
             
             const result = Function('"use strict"; return (' + expression + ')')();
             
@@ -495,18 +358,8 @@ const JiexiModule = (function() {
         }
     }
     
-    // 验证基本语法
-    function isValidSyntax(expression) {
-        let parenthesesCount = 0;
-        for (const char of expression) {
-            if (char === '(') parenthesesCount++;
-            if (char === ')') parenthesesCount--;
-            if (parenthesesCount < 0) return false;
-        }
-        return parenthesesCount === 0;
-    }
-    
     return {
+        parseGroupedFormulas,
         parseFormulas,
         analyzeAndSortFormulas,
         extractFields,
