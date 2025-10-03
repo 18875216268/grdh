@@ -1,0 +1,403 @@
+/* ==========================================
+   软件库前端样式 - 核心样式（已模块化）
+   导航样式 → dh/dh.css
+   投稿样式 → tg/tg.css
+   ========================================== */
+
+/* 全局变量 - 与后台完全一致 */
+:root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #242424;
+    --bg-tertiary: #2d2d2d;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --accent: #4a9eff;
+    --accent-hover: #357abd;
+    --success: #4caf50;
+    --error: #f44336;
+    --warning: #ff9800;
+    --border: #3a3a3a;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --transition: 0.2s ease;
+}
+
+/* 基础重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar { 
+    width: 5px; 
+    height: 5px; 
+}
+
+::-webkit-scrollbar-track { 
+    background: rgba(255, 255, 255, 0.02); 
+    border-radius: 10px; 
+}
+
+::-webkit-scrollbar-thumb { 
+    background: rgba(255, 255, 255, 0.08); 
+    border-radius: 10px; 
+}
+
+::-webkit-scrollbar-thumb:hover { 
+    background: rgba(255, 255, 255, 0.12); 
+}
+
+/* ==========================================
+   顶部导航栏
+   ========================================== */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 100;
+    box-shadow: 0 2px 10px var(--shadow);
+    gap: 10px;
+}
+
+.site-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.header-search {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0 5px;
+}
+
+.search-input {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 6px 12px;
+    width: 200px;
+    font-size: 14px;
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.search-btn,
+.admin-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+    border-radius: 50%;
+}
+
+.search-btn:hover,
+.admin-btn:hover {
+    color: var(--accent);
+    background-color: rgba(74, 158, 255, 0.1);
+}
+
+.admin-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+}
+
+/* ==========================================
+   主容器
+   ========================================== */
+.main-container {
+    display: flex;
+    margin-top: 60px;
+    height: calc(100vh - 60px);
+}
+
+/* ==========================================
+   内容区
+   ========================================== */
+.content {
+    flex: 1;
+    margin-left: 170px;
+    padding: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+}
+
+.resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.loading-placeholder,
+.empty-placeholder {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* ==========================================
+   资源卡片 - 优化后的4行布局
+   ========================================== */
+.resource-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    transition: all var(--transition);
+    position: relative;
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.resource-card:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+    border-color: rgba(74, 158, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+/* 第一行：状态+标题+访问按钮 */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.card-title-wrapper {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+.status-icon {
+    font-size: 12px;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.status-icon.valid {
+    color: var(--success);
+}
+
+.status-icon.invalid {
+    color: var(--error);
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* 访问按钮样式 */
+.visit-btn {
+    padding: 4px 10px;
+    background: rgba(74, 158, 255, 0.15);
+    color: var(--accent);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all var(--transition);
+    white-space: nowrap;
+}
+
+.visit-btn:hover {
+    background: rgba(74, 158, 255, 0.25);
+}
+
+/* 第二行：网盘类型+日期 */
+.card-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.card-tag {
+    background-color: var(--bg-tertiary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.card-date {
+    opacity: 0.8;
+}
+
+/* 第三行：链接展示（单行横向滚动） */
+.card-url {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: monospace;
+    font-size: 13px;
+    color: var(--accent);
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 42px;
+    line-height: 1.6;
+    flex-shrink: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.card-url::-webkit-scrollbar {
+    display: none;
+}
+
+/* 第四行：投稿人+访问次数 */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-secondary);
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* ==========================================
+   Toast通知 - 与后台一致
+   ========================================== */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 2000;
+}
+
+.toast {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 15px 20px;
+    margin-top: 10px;
+    min-width: 300px;
+    animation: slideInFromBottom 0.3s ease;
+    color: var(--text-primary);
+}
+
+.toast.success {
+    border-left: 4px solid var(--success);
+}
+
+.toast.error {
+    border-left: 4px solid var(--error);
+}
+
+.toast.warning {
+    border-left: 4px solid var(--warning);
+}
+
+@keyframes slideInFromBottom {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ==========================================
+   悬浮提示
+   ========================================== */
+.tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    max-width: 300px;
+    word-break: break-all;
+    white-space: pre-line;
+}
+
+.tooltip.show {
+    opacity: 1;
+    visibility: visible;
+}

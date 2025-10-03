@@ -1,0 +1,128 @@
+/* ==========================================
+   导航模块样式
+   ========================================== */
+
+/* 侧边栏主容器 */
+.sidebar {
+    width: 170px;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    left: 0;
+    top: 60px;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 顶部固定区域 */
+.sidebar-header {
+    flex-shrink: 0;
+    padding: 5px 0;
+    position: relative;
+}
+
+.sidebar-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
+/* 中间内容区域（可滚动） */
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 5px 0;
+}
+
+.sidebar-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+/* 底部固定区域 */
+.sidebar-footer {
+    flex-shrink: 0;
+    padding: 5px 0;
+    position: relative;
+}
+
+.sidebar-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
+/* 导航列表 */
+.nav-list {
+    list-style: none;
+    padding: 0;
+}
+
+/* 导航项 */
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: all var(--transition);
+    border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.nav-item.active {
+    background-color: var(--bg-tertiary);
+    border-left-color: var(--accent);
+}
+
+/* 导航图标 */
+.nav-icon {
+    font-size: 18px;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+/* 导航文字 */
+.nav-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    transition: color var(--transition);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nav-item.active .nav-text,
+.nav-item:hover .nav-text {
+    color: var(--text-primary);
+}
+
+/* 加载状态 */
+.loading-nav {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
