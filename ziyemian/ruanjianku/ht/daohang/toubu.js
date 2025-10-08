@@ -268,10 +268,6 @@ const domainModule = {
     },
 
     async delete(key) {
-        if (!confirm('确定删除这个网盘配置？注意：相关的专属过滤规则也会被删除。')) {
-            return;
-        }
-        
         await firebase.deleteXinxiNode(key);
         
         const remainingNetdisks = Object.entries(firebase.xinxiData)

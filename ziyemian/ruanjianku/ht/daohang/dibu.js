@@ -263,10 +263,6 @@ const filterModule = {
     },
 
     async delete(key) {
-        if (!confirm('确定删除这个网盘的专属过滤规则？')) {
-            return;
-        }
-        
         await firebase.deleteXinxiNode(`${key}/guize`);
     }
 };
@@ -392,9 +388,6 @@ const statusModule = {
     },
     
     async delete(key) {
-        if (!confirm('确定删除这个链接？')) {
-            return;
-        }
         await firebase.deleteRuanjiankuNode(key);
     }
 };

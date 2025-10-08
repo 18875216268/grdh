@@ -123,7 +123,7 @@ const firebase = {
         try {
             await window.firebaseDB.remove(window.firebaseDB.ref(window.firebaseDB.database, `xinxi/${path}`));
             utils.updateConnectionStatus('connected', '已连接');
-            Toast.show('删除成功', 'success');
+            Toast.show('删除成功！', 'success');
             return true;
         } catch (error) {
             console.error('删除失败:', error);
@@ -173,7 +173,7 @@ const firebase = {
         try {
             await window.firebaseDB.remove(window.firebaseDB.ref(window.firebaseDB.database, `ruanjianku/${path}`));
             utils.updateConnectionStatus('connected', '已连接');
-            Toast.show('删除成功', 'success');
+            Toast.show('删除成功！', 'success');
             return true;
         } catch (error) {
             console.error('删除失败:', error);
