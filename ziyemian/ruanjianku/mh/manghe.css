@@ -1,0 +1,410 @@
+/* ==========================================
+   盲盒模块样式 - 九宫格老虎机版
+   ========================================== */
+
+/* 弹窗遮罩 */
+.blindbox-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1500;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.blindbox-modal.show {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 弹窗容器 */
+.blindbox-content {
+    background: transparent;
+    width: 100%;
+    max-width: 650px;
+    height: 85vh;
+    max-height: 750px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* 关闭按钮 */
+.blindbox-close {
+    position: fixed;
+    top: 25px;
+    right: 30px;
+    background: none;
+    border: none;
+    font-size: 32px;
+    font-weight: 300;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+    z-index: 10;
+    padding: 5px;
+    line-height: 1;
+}
+
+.blindbox-close:hover {
+    color: #4a9eff;
+    transform: scale(1.15);
+}
+
+/* 弹窗主体 */
+.blindbox-body {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    gap: 10px;
+}
+
+/* 九宫格场景容器 */
+.box-scene {
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.box-scene.hide {
+    display: none;
+}
+
+/* 九宫格容器 */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 25px;
+    background: rgba(26, 26, 26, 0.8);
+    border-radius: 16px;
+    border: 2px solid rgba(74, 158, 255, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* 九宫格单元 */
+.grid-item {
+    width: 85px;
+    height: 85px;
+    perspective: 1000px;
+    position: relative;
+}
+
+/* 中心灯泡 */
+.grid-item.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(74, 158, 255, 0.5);
+}
+
+.bulb {
+    font-size: 42px;
+    animation: bulbGlow 2s ease-in-out infinite;
+}
+
+@keyframes bulbGlow {
+    0%, 100% { 
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% { 
+        transform: scale(1.1);
+        filter: brightness(1.3);
+    }
+}
+
+/* 问号卡片 */
+.grid-item:not(.center) {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+    transform-style: preserve-3d;
+}
+
+.grid-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    font-weight: 700;
+    backface-visibility: hidden;
+    border-radius: 10px;
+    transition: transform 0.6s ease;
+}
+
+.grid-face.front {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.grid-face.back {
+    background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+    color: white;
+    transform: rotateY(180deg);
+    font-size: 13px;
+    padding: 10px;
+    word-break: break-word;
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* 高亮状态 - 金色发光 */
+.grid-item.active {
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.15);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.5), inset 0 0 15px rgba(255, 215, 0, 0.3);
+    transform: scale(1.05);
+}
+
+/* 翻转状态 */
+.grid-item.flip {
+    transform: rotateY(180deg);
+}
+
+/* 抽取按钮 */
+.twist-btn {
+    padding: 12px 36px;
+    background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+    color: white;
+    border: 1px solid rgba(74, 158, 255, 0.3);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(74, 158, 255, 0.3);
+    letter-spacing: 1px;
+}
+
+.twist-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74, 158, 255, 0.5);
+    background: linear-gradient(135deg, #5ba9ff 0%, #4589cd 100%);
+}
+
+.twist-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.twist-btn.hide {
+    display: none;
+}
+
+/* 结果卡片 */
+.result-card {
+    width: 90%;
+    max-width: 520px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    animation: cardFadeIn 0.5s ease;
+}
+
+.result-card.show {
+    display: flex;
+}
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* 结果卡片头部 */
+.result-header {
+    text-align: center;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+}
+
+.result-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+/* 信息网格 */
+.result-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+
+.result-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.result-info-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.result-info-value {
+    font-size: 15px;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* URL展示 */
+.result-url {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    word-break: break-all;
+    max-height: 85px;
+    overflow-y: auto;
+}
+
+.result-url::-webkit-scrollbar {
+    width: 6px;
+}
+
+.result-url::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.result-url::-webkit-scrollbar-thumb {
+    background: rgba(74, 158, 255, 0.5);
+    border-radius: 3px;
+}
+
+/* 按钮组 */
+.result-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.result-btn {
+    flex: 1;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.visit-result-btn {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
+}
+
+.visit-result-btn:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 6px 16px rgba(74, 158, 255, 0.4);
+}
+
+.retry-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+.retry-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .blindbox-close {
+        top: 12px;
+        right: 18px;
+        font-size: 28px;
+    }
+    
+    .box-scene {
+        max-width: 95%;
+    }
+    
+    .grid-container {
+        gap: 8px;
+        padding: 18px;
+    }
+    
+    .grid-item {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .bulb {
+        font-size: 32px;
+    }
+    
+    .grid-face.front {
+        font-size: 32px;
+    }
+    
+    .grid-face.back {
+        font-size: 11px;
+        padding: 8px;
+    }
+    
+    .twist-btn {
+        padding: 10px 30px;
+        font-size: 14px;
+    }
+    
+    .result-card {
+        max-width: 95%;
+        padding: 24px;
+    }
+    
+    .result-title {
+        font-size: 19px;
+    }
+    
+    .result-info {
+        grid-template-columns: 1fr;
+    }
+}

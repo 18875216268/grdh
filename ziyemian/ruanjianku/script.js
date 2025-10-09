@@ -18,6 +18,7 @@ const App = (() => {
             window.FirebaseModule.setDataChangeCallback(refresh);
             window.NavigationModule.init();
             window.ContributeModule.init();
+            window.BlindBoxModule.init();
             bindEvents();
             refresh();
         } catch (error) {
