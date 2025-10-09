@@ -30,16 +30,6 @@ function initEventListeners() {
             const section = e.target.closest('.admin-nav-item').dataset.section;
             switchSection(section);
         }
-        
-        if (e.target.classList.contains('modal')) {
-            if (e.target.id === 'addNetdiskModal') {
-                domainModule.hideModal();
-            } else if (e.target.id === 'addRuleModal') {
-                filterModule.hideModal();
-            } else if (e.target.id === 'addLinkModal') {
-                linksModule.hideModal();
-            }
-        }
     });
 }
 
