@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+    
+    <!-- 主域名首页 -->
+    <url>
+        <loc>https://www.quruanpu.cn/</loc>
+        <lastmod>2025-10-10</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+    
+    <!-- 软件库主页（核心页面） -->
+    <url>
+        <loc>https://www.quruanpu.cn/ziyemian/ruanjianku/</loc>
+        <lastmod>2025-10-10</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+        <image:image>
+            <image:loc>https://www.quruanpu.cn/ziyemian/ruanjianku/logo.png</image:loc>
+            <image:title>去软谱 - 破解软件库</image:title>
+        </image:image>
+    </url>
+    
+    <!-- 软件库index.html（备用URL） -->
+    <url>
+        <loc>https://www.quruanpu.cn/ziyemian/ruanjianku/index.html</loc>
+        <lastmod>2025-10-10</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+    
+</urlset>

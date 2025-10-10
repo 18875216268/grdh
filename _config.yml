@@ -1,0 +1,19 @@
+# GitHub Pages配置
+title: 趣软铺 - 破解软件库
+description: 全网最全的破解软件、绿化软件、开源软件分享平台，支持蓝奏云、夸克网盘、小飞机网盘免费下载
+url: "https://www.quruanpu.cn"
+baseurl: ""
+
+# SEO优化
+lang: zh-CN
+timezone: Asia/Shanghai
+
+# 插件（GitHub Pages自动支持）
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# 排除文件
+exclude:
+  - README.md
+  - .gitignore

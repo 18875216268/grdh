@@ -1,0 +1,44 @@
+# 趣软铺(quruanpu.cn) - 破解软件库 Robots.txt
+# 允许所有搜索引擎爬取
+
+User-agent: *
+Allow: /
+
+# 允许爬取关键资源
+Allow: /ziyemian/ruanjianku/
+Allow: /ziyemian/ruanjianku/index.html
+Allow: /ziyemian/ruanjianku/logo.png
+
+# 禁止爬取内部脚本（减少爬虫负担，提高核心页面权重）
+Disallow: /ziyemian/ruanjianku/firebase.js
+Disallow: /ziyemian/ruanjianku/dh/
+Disallow: /ziyemian/ruanjianku/tg/
+Disallow: /ziyemian/ruanjianku/mh/
+
+# 网站地图位置
+Sitemap: https://www.quruanpu.cn/sitemap.xml
+
+# 爬取延迟（避免服务器压力）
+Crawl-delay: 1
+
+# Google搜索引擎优化
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# 百度搜索引擎优化
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 1
+
+# 360搜索
+User-agent: 360Spider
+Allow: /
+
+# 搜狗搜索
+User-agent: Sogou web spider
+Allow: /
+
+# 必应搜索
+User-agent: bingbot
+Allow: /
