@@ -26,19 +26,4 @@ User-agent: Googlebot
 Allow: /
 Crawl-delay: 0
 
-# 百度搜索引擎优化
-User-agent: Baiduspider
-Allow: /
-Crawl-delay: 1
-
-# 360搜索
-User-agent: 360Spider
-Allow: /
-
-# 搜狗搜索
-User-agent: Sogou web spider
-Allow: /
-
-# 必应搜索
-User-agent: bingbot
 Allow: /
