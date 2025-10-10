@@ -214,7 +214,7 @@
     display: none;
 }
 
-/* 结果卡片 - 紧凑列表式布局 */
+/* 结果卡片 */
 .result-card {
     width: 90%;
     max-width: 360px;
@@ -224,7 +224,7 @@
     padding: 20px;
     display: none;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     animation: cardFadeIn 0.5s ease;
 }
@@ -244,66 +244,56 @@
     }
 }
 
-/* 资源名称 */
-.result-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    word-break: break-word;
-    line-height: 1.4;
-    margin: 0 0 8px 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
+/* 信息表格 */
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-/* 信息行 */
-.result-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
+.result-table tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.result-table tr:last-child {
+    border-bottom: none;
+}
+
+/* 所有单元格统一样式 */
+.result-table td {
+    padding: 10px 12px;
     font-size: 13px;
     line-height: 1.5;
-}
-
-.result-label {
-    color: var(--text-secondary);
-    flex-shrink: 0;
-    min-width: 50px;
-}
-
-.result-value {
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: var(--text-primary);
-    font-weight: 500;
-    flex: 1;
-    word-break: break-all;
-}
-
-/* URL特殊处理 - 单行横向滚动 */
-.result-value.result-url {
-    white-space: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
-    scrollbar-width: thin;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-.result-value.result-url::-webkit-scrollbar {
-    height: 4px;
+.result-table td::-webkit-scrollbar {
+    display: none;
 }
 
-.result-value.result-url::-webkit-scrollbar-track {
-    background: transparent;
+/* 标签列仅控制宽度和背景 */
+.table-label {
+    width: 80px;
+    min-width: 80px;
+    background: rgba(255, 255, 255, 0.02);
 }
 
-.result-value.result-url::-webkit-scrollbar-thumb {
-    background: rgba(74, 158, 255, 0.3);
-    border-radius: 2px;
+/* 值列仅控制最大宽度 */
+.table-value {
+    max-width: 0;
 }
 
 /* 按钮组 */
 .result-actions {
     display: flex;
     gap: 10px;
-    margin-top: 6px;
+    margin-top: 4px;
 }
 
 .result-btn {
@@ -383,15 +373,13 @@
         padding: 18px;
     }
     
-    .result-title {
-        font-size: 16px;
-    }
-    
-    .result-item {
+    .result-table td {
+        padding: 8px 10px;
         font-size: 12px;
     }
     
-    .result-label {
-        min-width: 45px;
+    .table-label {
+        width: 70px;
+        min-width: 70px;
     }
 }
