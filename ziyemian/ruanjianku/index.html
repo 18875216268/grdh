@@ -168,30 +168,25 @@
                 <!-- 抽取按钮 -->
                 <button class="twist-btn" id="twistBtn">随机抽取</button>
                 
-                <!-- 结果卡片 -->
+                <!-- 结果卡片 - 紧凑列表式布局 -->
                 <div class="result-card" id="resultCard">
-                    <div class="result-header">
-                        <h4 class="result-title" id="resultTitle">资源名称</h4>
+                    <h3 class="result-title" id="resultTitle">资源名称</h3>
+                    <div class="result-item">
+                        <span class="result-label">投稿：</span>
+                        <span class="result-value" id="resultAuthor">-</span>
                     </div>
-                    <div class="result-info">
-                        <div class="result-info-item">
-                            <span class="result-info-label">网盘类型</span>
-                            <span class="result-info-value" id="resultType">-</span>
-                        </div>
-                        <div class="result-info-item">
-                            <span class="result-info-label">发布日期</span>
-                            <span class="result-info-value" id="resultDate">-</span>
-                        </div>
-                        <div class="result-info-item">
-                            <span class="result-info-label">投稿人</span>
-                            <span class="result-info-value" id="resultAuthor">-</span>
-                        </div>
-                        <div class="result-info-item">
-                            <span class="result-info-label">访问次数</span>
-                            <span class="result-info-value" id="resultVisits">-</span>
-                        </div>
+                    <div class="result-item">
+                        <span class="result-label">发布：</span>
+                        <span class="result-value" id="resultDate">-</span>
                     </div>
-                    <div class="result-url" id="resultUrl">-</div>
+                    <div class="result-item">
+                        <span class="result-label">网盘：</span>
+                        <span class="result-value" id="resultType">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">地址：</span>
+                        <span class="result-value result-url" id="resultUrl">-</span>
+                    </div>
                     <div class="result-actions">
                         <button class="result-btn retry-btn" id="retryBtn">再抽一次</button>
                         <button class="result-btn visit-result-btn" id="visitResultBtn">立即访问</button>

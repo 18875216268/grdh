@@ -148,16 +148,17 @@ const BlindBoxModule = (() => {
         return list[Math.floor(Math.random() * list.length)];
     }
     
-    // 显示结果卡片
+    // 显示结果
     function displayResult(r) {
         resultCard.dataset.id = r.id;
         resultCard.dataset.url = r.url;
         
+        const date = new Date(r.time).toISOString().split('T')[0].replace(/-/g, '/');
+        
         document.getElementById('resultTitle').textContent = r.name;
-        document.getElementById('resultType').textContent = r.type;
-        document.getElementById('resultDate').textContent = new Date(r.time).toISOString().split('T')[0].replace(/-/g, '/');
         document.getElementById('resultAuthor').textContent = r.tougao;
-        document.getElementById('resultVisits').textContent = r.visits + '次';
+        document.getElementById('resultDate').textContent = date;
+        document.getElementById('resultType').textContent = r.type;
         document.getElementById('resultUrl').textContent = r.url;
         
         resultCard.classList.add('show');

@@ -214,17 +214,17 @@
     display: none;
 }
 
-/* 结果卡片 */
+/* 结果卡片 - 紧凑列表式布局 */
 .result-card {
     width: 90%;
-    max-width: 520px;
+    max-width: 360px;
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 28px;
+    padding: 20px;
     display: none;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     animation: cardFadeIn 0.5s ease;
 }
@@ -244,91 +244,74 @@
     }
 }
 
-/* 结果卡片头部 */
-.result-header {
-    text-align: center;
-    padding-bottom: 18px;
-    border-bottom: 1px solid var(--border);
-}
-
+/* 资源名称 */
 .result-title {
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--text-primary);
     word-break: break-word;
     line-height: 1.4;
+    margin: 0 0 8px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
 }
 
-/* 信息网格 */
-.result-info {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-}
-
-.result-info-item {
+/* 信息行 */
+.result-item {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 14px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-}
-
-.result-info-label {
-    font-size: 11px;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.result-info-value {
-    font-size: 15px;
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-/* URL展示 */
-.result-url {
-    background: var(--bg-primary);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px;
-    font-family: 'Courier New', monospace;
+    align-items: flex-start;
+    gap: 8px;
     font-size: 13px;
-    color: var(--accent);
+    line-height: 1.5;
+}
+
+.result-label {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    min-width: 50px;
+}
+
+.result-value {
+    color: var(--text-primary);
+    font-weight: 500;
+    flex: 1;
     word-break: break-all;
-    max-height: 85px;
-    overflow-y: auto;
 }
 
-.result-url::-webkit-scrollbar {
-    width: 6px;
+/* URL特殊处理 - 单行横向滚动 */
+.result-value.result-url {
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
 }
 
-.result-url::-webkit-scrollbar-track {
+.result-value.result-url::-webkit-scrollbar {
+    height: 4px;
+}
+
+.result-value.result-url::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.result-url::-webkit-scrollbar-thumb {
-    background: rgba(74, 158, 255, 0.5);
-    border-radius: 3px;
+.result-value.result-url::-webkit-scrollbar-thumb {
+    background: rgba(74, 158, 255, 0.3);
+    border-radius: 2px;
 }
 
 /* 按钮组 */
 .result-actions {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     margin-top: 6px;
 }
 
 .result-btn {
     flex: 1;
-    padding: 14px 24px;
+    padding: 8px 18px;
     border: none;
     border-radius: 8px;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -397,14 +380,18 @@
     
     .result-card {
         max-width: 95%;
-        padding: 24px;
+        padding: 18px;
     }
     
     .result-title {
-        font-size: 19px;
+        font-size: 16px;
     }
     
-    .result-info {
-        grid-template-columns: 1fr;
+    .result-item {
+        font-size: 12px;
+    }
+    
+    .result-label {
+        min-width: 45px;
     }
 }
