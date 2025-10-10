@@ -18,7 +18,7 @@
         <priority>1.0</priority>
         <image:image>
             <image:loc>https://www.quruanpu.cn/ziyemian/ruanjianku/logo.png</image:loc>
-            <image:title>去软谱 - 破解软件库</image:title>
+            <image:title>趣软铺 - 破解软件库</image:title>
         </image:image>
     </url>
     
@@ -30,4 +30,5 @@
         <priority>0.9</priority>
     </url>
     
+
 </urlset>
