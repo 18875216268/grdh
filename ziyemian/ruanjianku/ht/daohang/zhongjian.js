@@ -3,26 +3,25 @@ const zhongjianNav = {
     currentFilter: 'all',
     netdiskCategories: [],
     
-    // 初始化中间导航
     init() {
         this.generateCategories();
         this.render();
     },
     
-    // 生成网盘分类（只显示有链接的）
+    // 生成网盘分类（直接基于type字段统计）
     generateCategories() {
         this.netdiskCategories = [];
         
-        // 统计各网盘的链接数量
         const categoryCounts = {};
         let othersCount = 0;
         let totalCount = 0;
         
+        // 统计各类型的链接数量
         Object.values(firebase.ruanjiankuData).forEach(link => {
             if (link && typeof link === 'object') {
                 totalCount++;
-                const type = this.detectNetdiskType(link.url);
-                if (type === '未分类') {
+                const type = link.type || '其它网盘';
+                if (type === '其它网盘') {
                     othersCount++;
                 } else {
                     categoryCounts[type] = (categoryCounts[type] || 0) + 1;
@@ -30,7 +29,7 @@ const zhongjianNav = {
             }
         });
         
-        // 添加"全部"选项（总是显示）
+        // 添加"全部"选项
         this.netdiskCategories.push({
             key: 'all',
             name: '全部',
@@ -38,26 +37,19 @@ const zhongjianNav = {
             count: totalCount
         });
         
-        // 只添加有链接的网盘分类
-        const netdisksWithLinks = [];
-        Object.entries(firebase.xinxiData).forEach(([key, value]) => {
-            if (key !== 'tongyong' && value && typeof value === 'object' && value.name) {
-                // 检查是否有链接
-                if (categoryCounts[value.name] && categoryCounts[value.name] > 0) {
-                    netdisksWithLinks.push({
-                        key: key,
-                        name: value.name,
-                        icon: '⛅︎',  // 使用用户指定的图标
-                        xuhao: value.xuhao || 999,
-                        count: categoryCounts[value.name]
-                    });
-                }
-            }
-        });
-        
-        // 按序号排序
-        netdisksWithLinks.sort((a, b) => a.xuhao - b.xuhao);
-        this.netdiskCategories.push(...netdisksWithLinks);
+        // 添加有链接的网盘分类
+        Object.entries(firebase.xinxiData)
+            .filter(([key, value]) => key !== 'tongyong' && value && value.name)
+            .filter(([key, value]) => categoryCounts[value.name] > 0)
+            .sort((a, b) => (a[1].xuhao || 999) - (b[1].xuhao || 999))
+            .forEach(([key, value]) => {
+                this.netdiskCategories.push({
+                    key: key,
+                    name: value.name,
+                    icon: '⛅︎',
+                    count: categoryCounts[value.name]
+                });
+            });
         
         // 如果有其它网盘，添加到最后
         if (othersCount > 0) {
@@ -70,7 +62,7 @@ const zhongjianNav = {
         }
     },
     
-    // 检测网盘类型
+    // 检测网盘类型（仅用于URL输入时自动判断）
     detectNetdiskType(url) {
         const lowerUrl = url.toLowerCase();
         
@@ -85,10 +77,9 @@ const zhongjianNav = {
             }
         }
         
-        return '未分类';
+        return '其它网盘';
     },
     
-    // 渲染导航
     render() {
         const container = document.querySelector('.nav-section-middle');
         if (!container) return;
@@ -107,73 +98,74 @@ const zhongjianNav = {
             
             navItem.innerHTML = `
                 <span class="admin-nav-icon">${cat.icon}</span>
-                <span>${cat.name}</span>
-                ${cat.count > 0 ? `<span class="nav-count">${cat.count}</span>` : ''}
+                <span class="nav-text">${cat.name}</span>
+                <span class="nav-settings-icon" data-key="${cat.key}">⚙️</span>
             `;
             
-            navItem.addEventListener('click', () => {
-                this.setFilter(cat.key);
+            navItem.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('nav-settings-icon')) {
+                    this.setFilter(cat.key);
+                }
+            });
+            
+            const settingsIcon = navItem.querySelector('.nav-settings-icon');
+            settingsIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.openFilterSettings(cat.key);
             });
             
             container.appendChild(navItem);
         });
     },
     
-    // 设置过滤器
+    openFilterSettings(filterKey) {
+        if (filterKey === 'all') {
+            filterModule.edit('tongyong');
+        } else if (filterKey === 'others') {
+            Toast.show('其它网盘暂无专属过滤规则', 'warning');
+        } else {
+            filterModule.edit(filterKey);
+        }
+    },
+    
     setFilter(filter) {
         this.currentFilter = filter;
-        linksModule.searchKeyword = ''; // 重置搜索
+        linksModule.searchKeyword = '';
         document.getElementById('linksSearchInput').value = '';
         document.getElementById('linksSearchClear').style.display = 'none';
         
-        // 更新导航状态
         document.querySelectorAll('.nav-section-middle .admin-nav-item').forEach(item => {
             item.classList.toggle('active', item.dataset.filter === filter);
         });
         
-        // 更新其他导航状态
         document.querySelectorAll('.nav-section-top .admin-nav-item, .nav-section-bottom .admin-nav-item').forEach(item => {
             item.classList.remove('active');
         });
         
-        // 切换到链接管理页面
         currentSection = 'links';
         document.querySelectorAll('.content-section').forEach(sec => {
             sec.classList.toggle('active', sec.id === 'links-section');
         });
         
-        // 渲染链接
         linksModule.render();
     },
     
-    // 获取过滤后的链接
+    // 获取过滤后的链接（直接基于type字段过滤）
     getFilteredLinks() {
-        const allLinks = [];
+        const allLinks = Object.entries(firebase.ruanjiankuData)
+            .filter(([key, value]) => value && typeof value === 'object')
+            .map(([key, value]) => ({ key, ...value }));
         
-        Object.entries(firebase.ruanjiankuData).forEach(([key, value]) => {
-            if (value && typeof value === 'object') {
-                const type = this.detectNetdiskType(value.url);
-                allLinks.push({
-                    key: key,
-                    ...value,  // 包含所有字段
-                    type: type  // 添加计算出的type字段
-                });
-            }
-        });
-        
-        // 应用过滤
         if (this.currentFilter === 'all') {
             return allLinks;
-        } else if (this.currentFilter === 'others') {
-            return allLinks.filter(link => link.type === '未分类');
-        } else {
-            const category = this.netdiskCategories.find(c => c.key === this.currentFilter);
-            if (category) {
-                return allLinks.filter(link => link.type === category.name);
-            }
         }
         
-        return allLinks;
+        if (this.currentFilter === 'others') {
+            return allLinks.filter(link => !link.type || link.type === '其它网盘');
+        }
+        
+        const category = this.netdiskCategories.find(c => c.key === this.currentFilter);
+        return category ? allLinks.filter(link => link.type === category.name) : allLinks;
     }
 };
 
@@ -190,8 +182,6 @@ const linksModule = {
         if (!container) return;
         
         container.innerHTML = '';
-        
-        // 从中间导航获取过滤后的链接
         this.allLinks = zhongjianNav.getFilteredLinks();
         
         if (this.allLinks.length === 0) {
@@ -199,26 +189,19 @@ const linksModule = {
             return;
         }
         
-        // 应用搜索过滤
         this.applySearch();
     },
     
     applySearch() {
         const container = document.getElementById('linksCardsGrid');
         
-        // 使用公共搜索模块进行全字段过滤
-        this.filteredLinks = searchModule.filterItems(
-            this.allLinks, 
-            this.searchKeyword
-            // 不传递getSearchText，使用默认的getAllFieldsText
-        );
+        this.filteredLinks = searchModule.filterItems(this.allLinks, this.searchKeyword);
         
         if (this.filteredLinks.length === 0) {
             container.innerHTML = '<div class="empty-card">未找到匹配的链接</div>';
             return;
         }
         
-        // 按时间倒序排序
         this.filteredLinks.sort((a, b) => (b.time || 0) - (a.time || 0));
         
         container.innerHTML = '';
@@ -237,8 +220,17 @@ const linksModule = {
                 <div class="link-card" data-key="${link.key}">
                     <div class="link-card-header">
                         <div class="link-card-title">${link.name || '未命名'}</div>
-                        <div class="card-actions">
+                        <div class="link-card-actions">
                             <button class="btn btn-primary" onclick="linksModule.edit('${link.key}')">编辑</button>
+                            <button class="btn btn-danger" onclick="linksModule.delete('${link.key}')">删除</button>
+                            <button class="status-toggle-btn ${link.shenhe === '已审' ? 'active-reviewed' : 'active-pending'}" 
+                                onclick="linksModule.toggleStatus('${link.key}', 'shenhe')">
+                                ${link.shenhe || '已审'}
+                            </button>
+                            <button class="status-toggle-btn ${link.zhuangtai === '有效' ? 'active-valid' : 'active-invalid'}" 
+                                onclick="linksModule.toggleStatus('${link.key}', 'zhuangtai')">
+                                ${link.zhuangtai || '有效'}
+                            </button>
                         </div>
                     </div>
                     <div class="link-card-body">
@@ -246,7 +238,7 @@ const linksModule = {
                         <a href="${link.url}" target="_blank" class="link-card-url" title="${link.url}">${link.url || ''}</a>
                     </div>
                     <div class="link-card-footer">
-                        <span>${link.tougao || '木小匣'} | ${link.type} | 访问：${link.visits || 0}</span>
+                        <span>${link.tougao || '木小匣'} | ${link.type || '其它网盘'} | 访问：${link.visits || 0}</span>
                     </div>
                 </div>
             `;
@@ -269,12 +261,46 @@ const linksModule = {
             this.applySearch();
         });
     },
+    
+    // 填充类型选择框
+    populateTypeOptions() {
+        const select = document.getElementById('modalLinkType');
+        select.innerHTML = '';
+        
+        Object.entries(firebase.xinxiData)
+            .filter(([key, value]) => key !== 'tongyong' && value && value.name)
+            .sort((a, b) => (a[1].xuhao || 999) - (b[1].xuhao || 999))
+            .forEach(([key, value]) => {
+                const option = document.createElement('option');
+                option.value = value.name;
+                option.textContent = value.name;
+                select.appendChild(option);
+            });
+        
+        const otherOption = document.createElement('option');
+        otherOption.value = '其它网盘';
+        otherOption.textContent = '其它网盘';
+        select.appendChild(otherOption);
+    },
+    
+    // URL变化时自动判断类型
+    handleUrlChange() {
+        const url = document.getElementById('modalLinkUrl').value.trim();
+        if (url) {
+            const detectedType = zhongjianNav.detectNetdiskType(url);
+            document.getElementById('modalLinkType').value = detectedType;
+        }
+    },
 
     showAddModal() {
         this.currentEditKey = null;
         document.getElementById('modalLinkName').value = '';
         document.getElementById('modalLinkUrl').value = '';
         document.getElementById('modalLinkContributor').value = '';
+        
+        this.populateTypeOptions();
+        document.getElementById('modalLinkType').value = '其它网盘';
+        
         document.querySelector('#addLinkModal .modal-title').textContent = '添加新链接';
         const btn = document.getElementById('confirmLinkBtn');
         btn.textContent = '添加';
@@ -294,6 +320,10 @@ const linksModule = {
         document.getElementById('modalLinkName').value = item.name || '';
         document.getElementById('modalLinkUrl').value = item.url || '';
         document.getElementById('modalLinkContributor').value = item.tougao || '';
+        
+        this.populateTypeOptions();
+        document.getElementById('modalLinkType').value = item.type || '其它网盘';
+        
         document.querySelector('#addLinkModal .modal-title').textContent = '编辑链接';
         const btn = document.getElementById('confirmLinkBtn');
         btn.textContent = '保存';
@@ -305,13 +335,12 @@ const linksModule = {
         const name = document.getElementById('modalLinkName').value.trim();
         const url = document.getElementById('modalLinkUrl').value.trim();
         const contributor = document.getElementById('modalLinkContributor').value.trim() || '木小匣';
+        const type = document.getElementById('modalLinkType').value;
 
         if (!name || !url) {
             Toast.show('请填写网站名称和链接', 'error');
             return;
         }
-
-        const type = zhongjianNav.detectNetdiskType(url);
         
         if (this.currentEditKey) {
             const existingData = firebase.ruanjiankuData[this.currentEditKey];
@@ -346,11 +375,18 @@ const linksModule = {
         zhongjianNav.render();
     },
 
-    async delete(key) {
-        if (!confirm('确定删除这个链接？')) {
-            return;
-        }
+    async toggleStatus(key, field) {
+        const item = firebase.ruanjiankuData[key];
+        if (!item) return;
         
+        const newValue = field === 'zhuangtai' 
+            ? (item.zhuangtai === '有效' ? '无效' : '有效')
+            : (item.shenhe === '已审' ? '未审' : '已审');
+        
+        await firebase.updateRuanjiankuNode(`${key}/${field}`, newValue);
+    },
+
+    async delete(key) {
         await firebase.deleteRuanjiankuNode(key);
         zhongjianNav.generateCategories();
         zhongjianNav.render();

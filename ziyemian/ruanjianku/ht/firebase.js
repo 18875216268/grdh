@@ -91,20 +91,18 @@ const firebase = {
             
             if (currentSection === 'links') {
                 linksModule.render();
-            } else if (currentSection === 'status') {
-                statusModule.render();
             }
         }, (error) => {
             console.error('ruanjianku数据监听失败:', error);
         });
     },
     
-    async updateXinxiNode(path, value) {
+    async _updateNode(basePath, path, value) {
         utils.updateConnectionStatus('loading', '保存中...');
         
         try {
             const updates = {};
-            updates[`xinxi/${path}`] = value;
+            updates[`${basePath}/${path}`] = value;
             await window.firebaseDB.update(window.firebaseDB.ref(window.firebaseDB.database), updates);
             utils.updateConnectionStatus('connected', '已连接');
             Toast.show('保存成功', 'success');
@@ -117,11 +115,19 @@ const firebase = {
         }
     },
     
-    async deleteXinxiNode(path) {
+    updateXinxiNode(path, value) {
+        return this._updateNode('xinxi', path, value);
+    },
+    
+    updateRuanjiankuNode(path, value) {
+        return this._updateNode('ruanjianku', path, value);
+    },
+    
+    async _deleteNode(basePath, path) {
         utils.updateConnectionStatus('loading', '删除中...');
         
         try {
-            await window.firebaseDB.remove(window.firebaseDB.ref(window.firebaseDB.database, `xinxi/${path}`));
+            await window.firebaseDB.remove(window.firebaseDB.ref(window.firebaseDB.database, `${basePath}/${path}`));
             utils.updateConnectionStatus('connected', '已连接');
             Toast.show('删除成功！', 'success');
             return true;
@@ -131,6 +137,14 @@ const firebase = {
             Toast.show('删除失败，请重试', 'error');
             return false;
         }
+    },
+    
+    deleteXinxiNode(path) {
+        return this._deleteNode('xinxi', path);
+    },
+    
+    deleteRuanjiankuNode(path) {
+        return this._deleteNode('ruanjianku', path);
     },
     
     async updateXinxiOrders(orderUpdates) {
@@ -145,40 +159,6 @@ const firebase = {
         } catch (error) {
             console.error('更新序号失败:', error);
             Toast.show('排序更新失败', 'error');
-            return false;
-        }
-    },
-    
-    async updateRuanjiankuNode(path, value) {
-        utils.updateConnectionStatus('loading', '保存中...');
-        
-        try {
-            const updates = {};
-            updates[`ruanjianku/${path}`] = value;
-            await window.firebaseDB.update(window.firebaseDB.ref(window.firebaseDB.database), updates);
-            utils.updateConnectionStatus('connected', '已连接');
-            Toast.show('保存成功', 'success');
-            return true;
-        } catch (error) {
-            console.error('更新失败:', error);
-            utils.updateConnectionStatus('disconnected', '保存失败');
-            Toast.show('保存失败，请重试', 'error');
-            return false;
-        }
-    },
-    
-    async deleteRuanjiankuNode(path) {
-        utils.updateConnectionStatus('loading', '删除中...');
-        
-        try {
-            await window.firebaseDB.remove(window.firebaseDB.ref(window.firebaseDB.database, `ruanjianku/${path}`));
-            utils.updateConnectionStatus('connected', '已连接');
-            Toast.show('删除成功！', 'success');
-            return true;
-        } catch (error) {
-            console.error('删除失败:', error);
-            utils.updateConnectionStatus('disconnected', '删除失败');
-            Toast.show('删除失败，请重试', 'error');
             return false;
         }
     },

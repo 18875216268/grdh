@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>网盘管理-后台</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
     <link rel="stylesheet" href="gonggong/gg.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="tongzhi/tongzhi.css">
@@ -66,33 +67,6 @@
                 </div>
             </div>
 
-            <!-- 过滤规则管理 -->
-            <div id="filter-section" class="content-section">
-                <div class="content-header">
-                    <div class="content-header-text">
-                        <h1 class="content-title">过滤规则</h1>
-                        <p class="content-desc">管理通用过滤规则和网盘专属过滤规则</p>
-                    </div>
-                    <div class="action-group">
-                        <div class="search-box">
-                            <div class="search-wrapper">
-                                <input type="text" id="filterSearchInput" class="search-input" 
-                                    placeholder="空格代表并，逗号代表或......" 
-                                    onkeyup="filterModule.handleSearch()"
-                                    title="提示：空格分隔表示并搜索，逗号分隔表示或搜索">
-                                <span class="search-clear" onclick="filterModule.clearSearch()" id="filterSearchClear">×</span>
-                            </div>
-                        </div>
-                        <button class="add-btn" onclick="filterModule.showAddModal()">+</button>
-                    </div>
-                </div>
-                <div class="cards-container" id="filterContainer">
-                    <div class="cards-grid" id="filterCardsGrid">
-                        <div class="loading-card">加载中...</div>
-                    </div>
-                </div>
-            </div>
-
             <!-- 链接管理 -->
             <div id="links-section" class="content-section">
                 <div class="content-header">
@@ -115,32 +89,6 @@
                 </div>
                 <div class="cards-container" id="linksContainer">
                     <div class="cards-grid" id="linksCardsGrid">
-                        <div class="loading-card">加载中...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 状态管理 -->
-            <div id="status-section" class="content-section">
-                <div class="content-header">
-                    <div class="content-header-text">
-                        <h1 class="content-title">状态管理</h1>
-                        <p class="content-desc">管理链接的审核状态和有效性</p>
-                    </div>
-                    <div class="action-group">
-                        <div class="search-box">
-                            <div class="search-wrapper">
-                                <input type="text" id="statusSearchInput" class="search-input" 
-                                    placeholder="空格代表并，逗号代表或......" 
-                                    onkeyup="statusModule.handleSearch()"
-                                    title="提示：空格分隔表示并搜索，逗号分隔表示或搜索">
-                                <span class="search-clear" onclick="statusModule.clearSearch()" id="statusSearchClear">×</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="cards-container" id="statusContainer">
-                    <div class="cards-grid" id="statusCardsGrid">
                         <div class="loading-card">加载中...</div>
                     </div>
                 </div>
@@ -176,18 +124,11 @@
     <div id="addRuleModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">添加过滤规则</h3>
+                <h3 class="modal-title">过滤规则设置</h3>
                 <span class="modal-close" onclick="filterModule.hideModal()">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="form-group-numbered" id="ruleNetdiskGroup">
-                    <label class="form-label">1. 选择网盘</label>
-                    <select id="ruleNetdiskSelect" class="form-select">
-                        <option value="">请选择网盘</option>
-                    </select>
-                </div>
                 <div class="form-group-numbered">
-                    <label class="form-label">2. 过滤规则</label>
                     <div class="filter-input-group">
                         <div class="filter-input-wrapper">
                             <textarea id="ruleValidKeywords" class="form-textarea" placeholder="有效关键字&#10;&#10;输入需要保留的关键字，用逗号分隔&#10;例如：资源,下载,分享"></textarea>
@@ -200,7 +141,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="filterModule.hideModal()">取消</button>
-                <button class="btn btn-primary" id="confirmRuleBtn">添加</button>
+                <button class="btn btn-primary" id="confirmRuleBtn">保存</button>
             </div>
         </div>
     </div>
@@ -219,10 +160,16 @@
                 </div>
                 <div class="form-group-numbered">
                     <label class="form-label">2. 网站链接</label>
-                    <input type="text" id="modalLinkUrl" class="form-input" placeholder="输入完整网址，如：https://example.com">
+                    <input type="text" id="modalLinkUrl" class="form-input" placeholder="输入完整网址，如：https://example.com" oninput="linksModule.handleUrlChange()">
                 </div>
                 <div class="form-group-numbered">
-                    <label class="form-label">3. 投稿人（选填）</label>
+                    <label class="form-label">3. 网盘类型</label>
+                    <select id="modalLinkType" class="form-select">
+                        <option value="其它网盘">其它网盘</option>
+                    </select>
+                </div>
+                <div class="form-group-numbered">
+                    <label class="form-label">4. 投稿人（选填）</label>
                     <input type="text" id="modalLinkContributor" class="form-input" placeholder="输入投稿人名称，默认为：木小匣">
                 </div>
             </div>
@@ -235,6 +182,11 @@
 
     <!-- Toast容器 -->
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 刷新按钮 -->
+    <button class="refresh-btn" onclick="refreshModule.refresh()" title="刷新网盘类型">
+        <i class="ri-refresh-line"></i>
+    </button>
 
     <!-- Firebase SDK -->
     <script type="module">
