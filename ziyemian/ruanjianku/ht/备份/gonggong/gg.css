@@ -427,7 +427,7 @@ body {
     background: var(--bg-secondary);
     border-radius: 8px;
     width: 90%;
-    max-width: 450px;
+    max-width: 500px;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
@@ -531,17 +531,12 @@ body {
     color: var(--text-secondary);
 }
 
-/* 统一所有可编辑区域高度 */
-.form-textarea,
-.config-textarea,
-.rule-textarea,
-.icon-grid {
-    height: 180px;
+.form-textarea {
+    height: 140px;
     resize: none;
     line-height: 1.5;
     font-family: monospace;
     font-size: 13px;
-    overflow-y: auto;
 }
 
 .form-select {

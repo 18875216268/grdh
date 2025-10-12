@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@软件导航-后台💡</title>
+    <title>网盘管理-后台</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
     <link rel="stylesheet" href="gonggong/gg.css">
     <link rel="stylesheet" href="styles.css">
@@ -11,14 +11,14 @@
     <link rel="stylesheet" href="daohang/toubu.css">
     <link rel="stylesheet" href="daohang/zhongjian.css">
     <link rel="stylesheet" href="daohang/dibu.css">
-    <link rel="stylesheet" href="shezhi/shezhi.css">
+    <link rel="stylesheet" href="guize/guize.css">
 </head>
 <body>
     <!-- 顶部导航栏 -->
     <header class="header">
         <div class="header-left">
             <div class="status-dot loading" id="statusDot"></div>
-            <div class="site-title">@软件导航-后台💡</div>
+            <div class="site-title">网盘管理-后台</div>
         </div>
         <div class="header-right">
             <div class="search-box">
@@ -82,39 +82,13 @@
                     <label class="form-label">2. 图标</label>
                     <div class="icon-grid" id="iconGrid"></div>
                 </div>
+                <div class="form-group-numbered">
+                    <label class="form-label">3. 配置</label>
+                    <textarea id="modalNavConfig" class="form-textarea" placeholder="输入配置，格式示例：&#10;百度网盘:baidu,pan.baidu&#10;阿里云盘:aliyundrive,alipan&#10;夸克网盘:quark"></textarea>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary" onclick="projectModule.save()">保存</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 设置弹窗（资源分类 + 过滤规则） -->
-    <div id="settingsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">@设置</h3>
-                <span class="modal-close" onclick="shezhiModule.hideModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="form-group-numbered">
-                    <label class="form-label">1. 资源分类</label>
-                    <textarea id="modalResourceConfig" class="config-textarea" placeholder="输入配置，每条规则占一行，格式：类型:域名关键字1,域名关键字2&#10;&#10;示例：&#10;百度网盘:baidu,pan.baidu&#10;阿里云盘:aliyundrive,alipan&#10;夸克网盘:quark"></textarea>
-                </div>
-                <div class="form-group-numbered">
-                    <label class="form-label">2. 过滤规则</label>
-                    <div class="rules-container">
-                        <div class="rule-section">
-                            <textarea id="validRulesInput" class="rule-textarea" placeholder="有效规则设置&#10;每条规则占一行，格式：类型:关键字1,关键字2;&#10;&#10;示例：&#10;通用:*;&#10;百度网盘:baidu,pan;&#10;阿里云盘:aliyun,alipan;"></textarea>
-                        </div>
-                        <div class="rule-section">
-                            <textarea id="invalidRulesInput" class="rule-textarea" placeholder="无效规则设置&#10;每条规则占一行，格式：类型:关键字1,关键字2;&#10;&#10;示例：&#10;通用:失效,无效;&#10;百度网盘:限速,禁止;"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" onclick="shezhiModule.save()">保存</button>
             </div>
         </div>
     </div>
@@ -158,6 +132,29 @@
         </div>
     </div>
 
+    <!-- 过滤规则设置弹窗 -->
+    <div id="filterRulesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">@过滤规则设置</h3>
+                <span class="modal-close" onclick="guizeModule.hideModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="rules-container">
+                    <div class="rule-section valid">
+                        <textarea id="validRulesInput" class="rule-textarea" placeholder="有效规则设置&#10;每条规则占一行，格式：类型:关键字1,关键字2;&#10;&#10;示例：&#10;通用:*;&#10;百度网盘:baidu,pan;&#10;阿里云盘:aliyun,alipan;"></textarea>
+                    </div>
+                    <div class="rule-section invalid">
+                        <textarea id="invalidRulesInput" class="rule-textarea" placeholder="无效规则设置&#10;每条规则占一行，格式：类型:关键字1,关键字2;&#10;&#10;示例：&#10;通用:失效,无效;&#10;百度网盘:限速,禁止;"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="guizeModule.save()">保存</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast容器 -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -194,7 +191,7 @@
     <script src="daohang/toubu.js"></script>
     <script src="daohang/zhongjian.js"></script>
     <script src="daohang/dibu.js"></script>
-    <script src="shezhi/shezhi.js"></script>
+    <script src="guize/guize.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

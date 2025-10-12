@@ -1,0 +1,27 @@
+/* Toast通知样式 */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 2000;
+}
+
+.toast {
+    background: #242424;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    padding: 15px 20px;
+    margin-top: 10px;
+    min-width: 300px;
+    animation: slideInFromBottom 0.3s ease;
+    color: #e0e0e0;
+}
+
+.toast.success { border-left: 4px solid #4caf50; }
+.toast.error { border-left: 4px solid #f44336; }
+.toast.warning { border-left: 4px solid #ff9800; }
+
+@keyframes slideInFromBottom {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}

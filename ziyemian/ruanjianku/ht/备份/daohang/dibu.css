@@ -1,0 +1,18 @@
+/* 底部导航独有样式 */
+.nav-section-bottom {
+    flex-shrink: 0;
+    padding: 10px 0;
+    margin-top: auto;
+    position: relative;
+}
+
+.nav-section-bottom::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), transparent);
+}

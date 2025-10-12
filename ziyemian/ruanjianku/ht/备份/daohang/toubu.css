@@ -113,7 +113,12 @@
     border-color: #4a9eff;
 }
 
-/* 图标选择器 */
+/* 图标选择器和配置输入区域统一样式 */
+.icon-grid,
+.form-textarea {
+    height: 140px;
+}
+
 .icon-grid {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
@@ -123,6 +128,7 @@
     background: #1a1a1a;
     border: 1px solid #3a3a3a;
     border-radius: 6px;
+    overflow-y: auto;
 }
 
 .icon-item {

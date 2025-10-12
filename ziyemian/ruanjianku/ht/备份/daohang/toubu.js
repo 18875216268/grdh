@@ -87,8 +87,8 @@ const projectModule = {
                 ? '<button class="btn btn-danger" disabled>删除</button>'
                 : `<button class="btn btn-danger" onclick="projectModule.delete('${item.key}')">删除</button>`;
             
-            // 设置按钮
-            const settingsBtn = `<button class="btn btn-primary" onclick="shezhiModule.showModal('${item.key}')" title="资源分类与过滤规则">⚙️</button>`;
+            // 添加设置按钮
+            const settingsBtn = `<button class="btn btn-primary" onclick="guizeModule.showModal('${item.key}')" title="过滤规则设置">⚙️</button>`;
             
             container.insertAdjacentHTML('beforeend', `
                 <div class="project-card" data-key="${item.key}" draggable="${!isOther}">
@@ -212,6 +212,7 @@ const projectModule = {
         
         document.getElementById('modalNavName').value = item?.name || '';
         this.currentIcon = item?.icon || '';
+        document.getElementById('modalNavConfig').value = item ? utils.convertConfigToText(item) : '';
         
         this.renderIconGrid();
         
@@ -242,6 +243,7 @@ const projectModule = {
 
     async save() {
         const name = document.getElementById('modalNavName').value.trim();
+        const configText = document.getElementById('modalNavConfig').value.trim();
 
         if (!name) {
             Toast.show('请填写导航项名称', 'error');
@@ -253,15 +255,46 @@ const projectModule = {
             return;
         }
         
+        const newConfig = utils.convertTextToConfig(configText);
         const updates = {};
 
         if (this.currentEditKey) {
-            // 编辑模式：只更新名称和图标
             const item = firebase.xiangmuData[this.currentEditKey];
+            const oldConfig = utils.extractConfig(item);
+            
+            // 更新基本信息
             if (item.name !== name) updates[`xiangmu/${this.currentEditKey}/name`] = name;
             if (item.icon !== this.currentIcon) updates[`xiangmu/${this.currentEditKey}/icon`] = this.currentIcon;
+            
+            // 配置更新逻辑
+            const oldTypes = Object.keys(oldConfig);
+            const newTypes = Object.keys(newConfig);
+            
+            // 删除不存在的类型
+            oldTypes.forEach(type => {
+                if (!newTypes.includes(type)) {
+                    updates[`xiangmu/${this.currentEditKey}/${type}`] = null;
+                }
+            });
+            
+            // 新增或更新类型
+            newTypes.forEach(type => {
+                const oldData = oldConfig[type];
+                const newData = newConfig[type];
+                
+                if (!oldData) {
+                    updates[`xiangmu/${this.currentEditKey}/${type}`] = newData;
+                } else {
+                    if (oldData.yuming !== newData.yuming) {
+                        updates[`xiangmu/${this.currentEditKey}/${type}/yuming`] = newData.yuming;
+                    }
+                    if (oldData.xuhao !== newData.xuhao) {
+                        updates[`xiangmu/${this.currentEditKey}/${type}/xuhao`] = newData.xuhao;
+                    }
+                }
+            });
         } else {
-            // 新增模式：只创建基本信息
+            // 新增导航项
             const existingOrders = Object.values(firebase.xiangmuData)
                 .filter(item => item && typeof item === 'object' && item.xuhao !== undefined)
                 .map(item => item.xuhao);
@@ -272,7 +305,8 @@ const projectModule = {
                 xuhao: newOrder,
                 name: name,
                 icon: this.currentIcon,
-                time: Date.now()
+                time: Date.now(),
+                ...newConfig
             };
         }
         

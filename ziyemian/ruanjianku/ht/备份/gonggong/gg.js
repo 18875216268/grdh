@@ -37,11 +37,48 @@ const utils = {
         return text.toLowerCase();
     },
     
+    // 提取配置（排除name、icon、xuhao、time）
+    extractConfig(navItem) {
+        if (!navItem || typeof navItem !== 'object') return {};
+        const config = {};
+        for (const [key, value] of Object.entries(navItem)) {
+            if (!['name', 'icon', 'xuhao', 'time'].includes(key) && value && typeof value === 'object') {
+                config[key] = value;
+            }
+        }
+        return config;
+    },
+    
+    // 配置转文本
+    convertConfigToText(navItem) {
+        const config = this.extractConfig(navItem);
+        return Object.entries(config)
+            .sort((a, b) => (a[1].xuhao ?? 999) - (b[1].xuhao ?? 999))
+            .map(([typeName, typeData]) => `${typeName}:${typeData.yuming || ''}`)
+            .join('\n');
+    },
+    
+    // 文本转配置
+    convertTextToConfig(text) {
+        if (!text || !text.trim()) return {};
+        const result = {};
+        text.split('\n').map(l => l.trim()).filter(l => l).forEach((line, index) => {
+            const colonIndex = line.indexOf(':');
+            if (colonIndex === -1) return;
+            const typeName = line.substring(0, colonIndex).trim();
+            const yuming = line.substring(colonIndex + 1).trim();
+            if (typeName) {
+                result[typeName] = { yuming, xuhao: index + 1, time: Date.now() };
+            }
+        });
+        return result;
+    },
+    
     // 获取导航项的所有类型名称
     getTypesFromNav(navItem) {
         if (!navItem || typeof navItem !== 'object') return [];
         return Object.keys(navItem)
-            .filter(key => !['name', 'icon', 'xuhao', 'time', 'guize'].includes(key))
+            .filter(key => !['name', 'icon', 'xuhao', 'time'].includes(key))
             .filter(key => navItem[key] && typeof navItem[key] === 'object');
     },
     
@@ -54,7 +91,7 @@ const utils = {
             if (!navItem || typeof navItem !== 'object') continue;
             
             for (const [typeName, typeData] of Object.entries(navItem)) {
-                if (['name', 'icon', 'xuhao', 'time', 'guize'].includes(typeName)) continue;
+                if (['name', 'icon', 'xuhao', 'time'].includes(typeName)) continue;
                 
                 if (typeData && typeData.yuming && typeData.yuming !== '*') {
                     const domains = typeData.yuming.split(',').map(d => d.trim());
@@ -67,7 +104,7 @@ const utils = {
         return { navKey: null, type: null };
     },
     
-    // 计算导航项统计数据
+    // 计算导航项统计数据（只根据daohang统计）
     calcNavStats(navKey, xiangmuData, ruanjiankuData) {
         const navItem = xiangmuData[navKey];
         if (!navItem) return { total: 0, types: 0, unreviewed: 0, invalid: 0 };

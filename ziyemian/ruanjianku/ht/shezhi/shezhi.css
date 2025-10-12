@@ -1,0 +1,61 @@
+/* 设置弹窗专用样式 */
+
+/* 资源分类配置文本域 */
+.config-textarea {
+    width: 100%;
+    padding: 10px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+    transition: border-color 0.2s ease;
+}
+
+.config-textarea:focus {
+    outline: none;
+    border-color: rgba(74, 158, 255, 0.3);
+}
+
+.config-textarea::placeholder {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+/* 过滤规则区域 */
+.rules-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.rule-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.rule-textarea {
+    width: 100%;
+    padding: 10px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+    transition: border-color 0.2s ease;
+}
+
+.rule-textarea:focus {
+    outline: none;
+    border-color: rgba(74, 158, 255, 0.3);
+}
+
+.rule-textarea::placeholder {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+}
