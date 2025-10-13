@@ -14,10 +14,8 @@ const firebase = {
         this.xiangmuListener = window.firebaseDB.onValue(xiangmuRef, (snapshot) => {
             this.xiangmuData = snapshot.val() || {};
             
-            // 确保"其它资源"导航项存在
             this.ensureOtherNavExists();
             
-            // 渲染所有导航区域
             zhongjianNav.render();
             dibuNav.render();
             
@@ -27,9 +25,8 @@ const firebase = {
                 linksModule.render();
             }
             
-            // 配置变更时自动刷新（跳过首次加载）
             if (!this.isFirstXiangmuLoad) {
-                refreshModule.refresh();
+                zujianModule.refresh();
             }
             this.isFirstXiangmuLoad = false;
             
@@ -49,7 +46,7 @@ const firebase = {
         });
     },
     
-    // 确保"其它资源"导航项存在（固定在第一位，序号为0，不可删除）
+    // 确保"其它资源"导航项存在
     async ensureOtherNavExists() {
         const other = this.xiangmuData.other;
         if (!other) {
@@ -64,7 +61,7 @@ const firebase = {
         }
     },
     
-    // 只补充基础缺失字段
+    // 补充基础缺失字段
     async fillBasicFields() {
         const updates = {};
         
@@ -78,10 +75,7 @@ const firebase = {
         }
         
         if (Object.keys(updates).length > 0) {
-            await window.firebaseDB.update(
-                window.firebaseDB.ref(window.firebaseDB.database),
-                updates
-            );
+            await this.batchUpdate(updates);
         }
     },
     
@@ -98,6 +92,21 @@ const firebase = {
             console.error('更新失败:', error);
             utils.updateConnectionStatus('disconnected');
             Toast.show('保存失败，请重试', 'error');
+            return false;
+        }
+    },
+    
+    // 批量更新方法（不显示Toast）
+    async batchUpdate(updates) {
+        utils.updateConnectionStatus('loading');
+        try {
+            await window.firebaseDB.update(window.firebaseDB.ref(window.firebaseDB.database), updates);
+            utils.updateConnectionStatus('connected');
+            return true;
+        } catch (error) {
+            console.error('批量更新失败:', error);
+            utils.updateConnectionStatus('disconnected');
+            Toast.show('更新失败，请重试', 'error');
             return false;
         }
     },

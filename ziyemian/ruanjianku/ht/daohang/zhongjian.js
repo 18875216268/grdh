@@ -1,4 +1,4 @@
-// 中间导航模块
+// 中间导航模块 - UI交互层
 const zhongjianNav = {
     currentFilter: null,
     
@@ -12,7 +12,6 @@ const zhongjianNav = {
         
         container.innerHTML = '';
         
-        // 只渲染非other的导航项（other固定在底部）
         const navItems = Object.entries(firebase.xiangmuData)
             .filter(([key, value]) => key !== 'other' && value && typeof value === 'object' && value.name)
             .sort((a, b) => (a[1].xuhao ?? 999) - (b[1].xuhao ?? 999));
@@ -72,7 +71,7 @@ const zhongjianNav = {
     }
 };
 
-// 链接管理模块
+// 链接管理模块 - UI交互层
 const linksModule = {
     currentEditKey: null,
     isEditMode: false,
@@ -87,13 +86,11 @@ const linksModule = {
         const container = document.getElementById('linksCardsGrid');
         if (!container) return;
         
-        // 立即重置所有状态变量
         this.allLinks = [];
         this.filteredLinks = [];
         this.loadedCount = 0;
         container.innerHTML = '';
         
-        // 获取当前导航项的链接
         this.allLinks = zhongjianNav.getFilteredLinks();
         
         if (this.allLinks.length === 0) {
@@ -169,29 +166,13 @@ const linksModule = {
         this.loadedCount = endIndex;
     },
     
-    // 检查URL是否已存在
-    checkUrlExists(url) {
-        if (!url) return null;
-        const normalizedUrl = url.trim().toLowerCase();
-        
-        for (const [key, link] of Object.entries(firebase.ruanjiankuData)) {
-            if (link && link.url && link.url.trim().toLowerCase() === normalizedUrl) {
-                return key;
-            }
-        }
-        return null;
-    },
-    
-    // 处理URL输入
     onUrlInput() {
         const urlInput = document.getElementById('modalLinkUrl');
         const navSelect = document.getElementById('modalLinkNav');
         const typeSelect = document.getElementById('modalLinkType');
-        const nameInput = document.getElementById('modalLinkName');
         const url = urlInput.value.trim();
         
         if (!url) {
-            // URL为空，恢复初始状态
             if (!this.isEditMode) {
                 navSelect.disabled = true;
                 typeSelect.disabled = true;
@@ -201,9 +182,8 @@ const linksModule = {
             return;
         }
         
-        // 新增模式下检查URL是否已存在
         if (!this.isEditMode) {
-            const existingKey = this.checkUrlExists(url);
+            const existingKey = zujianModule.checkUrlExists(url);
             if (existingKey) {
                 Toast.show('该链接已存在，将加载现有信息', 'warning');
                 this.showModal(existingKey);
@@ -211,27 +191,22 @@ const linksModule = {
             }
         }
         
-        // 自动检测导航项和类型
         const { navKey, type } = utils.detectNavAndType(url, firebase.xiangmuData);
         this.urlDetectedNav = navKey;
         this.urlDetectedType = type;
         
-        // 启用选择框
         navSelect.disabled = false;
         
         if (navKey && type) {
-            // 匹配成功：自动选择导航和类型
             navSelect.value = navKey;
             this.populateTypeOptions(navKey);
             typeSelect.value = type;
         } else {
-            // 匹配失败：自动选中当前导航项
             navSelect.value = zhongjianNav.currentFilter || 'other';
             this.populateTypeOptions(navSelect.value);
         }
     },
     
-    // 填充导航选项
     populateNavOptions() {
         const select = document.getElementById('modalLinkNav');
         select.innerHTML = '<option value="">请选择</option>';
@@ -247,7 +222,6 @@ const linksModule = {
             });
     },
     
-    // 填充类型选项
     populateTypeOptions(navKey) {
         const typeSelect = document.getElementById('modalLinkType');
         typeSelect.innerHTML = '<option value="">请选择</option>';
@@ -263,7 +237,6 @@ const linksModule = {
         
         const types = utils.getTypesFromNav(navItem);
         if (types.length === 0) {
-            // 无类型配置
             typeSelect.innerHTML = '<option value="*">*</option>';
             typeSelect.value = '*';
             typeSelect.disabled = true;
@@ -277,7 +250,6 @@ const linksModule = {
         }
     },
     
-    // 导航切换事件
     onNavChange() {
         const navKey = document.getElementById('modalLinkNav').value;
         this.populateTypeOptions(navKey);
@@ -296,11 +268,9 @@ const linksModule = {
         const nameInput = document.getElementById('modalLinkName');
         const contributorInput = document.getElementById('modalLinkContributor');
         
-        // 填充导航选项
         this.populateNavOptions();
         
         if (this.isEditMode) {
-            // 编辑模式：加载现有数据，不禁用
             const item = firebase.ruanjiankuData[key];
             nameInput.value = item?.name || '';
             urlInput.value = item?.url || '';
@@ -312,7 +282,6 @@ const linksModule = {
             this.populateTypeOptions(item?.daohang);
             typeSelect.value = item?.type || '';
         } else {
-            // 新增模式：清空表单，禁用选择框
             nameInput.value = '';
             urlInput.value = '';
             contributorInput.value = '';
@@ -323,7 +292,6 @@ const linksModule = {
             typeSelect.innerHTML = '<option value="">请选择</option>';
         }
         
-        // 绑定事件
         urlInput.oninput = () => this.onUrlInput();
         navSelect.onchange = () => this.onNavChange();
         
@@ -336,89 +304,25 @@ const linksModule = {
     },
 
     async save() {
-        const name = document.getElementById('modalLinkName').value.trim();
-        const url = document.getElementById('modalLinkUrl').value.trim();
-        const contributor = document.getElementById('modalLinkContributor').value.trim() || '木小匣';
-        const navKey = document.getElementById('modalLinkNav').value.trim();
-        let type = document.getElementById('modalLinkType').value.trim();
-
-        if (!name || !url) {
-            Toast.show('请填写网站名称和链接', 'error');
-            return;
-        }
+        const success = await zujianModule.saveResource({
+            key: this.currentEditKey,
+            name: document.getElementById('modalLinkName').value,
+            url: document.getElementById('modalLinkUrl').value,
+            navKey: document.getElementById('modalLinkNav').value,
+            type: document.getElementById('modalLinkType').value,
+            contributor: document.getElementById('modalLinkContributor').value
+        });
         
-        if (!navKey) {
-            Toast.show('请选择导航分类', 'error');
-            return;
+        if (success) {
+            this.hideModal();
         }
-        
-        // 判断类型是否需要添加"*"标记
-        const navItem = firebase.xiangmuData[navKey];
-        const types = utils.getTypesFromNav(navItem);
-        
-        if (types.length === 0) {
-            // 无类型配置
-            type = '*';
-        } else if (type && type !== '' && type !== '*') {
-            // 用户手动选择了类型
-            // 检查是否是自动检测的类型
-            const isAutoDetected = (this.urlDetectedNav === navKey && this.urlDetectedType === type);
-            
-            if (!isAutoDetected) {
-                // 用户手动选择，添加"*"标记
-                if (!type.startsWith('*')) {
-                    type = '*' + type;
-                }
-            }
-        } else {
-            // 未选择类型
-            type = '*';
-        }
-        
-        if (this.currentEditKey) {
-            // 编辑模式
-            const existingData = firebase.ruanjiankuData[this.currentEditKey];
-            await firebase.updateNode(`ruanjianku/${this.currentEditKey}`, {
-                name,
-                url,
-                daohang: navKey,
-                type: type,
-                time: existingData.time || Date.now(),
-                visits: existingData.visits || 0,
-                tougao: contributor,
-                shenhe: existingData.shenhe || '已审',
-                zhuangtai: existingData.zhuangtai || '有效'
-            });
-        } else {
-            // 新增模式
-            await firebase.updateNode(`ruanjianku/${utils.generateId()}`, {
-                name,
-                url,
-                daohang: navKey,
-                type: type,
-                time: Date.now(),
-                visits: 0,
-                tougao: contributor,
-                shenhe: '已审',
-                zhuangtai: '有效'
-            });
-        }
-
-        this.hideModal();
     },
 
     async toggleStatus(key, field) {
-        const item = firebase.ruanjiankuData[key];
-        if (!item) return;
-        
-        const newValue = field === 'zhuangtai' 
-            ? (item.zhuangtai === '有效' ? '无效' : '有效')
-            : (item.shenhe === '已审' ? '未审' : '已审');
-        
-        await firebase.updateNode(`ruanjianku/${key}/${field}`, newValue);
+        await zujianModule.toggleStatus(key, field);
     },
 
     async delete(key) {
-        await firebase.deleteNode(`ruanjianku/${key}`);
+        await zujianModule.deleteResource(key);
     }
 };

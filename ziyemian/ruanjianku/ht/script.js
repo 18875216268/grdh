@@ -7,100 +7,6 @@ const lazyLoadConfig = {
     threshold: 100
 };
 
-// 刷新模块 - 核心刷新逻辑
-const refreshModule = {
-    async refresh() {
-        Toast.show('开始重新归类所有资源...', 'info');
-        const updates = {};
-        let updateCount = 0;
-        
-        for (const [key, link] of Object.entries(firebase.ruanjiankuData)) {
-            if (!link || typeof link !== 'object') continue;
-            
-            // 跳过：type包含"*"且daohang不为"other"的卡片（用户手动分类，不被破坏）
-            if (link.type && link.type.includes('*') && link.daohang !== 'other') {
-                // 仅补充基础字段
-                if (!link.time) {
-                    updates[`ruanjianku/${key}/time`] = Date.now();
-                    updateCount++;
-                }
-                if (!link.zhuangtai) {
-                    updates[`ruanjianku/${key}/zhuangtai`] = '有效';
-                    updateCount++;
-                }
-                if (!link.shenhe) {
-                    updates[`ruanjianku/${key}/shenhe`] = '已审';
-                    updateCount++;
-                }
-                if (!link.tougao) {
-                    updates[`ruanjianku/${key}/tougao`] = '木小匣';
-                    updateCount++;
-                }
-                continue;
-            }
-            
-            // 根据URL检测导航项和类型
-            const { navKey, type } = utils.detectNavAndType(link.url, firebase.xiangmuData);
-            
-            if (navKey && type) {
-                // 匹配成功 → 更新导航项和类型（不管原字段是否缺失或不一致，统一更新）
-                if (link.daohang !== navKey) {
-                    updates[`ruanjianku/${key}/daohang`] = navKey;
-                    updateCount++;
-                }
-                if (link.type !== type) {
-                    updates[`ruanjianku/${key}/type`] = type;
-                    updateCount++;
-                }
-            } else {
-                // 未匹配 → daohang="other", type="*"
-                if (link.daohang !== 'other') {
-                    updates[`ruanjianku/${key}/daohang`] = 'other';
-                    updateCount++;
-                }
-                if (link.type !== '*') {
-                    updates[`ruanjianku/${key}/type`] = '*';
-                    updateCount++;
-                }
-            }
-            
-            // 补充基础字段
-            if (!link.time) {
-                updates[`ruanjianku/${key}/time`] = Date.now();
-                updateCount++;
-            }
-            if (!link.zhuangtai) {
-                updates[`ruanjianku/${key}/zhuangtai`] = '有效';
-                updateCount++;
-            }
-            if (!link.shenhe) {
-                updates[`ruanjianku/${key}/shenhe`] = '已审';
-                updateCount++;
-            }
-            if (!link.tougao) {
-                updates[`ruanjianku/${key}/tougao`] = '木小匣';
-                updateCount++;
-            }
-        }
-        
-        if (updateCount === 0) {
-            Toast.show('所有资源归类已是最新状态', 'success');
-            return;
-        }
-        
-        try {
-            await window.firebaseDB.update(
-                window.firebaseDB.ref(window.firebaseDB.database),
-                updates
-            );
-            Toast.show(`成功更新 ${updateCount} 个字段`, 'success');
-        } catch (error) {
-            console.error('更新失败:', error);
-            Toast.show('更新失败，请重试', 'error');
-        }
-    }
-};
-
 // 全局搜索处理
 function handleGlobalSearch() {
     const searchInput = document.getElementById('globalSearchInput');
@@ -165,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
             zhongjianNav.init();
             dibuNav.render();
             projectModule.init();
+            zujianModule.init();
             updateHeaderControls();
         }
     }, 100);

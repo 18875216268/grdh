@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="daohang/zhongjian.css">
     <link rel="stylesheet" href="daohang/dibu.css">
     <link rel="stylesheet" href="shezhi/shezhi.css">
+    <link rel="stylesheet" href="zujian/zujian.css">
 </head>
 <body>
     <!-- 顶部导航栏 -->
@@ -161,8 +162,18 @@
     <!-- Toast容器 -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- 下载按钮 -->
+    <button class="download-btn component-btn" title="下载所有资源">
+        <i class="ri-download-cloud-line"></i>
+    </button>
+
+    <!-- 批量上传按钮 -->
+    <button class="upload-btn component-btn" title="批量上传资源">
+        <i class="ri-upload-cloud-line"></i>
+    </button>
+
     <!-- 刷新按钮 -->
-    <button class="refresh-btn" onclick="refreshModule.refresh()" title="刷新资源类型">
+    <button class="refresh-btn component-btn" title="刷新资源类型">
         <i class="ri-refresh-line"></i>
     </button>
 
@@ -195,6 +206,7 @@
     <script src="daohang/zhongjian.js"></script>
     <script src="daohang/dibu.js"></script>
     <script src="shezhi/shezhi.js"></script>
+    <script src="zujian/zujian.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
