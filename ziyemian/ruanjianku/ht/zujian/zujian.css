@@ -20,7 +20,6 @@
 
 .component-btn i {
     font-size: 18px;
-    transition: transform 0.3s ease;
 }
 
 .component-btn:active {
@@ -33,14 +32,10 @@
 }
 
 .download-btn:hover {
-    border-color: rgba(76, 175, 80, 0.5);
-    background: rgba(76, 175, 80, 0.1);
-    color: #4caf50;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-}
-
-.download-btn:hover i {
-    transform: translateY(2px);
+    border-color: rgba(74, 158, 255, 0.5);
+    background: rgba(74, 158, 255, 0.1);
+    color: #4a9eff;
+    box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
 }
 
 /* 上传按钮 */
@@ -55,10 +50,6 @@
     box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
 }
 
-.upload-btn:hover i {
-    transform: translateY(-2px);
-}
-
 /* 刷新按钮 */
 .refresh-btn {
     bottom: 8px;
@@ -69,8 +60,4 @@
     background: rgba(74, 158, 255, 0.1);
     color: #4a9eff;
     box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
-}
-
-.refresh-btn:hover i {
-    transform: rotate(180deg);
 }
