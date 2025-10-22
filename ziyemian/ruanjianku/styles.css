@@ -208,10 +208,7 @@ body {
 }
 
 .resource-card:hover {
-    background-color: rgba(255, 255, 255, 0.02);
     border-color: rgba(74, 158, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--shadow);
 }
 
 /* 第一行：状态+标题+访问按钮 */

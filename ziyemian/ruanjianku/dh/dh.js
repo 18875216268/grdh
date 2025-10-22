@@ -1,61 +1,174 @@
 // ==========================================
-// 导航模块 - 被动渲染
+// 导航模块 - 支持顶中底部分、密码验证
 // ==========================================
 
 const NavigationModule = (() => {
     let clickCallback = null;
+    let passwordModal, passwordInput, passwordConfirmBtn, passwordModalClose;
+    let passwordResolve = null;
+    let currentActiveNavKey = null;
     
     // 初始化
     function init() {
-        document.querySelector('.sidebar').addEventListener('click', e => {
+        passwordModal = document.getElementById('passwordModal');
+        passwordInput = document.getElementById('passwordInput');
+        passwordConfirmBtn = document.getElementById('passwordConfirmBtn');
+        passwordModalClose = document.getElementById('passwordModalClose');
+        
+        bindPasswordModalEvents();
+        
+        // 绑定导航点击事件
+        document.querySelector('.sidebar').addEventListener('click', async e => {
             const item = e.target.closest('.nav-item');
             if (!item) return;
             
+            const navKey = item.dataset.type;
+            
+            // 验证密码
+            if (!window.FirebaseModule.isPasswordVerified(navKey)) {
+                const navName = item.querySelector('.nav-text')?.textContent.replace(' 🔒', '') || '该导航项';
+                const password = await showPasswordPrompt(navName);
+                if (password === null) return;
+                
+                if (!window.FirebaseModule.verifyPassword(navKey, password)) {
+                    window.showToast('密码错误', 'error');
+                    return;
+                }
+                window.showToast('验证成功', 'success');
+            }
+            
+            // 更新当前选中的导航key
+            currentActiveNavKey = navKey;
+            
+            // 切换激活状态
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             item.classList.add('active');
             
-            if (clickCallback) clickCallback(item.dataset.type);
+            if (clickCallback) clickCallback(navKey);
         });
+    }
+    
+    // 绑定密码弹窗事件
+    function bindPasswordModalEvents() {
+        passwordModalClose.addEventListener('click', closePasswordModal);
+        passwordConfirmBtn.addEventListener('click', confirmPassword);
+        
+        // 回车键确认
+        passwordInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') confirmPassword();
+        });
+    }
+    
+    // 显示密码弹窗
+    function showPasswordPrompt(navName) {
+        return new Promise(resolve => {
+            passwordResolve = resolve;
+            passwordInput.value = '';
+            passwordModal.classList.add('show');
+            passwordInput.focus();
+        });
+    }
+    
+    // 确认密码
+    function confirmPassword() {
+        const password = passwordInput.value.trim();
+        if (passwordResolve) {
+            passwordResolve(password || null);
+            passwordResolve = null;
+        }
+        closePasswordModal();
+    }
+    
+    // 关闭密码弹窗
+    function closePasswordModal() {
+        passwordModal.classList.remove('show');
+        passwordInput.value = '';
+        if (passwordResolve) {
+            passwordResolve(null);
+            passwordResolve = null;
+        }
     }
     
     // 渲染导航
-    function render(xinxiData, resources) {
-        const navList = document.getElementById('navList');
-        navList.innerHTML = '';
+    function render(xiangmuData) {
+        const topContainer = document.querySelector('.sidebar-header');
+        const middleContainer = document.querySelector('.sidebar-content .nav-list');
+        const bottomContainer = document.querySelector('.sidebar-footer');
         
-        // 统计各类资源数量
-        const counts = {};
-        let othersCount = 0;
+        topContainer.innerHTML = '';
+        middleContainer.innerHTML = '';
+        bottomContainer.innerHTML = '';
         
-        resources.forEach(r => {
-            if (r.type === '未分类') {
-                othersCount++;
+        // 分组并排序
+        const groups = { 顶部: [], 中部: [], 底部: [] };
+        
+        for (const key in xiangmuData) {
+            const data = xiangmuData[key];
+            if (!data?.name) continue;
+            
+            // 过滤隐藏的导航项
+            if (data.zhuangtai === '隐藏') continue;
+            
+            const weizhi = data.weizhi || '中部';
+            groups[weizhi].push({
+                key,
+                name: data.name,
+                icon: data.icon || '📁',
+                xuhao: data.xuhao || 999,
+                mima: data.mima || ''
+            });
+        }
+        
+        // 各组内按序号排序
+        Object.values(groups).forEach(arr => arr.sort((a, b) => a.xuhao - b.xuhao));
+        
+        // 渲染顶部
+        groups.顶部.forEach(item => topContainer.appendChild(createNavItem(item)));
+        
+        // 渲染中部
+        groups.中部.forEach(item => middleContainer.appendChild(createNavItem(item)));
+        
+        // 渲染底部
+        groups.底部.forEach(item => bottomContainer.appendChild(createNavItem(item)));
+        
+        // 恢复选中状态
+        if (currentActiveNavKey) {
+            const activeNav = document.querySelector(`.nav-item[data-type="${currentActiveNavKey}"]`);
+            if (activeNav) {
+                activeNav.classList.add('active');
             } else {
-                counts[r.type] = (counts[r.type] || 0) + 1;
+                // 如果之前选中的导航项不存在了，选中第一个
+                activateFirstNav();
             }
-        });
-        
-        // 收集并排序有资源的网盘
-        const items = Object.entries(xinxiData)
-            .filter(([key, val]) => key !== 'tongyong' && val?.name && counts[val.name] > 0)
-            .map(([, val]) => ({ name: val.name, xuhao: val.xuhao || 999 }))
-            .sort((a, b) => a.xuhao - b.xuhao);
-        
-        items.forEach(item => navList.appendChild(createNavItem(item.name)));
-        
-        // 更新"其它资源"显示
-        const othersNav = document.querySelector('.sidebar-footer .nav-item[data-type="others"]');
-        if (othersNav) othersNav.style.display = othersCount > 0 ? 'flex' : 'none';
+        } else {
+            // 首次加载，激活第一个
+            activateFirstNav();
+        }
+    }
+    
+    // 激活第一个导航项
+    function activateFirstNav() {
+        const firstNav = document.querySelector('.nav-item');
+        if (firstNav) {
+            currentActiveNavKey = firstNav.dataset.type;
+            firstNav.classList.add('active');
+            if (clickCallback) clickCallback(currentActiveNavKey);
+        }
     }
     
     // 创建导航项
-    function createNavItem(name) {
-        const li = document.createElement('li');
+    function createNavItem(item) {
+        const li = document.createElement('div');
         li.className = 'nav-item';
-        li.dataset.type = name;
+        li.dataset.type = item.key;
+        
+        const icon = item.icon || '📁';
+        const firstChar = item.name.charAt(0);
+        const lockIcon = item.mima ? ' 🔒' : '';
+        
         li.innerHTML = `
-            <span class="nav-icon" data-first-char="${name.charAt(0)}">⛅︎</span>
-            <span class="nav-text">${name}</span>
+            <span class="nav-icon" data-first-char="${firstChar}">${icon}</span>
+            <span class="nav-text">${item.name}${lockIcon}</span>
         `;
         return li;
     }

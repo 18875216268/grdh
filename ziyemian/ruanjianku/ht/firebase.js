@@ -1,4 +1,4 @@
-// Firebase实时数据管理
+// Firebase实时数据管理 - 优化版
 const firebase = {
     xiangmuData: {},
     ruanjiankuData: {},
@@ -16,15 +16,19 @@ const firebase = {
             
             this.ensureOtherNavExists();
             
+            // 重新渲染导航
+            toubuNav.render();
             zhongjianNav.render();
             dibuNav.render();
             
+            // 重新渲染当前页面
             if (currentSection === 'project') {
                 projectModule.render();
             } else if (currentSection === 'links') {
                 linksModule.render();
             }
             
+            // 首次加载后的数据变化才触发刷新
             if (!this.isFirstXiangmuLoad) {
                 zujianModule.refresh();
             }
@@ -39,9 +43,14 @@ const firebase = {
             this.ruanjiankuData = snapshot.val() || {};
             this.fillBasicFields();
             
+            // 重新渲染当前页面
             if (currentSection === 'links' || currentSection === 'project') {
-                linksModule.render();
-                projectModule.render();
+                if (currentSection === 'links') {
+                    linksModule.render();
+                }
+                if (currentSection === 'project') {
+                    projectModule.render();
+                }
             }
         });
     },
@@ -50,14 +59,19 @@ const firebase = {
     async ensureOtherNavExists() {
         const other = this.xiangmuData.other;
         if (!other) {
+            // 计算当前最大序号
+            const maxXuhao = Object.values(this.xiangmuData)
+                .filter(item => item && typeof item === 'object' && item.xuhao !== undefined)
+                .map(item => item.xuhao)
+                .reduce((max, xuhao) => Math.max(max, xuhao), 0);
+            
             await this.updateNode('xiangmu/other', {
                 name: '其它资源',
                 icon: '📦',
-                xuhao: 0,
+                xuhao: maxXuhao + 1,
+                weizhi: '底部',
                 time: Date.now()
             });
-        } else if (other.xuhao !== 0) {
-            await this.updateNode('xiangmu/other/xuhao', 0);
         }
     },
     

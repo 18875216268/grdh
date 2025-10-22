@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="logo.png">
     
     <!-- 基础SEO Meta标签 - 高密度关键词 -->
-    <meta name="description" content="趣软铺(quruanpu)是全网最全的破解软件库、绿化软件、开源软件分享平台。提供蓝奏云、小飞机网盘、夸克网盘等海量破解软件资源，支持免费下载、不限速下载。每日更新最新破解版软件、绿化版工具，是您寻找免费软件的首选平台。">
+    <meta name="description" content="趣软铺(quruanpu)是全网最全的破解软件库、绿化软件、开源软件分享平台。提供蓝奏云、小飞机网盘、夸克网盘等海量破解软件资源,支持免费下载、不限速下载。每日更新最新破解版软件、绿化版工具，是您寻找免费软件的首选平台。">
     <meta name="keywords" content="破解软件,软件破解,破解软件库,绿化软件,免费软件,软件下载,蓝奏云,夸克网盘,小飞机网盘,开源软件,不限速下载,趣软铺,quruanpu,破解版,绿化版,免费下载">
     <meta name="author" content="趣软铺团队">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
@@ -140,6 +140,7 @@
     <link rel="stylesheet" href="dh/dh.css">
     <link rel="stylesheet" href="tg/tg.css">
     <link rel="stylesheet" href="mh/manghe.css">
+    <link rel="stylesheet" href="tc/tc.css">
     <link rel="stylesheet" href="mobile.css">
 </head>
 <body>
@@ -178,12 +179,7 @@
         <!-- 左侧导航栏 -->
         <nav class="sidebar" aria-label="软件分类导航">
             <!-- 顶部固定区域 -->
-            <div class="sidebar-header">
-                <div class="nav-item active" data-type="all">
-                    <span class="nav-icon" data-first-char="全">📚</span>
-                    <span class="nav-text">全部资源</span>
-                </div>
-            </div>
+            <div class="sidebar-header"></div>
             
             <!-- 中间内容区域（可滚动） -->
             <div class="sidebar-content">
@@ -193,12 +189,7 @@
             </div>
             
             <!-- 底部固定区域 -->
-            <div class="sidebar-footer">
-                <div class="nav-item" data-type="others">
-                    <span class="nav-icon" data-first-char="其">📦</span>
-                    <span class="nav-text">其它资源</span>
-                </div>
-            </div>
+            <div class="sidebar-footer"></div>
         </nav>
 
         <!-- 右侧内容区 -->
@@ -232,21 +223,47 @@
                 <form class="form" id="contributeForm">
                     <div class="form-group">
                         <label class="form-label">1. 资源名称</label>
-                        <input type="text" class="form-input" id="resourceName" placeholder="请输入软件库名称（如：趣软铺）" required>
+                        <input type="text" class="form-input" id="resourceName" placeholder="请输入资源名称" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">2. 资源链接</label>
-                        <input type="url" class="form-input" id="resourceUrl" placeholder="请输入网盘链接（蓝奏云、夸克网盘等）" required>
+                        <label class="form-label">2. 访问地址</label>
+                        <input type="url" class="form-input" id="resourceUrl" placeholder="请输入资源链接" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">3. 投稿人（选填）</label>
+                        <label class="form-label">3. 导航分类</label>
+                        <select class="form-select" id="navSelect"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">4. 资源类型</label>
+                        <select class="form-select" id="typeSelect"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">5. 投稿人（选填）</label>
                         <input type="text" class="form-input" id="contributor" placeholder="请输入您的昵称，默认：匿名">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancelBtn">取消</button>
                 <button class="btn btn-primary" id="submitBtn">提交投稿</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 密码验证弹窗 -->
+    <div class="modal" id="passwordModal" role="dialog" aria-labelledby="passwordModalTitle" aria-modal="true">
+        <div class="modal-content password-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="passwordModalTitle">@需要访问密码👇</h3>
+                <span class="modal-close" id="passwordModalClose" aria-label="关闭">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="password" class="form-input" id="passwordInput" placeholder="请输入密码" autocomplete="off">
+                </div>
+                <div class="password-tip">👉微信公众号:"木小匣"，回复"粉丝"获取最新密码。</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="passwordConfirmBtn">确认</button>
             </div>
         </div>
     </div>
@@ -316,7 +333,7 @@
                             <td class="table-value" id="resultDate">-</td>
                         </tr>
                         <tr>
-                            <td class="table-label">网盘类型</td>
+                            <td class="table-label">资源分类</td>
                             <td class="table-value" id="resultType">-</td>
                         </tr>
                         <tr>
@@ -329,6 +346,24 @@
                         <button class="result-btn visit-result-btn" id="visitResultBtn">立即访问</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示弹窗 -->
+    <div class="tip-modal" id="tipModal" role="dialog" aria-labelledby="tipModalTitle" aria-modal="true">
+        <div class="tip-modal-content">
+            <div class="tip-modal-header">
+                <h3 class="tip-modal-title" id="tipModalTitle">温馨提示</h3>
+                <button class="tip-modal-close" id="tipModalClose" aria-label="关闭">&times;</button>
+            </div>
+            <div class="tip-modal-body">
+                <div class="tip-content">
+                    <p>本站为纯公益分享，为防止失联，请关注<span class="tip-highlight">微信公众号："木小匣"</span>，以获取最新地址。资源持续更新中，敬请期待......</p>
+                </div>
+            </div>
+            <div class="tip-modal-footer">
+                <button class="tip-confirm-btn" id="tipConfirmBtn">我知道了</button>
             </div>
         </div>
     </div>
@@ -356,10 +391,8 @@
     <script src="dh/dh.js"></script>
     <script src="tg/tg.js"></script>
     <script src="mh/manghe.js"></script>
+    <script src="tc/tc.js"></script>
     <script src="script.js"></script>
 </body>
 
 </html>
-
-
-

@@ -42,12 +42,12 @@ const shezhiModule = {
         document.getElementById('settingsModal').classList.remove('show');
     },
     
-    // 提取配置（排除name、icon、xuhao、time、guize）
+    // 提取配置（排除name、icon、xuhao、time、guize、weizhi、mima）
     extractConfig(navItem) {
         if (!navItem || typeof navItem !== 'object') return {};
         const config = {};
         for (const [key, value] of Object.entries(navItem)) {
-            if (!['name', 'icon', 'xuhao', 'time', 'guize'].includes(key) && 
+            if (!['name', 'icon', 'xuhao', 'time', 'guize', 'weizhi', 'mima'].includes(key) && 
                 value && typeof value === 'object') {
                 config[key] = value;
             }

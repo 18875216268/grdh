@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@软件导航-后台💡</title>
+    <link rel="icon" type="image/png" href="../logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
     <link rel="stylesheet" href="gonggong/gg.css">
     <link rel="stylesheet" href="styles.css">
@@ -13,6 +14,7 @@
     <link rel="stylesheet" href="daohang/dibu.css">
     <link rel="stylesheet" href="shezhi/shezhi.css">
     <link rel="stylesheet" href="zujian/zujian.css">
+    <link rel="stylesheet" href="piliang/piliang.css">
 </head>
 <body>
     <!-- 顶部导航栏 -->
@@ -31,6 +33,7 @@
                 </div>
             </div>
             <button class="add-btn" id="globalAddBtn">+</button>
+            <button class="select-all-btn" id="selectAllBtn" title="全选/取消全选">✓</button>
         </div>
     </header>
 
@@ -82,6 +85,18 @@
                 <div class="form-group-numbered">
                     <label class="form-label">2. 图标</label>
                     <div class="icon-grid" id="iconGrid"></div>
+                </div>
+                <div class="form-group-numbered">
+                    <label class="form-label">3. 导航位置</label>
+                    <select id="modalNavPosition" class="form-select">
+                        <option value="中部">中部</option>
+                        <option value="底部">底部</option>
+                        <option value="顶部">顶部</option>
+                    </select>
+                </div>
+                <div class="form-group-numbered">
+                    <label class="form-label">4. 访问密码</label>
+                    <input type="text" id="modalNavPassword" class="form-input" placeholder="留空表示无密码">
                 </div>
             </div>
             <div class="modal-footer">
@@ -162,20 +177,38 @@
     <!-- Toast容器 -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- 下载按钮 -->
-    <button class="download-btn component-btn" title="下载所有资源">
-        <i class="ri-download-cloud-line"></i>
-    </button>
+    <!-- 右下角按钮组 -->
+    <div class="batch-buttons-container">
+        <!-- 删除按钮 - 1行4列 -->
+        <button class="batch-btn batch-delete" id="batchDeleteBtn" title="批量删除" disabled>
+            <i class="ri-delete-bin-line"></i>
+        </button>
 
-    <!-- 批量上传按钮 -->
-    <button class="upload-btn component-btn" title="批量上传资源">
-        <i class="ri-upload-cloud-line"></i>
-    </button>
+        <!-- 状态按钮 - 2行4列 -->
+        <button class="batch-btn" id="batchZhuangtaiBtn" title="批量切换资源状态" disabled>
+            <i class="ri-toggle-line"></i>
+        </button>
 
-    <!-- 刷新按钮 -->
-    <button class="refresh-btn component-btn" title="刷新资源类型">
-        <i class="ri-refresh-line"></i>
-    </button>
+        <!-- 审核按钮 - 3行4列 -->
+        <button class="batch-btn" id="batchShenheBtn" title="批量切换审核状态" disabled>
+            <i class="ri-checkbox-circle-line"></i>
+        </button>
+
+        <!-- 刷新按钮 - 4行4列 -->
+        <button class="batch-btn component-btn refresh-btn" title="刷新资源类型">
+            <i class="ri-refresh-line"></i>
+        </button>
+
+        <!-- 下载按钮 - 4行3列 -->
+        <button class="batch-btn component-btn download-btn" title="下载所有资源">
+            <i class="ri-download-cloud-line"></i>
+        </button>
+
+        <!-- 上传按钮 - 4行2列 -->
+        <button class="batch-btn component-btn upload-btn" title="批量上传资源">
+            <i class="ri-upload-cloud-line"></i>
+        </button>
+    </div>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -207,6 +240,7 @@
     <script src="daohang/dibu.js"></script>
     <script src="shezhi/shezhi.js"></script>
     <script src="zujian/zujian.js"></script>
+    <script src="piliang/piliang.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

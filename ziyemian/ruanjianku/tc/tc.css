@@ -1,0 +1,176 @@
+/* ==========================================
+   提示弹窗样式
+   ========================================== */
+
+/* 提示弹窗遮罩 */
+.tip-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 3000;
+    justify-content: center;
+    align-items: center;
+    animation: tipFadeIn 0.3s ease;
+}
+
+.tip-modal.show {
+    display: flex;
+}
+
+@keyframes tipFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 提示弹窗内容 */
+.tip-modal-content {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 480px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    animation: tipSlideUp 0.4s ease;
+    position: relative;
+}
+
+@keyframes tipSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 提示弹窗头部 */
+.tip-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tip-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tip-modal-title::before {
+    content: '📢';
+    font-size: 22px;
+}
+
+.tip-modal-close {
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    line-height: 1;
+    padding: 4px 8px;
+    transition: color var(--transition);
+    background: none;
+    border: none;
+}
+
+.tip-modal-close:hover {
+    color: var(--text-primary);
+}
+
+/* 提示弹窗主体 */
+.tip-modal-body {
+    padding: 24px;
+}
+
+.tip-content {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text-primary);
+    text-align: left;
+}
+
+.tip-content p {
+    margin-bottom: 12px;
+}
+
+.tip-content p:last-child {
+    margin-bottom: 0;
+}
+
+.tip-highlight {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* 提示弹窗底部 */
+.tip-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+}
+
+.tip-confirm-btn {
+    padding: 10px 32px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.tip-confirm-btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .tip-modal-content {
+        width: 95%;
+        max-width: 95%;
+    }
+    
+    .tip-modal-header {
+        padding: 16px 20px;
+    }
+    
+    .tip-modal-title {
+        font-size: 16px;
+    }
+    
+    .tip-modal-body {
+        padding: 20px;
+    }
+    
+    .tip-content {
+        font-size: 14px;
+    }
+    
+    .tip-modal-footer {
+        padding: 14px 20px;
+    }
+    
+    .tip-confirm-btn {
+        padding: 9px 28px;
+        font-size: 13px;
+    }
+}

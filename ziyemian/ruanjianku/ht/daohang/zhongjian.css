@@ -32,32 +32,6 @@
     border-radius: 2px;
 }
 
-/* 导航项文本区域 */
-.admin-nav-item .nav-text {
-    flex: 1;
-}
-
-/* 设置图标样式 */
-.nav-settings-icon {
-    font-size: 14px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    cursor: pointer;
-    padding: 4px;
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.admin-nav-item:hover .nav-settings-icon {
-    opacity: 0.6;
-}
-
-.nav-settings-icon:hover {
-    opacity: 1 !important;
-}
-
 /* 链接管理卡片样式 */
 .link-card {
     background: #2d2d2d;

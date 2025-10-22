@@ -22,7 +22,7 @@
     position: relative;
 }
 
-.sidebar-header::after {
+.sidebar-header:not(:empty)::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -61,7 +61,7 @@
     position: relative;
 }
 
-.sidebar-footer::before {
+.sidebar-footer:not(:empty)::before {
     content: '';
     position: absolute;
     top: 0;
@@ -97,11 +97,16 @@
     border-left-color: var(--accent);
 }
 
-/* 导航图标 */
+/* 导航图标 - 固定宽度确保对齐 */
 .nav-icon {
+    width: 24px;
     font-size: 18px;
     margin-right: 10px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 /* 导航文字 */
@@ -112,6 +117,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
 }
 
 .nav-item.active .nav-text,
@@ -125,4 +131,51 @@
     text-align: center;
     color: var(--text-secondary);
     font-size: 12px;
+}
+
+/* ==========================================
+   密码验证弹窗样式
+   ========================================== */
+
+/* 密码弹窗容器 */
+.password-modal-content {
+    max-width: 400px;
+}
+
+/* 密码弹窗 - 紧凑头部 */
+#passwordModal .modal-header {
+    padding: 12px 18px;
+}
+
+#passwordModal .modal-title {
+    font-size: 15px;
+}
+
+/* 密码弹窗 - 紧凑主体 */
+#passwordModal .modal-body {
+    padding: 12px 18px;
+}
+
+#passwordModal .form-group {
+    margin-bottom: 8px;
+}
+
+/* 密码提示文字 - 左对齐 */
+.password-tip {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: left;
+    margin-top: 8px;
+    line-height: 1.5;
+    opacity: 0.8;
+}
+
+/* 密码弹窗 - 紧凑底部 + 小按钮 */
+#passwordModal .modal-footer {
+    padding: 10px 18px;
+}
+
+#passwordModal .btn {
+    padding: 6px 16px;
+    font-size: 13px;
 }

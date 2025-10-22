@@ -1,5 +1,5 @@
 // ==========================================
-// 盲盒模块 - 九宫格老虎机版
+// 盲盒模块 - 显示导航分类/资源类型
 // ==========================================
 
 const BlindBoxModule = (() => {
@@ -8,7 +8,6 @@ const BlindBoxModule = (() => {
     let gridItems = [];
     let isAnimating = false;
     
-    // 顺时针旋转顺序（gridItems数组的索引）
     const rotateOrder = [0, 1, 2, 4, 7, 6, 5, 3];
     
     // 初始化
@@ -70,7 +69,7 @@ const BlindBoxModule = (() => {
         isAnimating = false;
     }
     
-    // 老虎机旋转动画（返回最终停留的gridItems索引）
+    // 老虎机旋转
     function runSlotMachine() {
         return new Promise(resolve => {
             const stopRotateIndex = Math.floor(Math.random() * 8);
@@ -113,7 +112,7 @@ const BlindBoxModule = (() => {
         });
     }
     
-    // 在九宫格上显示资源名称并翻转
+    // 在九宫格显示资源
     function showResourceOnGrid(gridIndex, resource) {
         return new Promise(resolve => {
             const item = gridItems[gridIndex];
@@ -154,11 +153,14 @@ const BlindBoxModule = (() => {
         resultCard.dataset.url = r.url;
         
         const date = new Date(r.time).toISOString().split('T')[0].replace(/-/g, '/');
+        const xiangmuData = window.FirebaseModule.getXiangmuData();
+        const navName = xiangmuData[r.daohang]?.name || '其它资源';
+        const category = r.type === '*' ? navName : `${navName}/${r.type}`;
         
         document.getElementById('resultTitle').textContent = r.name;
         document.getElementById('resultAuthor').textContent = r.tougao;
         document.getElementById('resultDate').textContent = date;
-        document.getElementById('resultType').textContent = r.type;
+        document.getElementById('resultType').textContent = category;
         document.getElementById('resultUrl').textContent = r.url;
         
         resultCard.classList.add('show');
@@ -174,7 +176,6 @@ const BlindBoxModule = (() => {
         if (resource) {
             await window.FirebaseModule.updateVisits(resultCard.dataset.id, resource.visits);
         }
-        window.showToast('访问成功！', 'success');
     }
     
     // 重置状态

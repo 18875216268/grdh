@@ -1,19 +1,20 @@
-// 中间导航模块 - UI交互层
+// 中间导航模块 - 优化版
 const zhongjianNav = {
     currentFilter: null,
-    
-    init() {
-        this.render();
-    },
     
     render() {
         const container = document.querySelector('.nav-section-middle');
         if (!container) return;
         
-        container.innerHTML = '';
+        const fragment = document.createDocumentFragment();
         
+        // 渲染weizhi='中部'的导航项（包括weizhi为空的兼容旧数据）
         const navItems = Object.entries(firebase.xiangmuData)
-            .filter(([key, value]) => key !== 'other' && value && typeof value === 'object' && value.name)
+            .filter(([key, value]) => {
+                if (!value || typeof value !== 'object' || !value.name) return false;
+                const weizhi = value.weizhi || '中部';
+                return weizhi === '中部';
+            })
             .sort((a, b) => (a[1].xuhao ?? 999) - (b[1].xuhao ?? 999));
         
         navItems.forEach(([key, navItem]) => {
@@ -31,26 +32,31 @@ const zhongjianNav = {
                 <span>${navItem.name}</span>
             `;
             
-            navElement.addEventListener('click', () => this.setFilter(key));
-            container.appendChild(navElement);
+            fragment.appendChild(navElement);
         });
+        
+        container.innerHTML = '';
+        container.appendChild(fragment);
     },
     
     setFilter(navKey) {
         this.currentFilter = navKey;
         
+        // 清除搜索
         document.getElementById('globalSearchInput').value = '';
         document.getElementById('globalSearchClear').style.display = 'none';
         linksModule.searchKeyword = '';
         
-        document.querySelectorAll('.nav-section-middle .admin-nav-item, .nav-section-bottom .admin-nav-item').forEach(item => {
-            item.classList.toggle('active', item.dataset.navkey === navKey);
+        // 更新导航激活状态
+        document.querySelectorAll('.admin-nav-item').forEach(item => {
+            if (item.dataset.navkey) {
+                item.classList.toggle('active', item.dataset.navkey === navKey);
+            } else {
+                item.classList.remove('active');
+            }
         });
         
-        document.querySelectorAll('.nav-section-top .admin-nav-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        
+        // 切换到链接页面
         currentSection = 'links';
         document.querySelectorAll('.content-section').forEach(sec => {
             sec.classList.toggle('active', sec.id === 'links-section');
@@ -61,17 +67,15 @@ const zhongjianNav = {
     },
     
     getFilteredLinks() {
-        const allLinks = Object.entries(firebase.ruanjiankuData)
-            .filter(([key, value]) => value && typeof value === 'object')
-            .map(([key, value]) => ({ key, ...value }));
-        
         if (!this.currentFilter) return [];
         
-        return allLinks.filter(link => link.daohang === this.currentFilter);
+        return Object.entries(firebase.ruanjiankuData)
+            .filter(([key, value]) => value && typeof value === 'object' && value.daohang === this.currentFilter)
+            .map(([key, value]) => ({ key, ...value }));
     }
 };
 
-// 链接管理模块 - UI交互层
+// 链接管理模块 - 优化版
 const linksModule = {
     currentEditKey: null,
     isEditMode: false,
@@ -86,8 +90,6 @@ const linksModule = {
         const container = document.getElementById('linksCardsGrid');
         if (!container) return;
         
-        this.allLinks = [];
-        this.filteredLinks = [];
         this.loadedCount = 0;
         container.innerHTML = '';
         
@@ -99,20 +101,24 @@ const linksModule = {
         }
         
         this.applySearch();
+        
+        // 渲染后更新批量操作状态
+        if (typeof piliangModule !== 'undefined') {
+            setTimeout(() => piliangModule.updateCardsSelection(), 0);
+        }
     },
     
     applySearch() {
-        const container = document.getElementById('linksCardsGrid');
-        
-        this.loadedCount = 0;
         this.filteredLinks = searchModule.filterItems(this.allLinks, this.searchKeyword);
         
+        const container = document.getElementById('linksCardsGrid');
         if (this.filteredLinks.length === 0) {
             container.innerHTML = '<div class="empty-card">未找到匹配的链接</div>';
             return;
         }
         
         this.filteredLinks.sort((a, b) => (b.time || 0) - (a.time || 0));
+        this.loadedCount = 0;
         container.innerHTML = '';
         this.loadMore();
     },
@@ -121,12 +127,12 @@ const linksModule = {
         if (this.loadedCount >= this.filteredLinks.length) return;
         
         const container = document.getElementById('linksCardsGrid');
+        const fragment = document.createDocumentFragment();
         const startIndex = this.loadedCount;
         const endIndex = Math.min(startIndex + lazyLoadConfig.batchSize, this.filteredLinks.length);
         
         for (let i = startIndex; i < endIndex; i++) {
             const link = this.filteredLinks[i];
-            
             if (link.daohang !== zhongjianNav.currentFilter) continue;
             
             const footerParts = [link.tougao || '木小匣'];
@@ -135,35 +141,45 @@ const linksModule = {
             }
             footerParts.push(`访问：${link.visits || 0}`);
             
-            container.insertAdjacentHTML('beforeend', `
-                <div class="link-card" data-key="${link.key}">
-                    <div class="link-card-header">
-                        <div class="link-card-title">${link.name || '未命名'}</div>
-                        <div class="link-card-actions">
-                            <button class="btn btn-primary" onclick="linksModule.showModal('${link.key}')">编辑</button>
-                            <button class="btn btn-danger" onclick="linksModule.delete('${link.key}')">删除</button>
-                            <button class="status-toggle-btn ${link.shenhe === '已审' ? 'active-reviewed' : 'active-pending'}" 
-                                onclick="linksModule.toggleStatus('${link.key}', 'shenhe')">
-                                ${link.shenhe || '已审'}
-                            </button>
-                            <button class="status-toggle-btn ${link.zhuangtai === '有效' ? 'active-valid' : 'active-invalid'}" 
-                                onclick="linksModule.toggleStatus('${link.key}', 'zhuangtai')">
-                                ${link.zhuangtai || '有效'}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="link-card-body">
-                        <div class="link-card-info">${utils.formatDate(link.time)}</div>
-                        <a href="${link.url}" target="_blank" class="link-card-url" title="${link.url}">${link.url || ''}</a>
-                    </div>
-                    <div class="link-card-footer">
-                        <span>${footerParts.join(' | ')}</span>
+            const card = document.createElement('div');
+            card.className = 'link-card';
+            card.dataset.key = link.key;
+            
+            card.innerHTML = `
+                <div class="link-card-header">
+                    <div class="link-card-title">${link.name || '未命名'}</div>
+                    <div class="link-card-actions">
+                        <button class="btn btn-primary" data-action="edit" data-key="${link.key}">编辑</button>
+                        <button class="btn btn-danger" data-action="delete" data-key="${link.key}">删除</button>
+                        <button class="status-toggle-btn ${link.shenhe === '已审' ? 'active-reviewed' : 'active-pending'}" 
+                            data-action="toggle" data-key="${link.key}" data-field="shenhe">
+                            ${link.shenhe || '已审'}
+                        </button>
+                        <button class="status-toggle-btn ${link.zhuangtai === '有效' ? 'active-valid' : 'active-invalid'}" 
+                            data-action="toggle" data-key="${link.key}" data-field="zhuangtai">
+                            ${link.zhuangtai || '有效'}
+                        </button>
                     </div>
                 </div>
-            `);
+                <div class="link-card-body">
+                    <div class="link-card-info">${utils.formatDate(link.time)}</div>
+                    <a href="${link.url}" target="_blank" class="link-card-url" title="${link.url}">${link.url || ''}</a>
+                </div>
+                <div class="link-card-footer">
+                    <span>${footerParts.join(' | ')}</span>
+                </div>
+            `;
+            
+            fragment.appendChild(card);
         }
         
+        container.appendChild(fragment);
         this.loadedCount = endIndex;
+        
+        // 加载更多后更新选中状态
+        if (typeof piliangModule !== 'undefined') {
+            setTimeout(() => piliangModule.updateCardsSelection(), 0);
+        }
     },
     
     onUrlInput() {
@@ -209,7 +225,12 @@ const linksModule = {
     
     populateNavOptions() {
         const select = document.getElementById('modalLinkNav');
-        select.innerHTML = '<option value="">请选择</option>';
+        const fragment = document.createDocumentFragment();
+        
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '请选择';
+        fragment.appendChild(defaultOption);
         
         Object.entries(firebase.xiangmuData)
             .filter(([key, value]) => value && typeof value === 'object' && value.name)
@@ -218,15 +239,25 @@ const linksModule = {
                 const option = document.createElement('option');
                 option.value = key;
                 option.textContent = navItem.name;
-                select.appendChild(option);
+                fragment.appendChild(option);
             });
+        
+        select.innerHTML = '';
+        select.appendChild(fragment);
     },
     
     populateTypeOptions(navKey) {
         const typeSelect = document.getElementById('modalLinkType');
-        typeSelect.innerHTML = '<option value="">请选择</option>';
+        const fragment = document.createDocumentFragment();
+        
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '请选择';
+        fragment.appendChild(defaultOption);
         
         if (!navKey) {
+            typeSelect.innerHTML = '';
+            typeSelect.appendChild(fragment);
             typeSelect.disabled = true;
             return;
         }
@@ -237,7 +268,12 @@ const linksModule = {
         
         const types = utils.getTypesFromNav(navItem);
         if (types.length === 0) {
-            typeSelect.innerHTML = '<option value="*">*</option>';
+            const option = document.createElement('option');
+            option.value = '*';
+            option.textContent = '*';
+            fragment.appendChild(option);
+            typeSelect.innerHTML = '';
+            typeSelect.appendChild(fragment);
             typeSelect.value = '*';
             typeSelect.disabled = true;
         } else {
@@ -245,8 +281,10 @@ const linksModule = {
                 const option = document.createElement('option');
                 option.value = type;
                 option.textContent = type;
-                typeSelect.appendChild(option);
+                fragment.appendChild(option);
             });
+            typeSelect.innerHTML = '';
+            typeSelect.appendChild(fragment);
         }
     },
     

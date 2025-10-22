@@ -1,26 +1,29 @@
-// 底部导航模块
+// 底部导航模块 - 优化版
 const dibuNav = {
     render() {
         const container = document.querySelector('.nav-section-bottom');
         if (!container) return;
         
-        const otherNav = firebase.xiangmuData.other;
-        if (!otherNav) {
-            container.innerHTML = '';
-            return;
-        }
+        const fragment = document.createDocumentFragment();
         
-        container.innerHTML = `
-            <div class="admin-nav-item" data-section="links" data-navkey="other">
-                <span class="admin-nav-icon">${otherNav.icon || '📦'}</span>
-                <span>${otherNav.name || '其它资源'}</span>
-            </div>
-        `;
+        // 渲染weizhi='底部'的导航项
+        const bottomNavItems = Object.entries(firebase.xiangmuData)
+            .filter(([key, value]) => value && typeof value === 'object' && value.name && value.weizhi === '底部')
+            .sort((a, b) => (a[1].xuhao ?? 999) - (b[1].xuhao ?? 999));
         
-        // 绑定点击事件
-        const navElement = container.querySelector('.admin-nav-item');
-        if (navElement) {
-            navElement.addEventListener('click', () => zhongjianNav.setFilter('other'));
-        }
+        bottomNavItems.forEach(([key, navItem]) => {
+            const navElement = document.createElement('div');
+            navElement.className = 'admin-nav-item';
+            navElement.dataset.section = 'links';
+            navElement.dataset.navkey = key;
+            navElement.innerHTML = `
+                <span class="admin-nav-icon">${navItem.icon || '📁'}</span>
+                <span>${navItem.name}</span>
+            `;
+            fragment.appendChild(navElement);
+        });
+        
+        container.innerHTML = '';
+        container.appendChild(fragment);
     }
 };

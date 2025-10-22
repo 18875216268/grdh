@@ -1,0 +1,30 @@
+项目结构：ht10.16优化
+==================================================
+
+├── firebase.js
+├── index.html
+├── script.js
+├── styles.css
+└── tubiao.json
+├── daohang/
+│   ├── dibu.css
+│   ├── dibu.js
+│   ├── toubu.css
+│   ├── toubu.js
+│   ├── zhongjian.css
+│   ├── zhongjian.js
+├── gonggong/
+│   ├── gg.css
+│   ├── gg.js
+├── piliang/
+│   ├── piliang.css
+│   ├── piliang.js
+├── shezhi/
+│   ├── shezhi.css
+│   ├── shezhi.js
+├── tongzhi/
+│   ├── tongzhi.css
+│   ├── tongzhi.js
+├── zujian/
+│   ├── zujian.css
+│   ├── zujian.js

@@ -64,9 +64,9 @@
     border: 1px solid var(--border);
 }
 
-/* 弹窗头部 */
+/* 弹窗头部 - 减小高度 */
 .modal-header {
-    padding: 20px;
+    padding: 15px 20px;
     border-bottom: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
@@ -74,13 +74,13 @@
 }
 
 .modal-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .modal-close {
-    font-size: 24px;
+    font-size: 22px;
     cursor: pointer;
     color: var(--text-secondary);
     line-height: 1;
@@ -92,25 +92,28 @@
     color: var(--text-primary);
 }
 
-/* 弹窗主体 */
+/* 弹窗主体 - 更紧凑 */
 .modal-body {
-    padding: 20px;
+    padding: 15px 20px;
     overflow-y: auto;
     flex: 1;
 }
 
-/* 弹窗底部 */
+/* 弹窗底部 - 减小高度 */
 .modal-footer {
-    padding: 20px;
+    padding: 12px 20px;
     border-top: 1px solid var(--border);
     display: flex;
-    gap: 12px;
     justify-content: flex-end;
 }
 
-/* 表单样式 */
+/* 表单样式 - 更紧凑 */
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
 }
 
 .form-label {
@@ -121,9 +124,10 @@
     margin-bottom: 6px;
 }
 
-.form-input {
+.form-input,
+.form-select {
     width: 100%;
-    padding: 10px 12px;
+    padding: 9px 12px;
     background: var(--bg-primary);
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -131,7 +135,8 @@
     font-size: 14px;
 }
 
-.form-input:focus {
+.form-input:focus,
+.form-select:focus {
     outline: none;
     border-color: var(--accent);
 }
@@ -142,7 +147,7 @@
 
 /* 按钮样式 */
 .btn {
-    padding: 8px 16px;
+    padding: 8px 20px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -157,16 +162,6 @@
 
 .btn-primary:hover {
     background: var(--accent-hover);
-}
-
-.btn-secondary {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-}
-
-.btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.05);
 }
 
 .btn:disabled {

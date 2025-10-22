@@ -1,12 +1,13 @@
 // ==========================================
-// Firebase 数据管理模块 - 实时监听版
+// Firebase 数据管理模块 - xiangmu架构
 // ==========================================
 
 const FirebaseModule = (() => {
     let database = null;
-    let xinxiData = {};
+    let xiangmuData = {};
     let ruanjiankuData = {};
     let onDataChange = null;
+    let passwordCache = {};
     
     // 初始化
     async function init() {
@@ -30,16 +31,16 @@ const FirebaseModule = (() => {
     // 启动实时监听器
     function startRealtimeListeners() {
         return new Promise(resolve => {
-            let xinxiLoaded = false;
+            let xiangmuLoaded = false;
             let ruanjiankuLoaded = false;
             
-            // 监听 xinxi
-            window.firebaseDB.onValue(window.firebaseDB.ref(database, 'xinxi'), snapshot => {
-                xinxiData = snapshot.val() || {};
-                console.log('xinxi 更新:', Object.keys(xinxiData).length, '个配置');
+            // 监听 xiangmu
+            window.firebaseDB.onValue(window.firebaseDB.ref(database, 'xiangmu'), snapshot => {
+                xiangmuData = snapshot.val() || {};
+                console.log('xiangmu 更新:', Object.keys(xiangmuData).length, '个导航项');
                 
-                if (!xinxiLoaded) {
-                    xinxiLoaded = true;
+                if (!xiangmuLoaded) {
+                    xiangmuLoaded = true;
                     if (ruanjiankuLoaded) resolve();
                 } else if (onDataChange) {
                     onDataChange();
@@ -53,7 +54,7 @@ const FirebaseModule = (() => {
                 
                 if (!ruanjiankuLoaded) {
                     ruanjiankuLoaded = true;
-                    if (xinxiLoaded) resolve();
+                    if (xiangmuLoaded) resolve();
                 } else if (onDataChange) {
                     onDataChange();
                 }
@@ -72,7 +73,8 @@ const FirebaseModule = (() => {
                     id: key,
                     name: value.name || '未命名',
                     url: value.url || '',
-                    type: detectType(value.url),
+                    daohang: value.daohang || 'other',
+                    type: value.type || '*',
                     time: value.time || Date.now(),
                     visits: value.visits || 0,
                     tougao: value.tougao || '匿名',
@@ -81,33 +83,75 @@ const FirebaseModule = (() => {
             }
         }
         
-        return resources.sort((a, b) => b.time - a.time);
+        // 【优化】移除此处的时间排序，由调用方决定排序逻辑
+        return resources;
     }
     
-    // 检测网盘类型
-    function detectType(url) {
-        if (!url) return '未分类';
+    // 获取导航项配置
+    function getXiangmuData() {
+        return xiangmuData;
+    }
+    
+    // 根据URL自动判断导航和类型
+    function detectNavAndType(url) {
+        if (!url) return { daohang: 'other', type: '*' };
+        
         const lowerUrl = url.toLowerCase();
         
-        for (const key in xinxiData) {
-            const value = xinxiData[key];
-            if (key !== 'tongyong' && value?.yuming) {
-                const domains = value.yuming.split(',');
-                for (let i = 0; i < domains.length; i++) {
-                    const domain = domains[i].trim();
-                    if (domain && lowerUrl.includes(domain.toLowerCase())) {
-                        return value.name;
+        // 遍历所有导航项
+        for (const navKey in xiangmuData) {
+            const navData = xiangmuData[navKey];
+            if (!navData) continue;
+            
+            // 遍历导航项下的资源类型
+            for (const typeKey in navData) {
+                const typeData = navData[typeKey];
+                
+                // 跳过非资源类型字段
+                if (typeof typeData !== 'object' || !typeData.yuming) continue;
+                
+                const domains = typeData.yuming.split(',');
+                for (const domain of domains) {
+                    const trimmedDomain = domain.trim().toLowerCase();
+                    if (trimmedDomain && lowerUrl.includes(trimmedDomain)) {
+                        return { daohang: navKey, type: typeKey };
                     }
                 }
             }
         }
         
-        return '未分类';
+        return { daohang: 'other', type: '*' };
     }
     
-    // 获取网盘配置
-    function getXinxiData() {
-        return xinxiData;
+    // 验证密码
+    function verifyPassword(navKey, password) {
+        const navData = xiangmuData[navKey];
+        if (!navData) return false;
+        
+        const mima = navData.mima || '';
+        
+        // 无密码直接通过
+        if (!mima) {
+            passwordCache[navKey] = true;
+            return true;
+        }
+        
+        // 验证密码
+        if (password === mima) {
+            passwordCache[navKey] = true;
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // 检查是否已验证
+    function isPasswordVerified(navKey) {
+        const navData = xiangmuData[navKey];
+        if (!navData) return true;
+        
+        const mima = navData.mima || '';
+        return !mima || passwordCache[navKey] === true;
     }
     
     // 设置数据变化回调
@@ -135,7 +179,8 @@ const FirebaseModule = (() => {
             await window.firebaseDB.set(ref, {
                 name: data.name,
                 url: data.url,
-                type: detectType(data.url),
+                daohang: data.daohang,
+                type: data.type,
                 time: Date.now(),
                 visits: 0,
                 tougao: data.tougao,
@@ -152,7 +197,10 @@ const FirebaseModule = (() => {
     return {
         init,
         getResources,
-        getXinxiData,
+        getXiangmuData,
+        detectNavAndType,
+        verifyPassword,
+        isPasswordVerified,
         setDataChangeCallback,
         updateVisits,
         addResource
