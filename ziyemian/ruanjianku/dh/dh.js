@@ -1,5 +1,5 @@
 // ==========================================
-// 导航模块 - 支持顶中底部分、密码验证
+// 导航模块 - 支持顶中底部分、密码验证、全部导航
 // ==========================================
 
 const NavigationModule = (() => {
@@ -24,17 +24,24 @@ const NavigationModule = (() => {
             
             const navKey = item.dataset.type;
             
-            // 验证密码
-            if (!window.FirebaseModule.isPasswordVerified(navKey)) {
-                const navName = item.querySelector('.nav-text')?.textContent.replace(' 🔒', '') || '该导航项';
-                const password = await showPasswordPrompt(navName);
-                if (password === null) return;
-                
-                if (!window.FirebaseModule.verifyPassword(navKey, password)) {
-                    window.showToast('密码错误', 'error');
-                    return;
+            // "全部"导航项无需密码验证
+            if (navKey !== 'all') {
+                // 验证密码
+                if (!window.FirebaseModule.isPasswordVerified(navKey)) {
+                    const xiangmuData = window.FirebaseModule.getXiangmuData();
+                    const navName = xiangmuData[navKey]?.name || '该导航项';
+                    const password = await showPasswordPrompt(navName);
+                    if (password === null) return;
+                    
+                    if (!window.FirebaseModule.verifyPassword(navKey, password)) {
+                        window.showToast('密码错误', 'error');
+                        return;
+                    }
+                    window.showToast('验证成功', 'success');
+                    
+                    // 密码验证成功后，重新渲染导航项以移除小锁
+                    render(xiangmuData);
                 }
-                window.showToast('验证成功', 'success');
             }
             
             // 更新当前选中的导航key
@@ -99,6 +106,16 @@ const NavigationModule = (() => {
         middleContainer.innerHTML = '';
         bottomContainer.innerHTML = '';
         
+        // 固定添加"全部"导航项到顶部
+        const allNavItem = createNavItem({
+            key: 'all',
+            name: '全部',
+            icon: '🌌',
+            xuhao: 0,
+            mima: ''
+        });
+        topContainer.appendChild(allNavItem);
+        
         // 分组并排序
         const groups = { 顶部: [], 中部: [], 底部: [] };
         
@@ -122,7 +139,7 @@ const NavigationModule = (() => {
         // 各组内按序号排序
         Object.values(groups).forEach(arr => arr.sort((a, b) => a.xuhao - b.xuhao));
         
-        // 渲染顶部
+        // 渲染顶部(在"全部"之后)
         groups.顶部.forEach(item => topContainer.appendChild(createNavItem(item)));
         
         // 渲染中部
@@ -137,16 +154,16 @@ const NavigationModule = (() => {
             if (activeNav) {
                 activeNav.classList.add('active');
             } else {
-                // 如果之前选中的导航项不存在了，选中第一个
+                // 如果之前选中的导航项不存在了，选中"全部"
                 activateFirstNav();
             }
         } else {
-            // 首次加载，激活第一个
+            // 首次加载，激活"全部"
             activateFirstNav();
         }
     }
     
-    // 激活第一个导航项
+    // 激活第一个导航项(即"全部")
     function activateFirstNav() {
         const firstNav = document.querySelector('.nav-item');
         if (firstNav) {
@@ -164,7 +181,10 @@ const NavigationModule = (() => {
         
         const icon = item.icon || '📁';
         const firstChar = item.name.charAt(0);
-        const lockIcon = item.mima ? ' 🔒' : '';
+        
+        // 判断是否需要显示小锁（有密码且未验证）
+        const needLock = item.mima && !window.FirebaseModule.isPasswordVerified(item.key);
+        const lockIcon = needLock ? '<span class="nav-lock">🔒</span>' : '';
         
         li.innerHTML = `
             <span class="nav-icon" data-first-char="${firstChar}">${icon}</span>

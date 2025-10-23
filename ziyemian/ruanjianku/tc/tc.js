@@ -26,10 +26,10 @@ const TipModule = (() => {
     
     // 显示提示
     function showTip() {
-        // 延迟500ms显示，让页面先加载
+        // 延迟100ms显示，让页面先加载
         setTimeout(() => {
             modal.classList.add('show');
-        }, 500);
+        }, 100);
     }
     
     // 关闭提示

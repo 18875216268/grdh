@@ -86,6 +86,7 @@
     cursor: pointer;
     transition: all var(--transition);
     border-left: 3px solid transparent;
+    position: relative;
 }
 
 .nav-item:hover {
@@ -123,6 +124,13 @@
 .nav-item.active .nav-text,
 .nav-item:hover .nav-text {
     color: var(--text-primary);
+}
+
+/* 密码小锁 */
+.nav-lock {
+    font-size: 10px;
+    margin-left: 4px;
+    opacity: 0.7;
 }
 
 /* 加载状态 */

@@ -96,7 +96,7 @@ const App = (() => {
         
         const grid = document.getElementById('resourceGrid');
         if (currentFilteredResources.length === 0) {
-            grid.innerHTML = '<div class="empty-placeholder">暂无资源，点击右下角按钮投稿</div>';
+            grid.innerHTML = '<div class="empty-placeholder">👉资源更新中，欢迎点击右下角投稿按钮投稿......</div>';
             return;
         }
         
@@ -134,7 +134,20 @@ const App = (() => {
         let result = allResources;
         
         // 按导航项过滤
-        if (currentNavKey !== 'all') {
+        if (currentNavKey === 'all') {
+            // "全部"导航项: 显示未被隐藏且已验证密码的导航项资源
+            const xiangmuData = window.FirebaseModule.getXiangmuData();
+            result = result.filter(r => {
+                const navData = xiangmuData[r.daohang];
+                // 排除没有导航配置的资源
+                if (!navData) return false;
+                // 排除被隐藏的导航项的资源
+                if (navData.zhuangtai === '隐藏') return false;
+                // 排除有密码但未验证的导航项的资源
+                if (!window.FirebaseModule.isPasswordVerified(r.daohang)) return false;
+                return true;
+            });
+        } else {
             result = result.filter(r => r.daohang === currentNavKey);
         }
         
