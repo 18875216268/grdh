@@ -1,4 +1,4 @@
-// 组件模块 - 统一管理上传、下载、刷新功能
+// 组件模块 - 统一管理上传、下载、刷新、模板功能
 const zujianModule = {
     // 动态加载SheetJS库
     async ensureSheetJS() {
@@ -163,23 +163,19 @@ const zujianModule = {
             let addCount = 0;
             let updateCount = 0;
             let skipCount = 0;
-            let nameCounter = 1;
-
+            
             for (const row of rows) {
                 const data = this.extractRowData(row);
                 
-                if (!data.url) {
+                if (!data.url || !data.name) {
                     skipCount++;
                     continue;
                 }
-
+                
                 const existingKey = this.checkUrlExists(data.url);
                 const existing = existingKey ? firebase.ruanjiankuData[existingKey] : null;
                 
-                const name = existing 
-                    ? (this.isEmptyValue(data.name) ? existing.name : data.name)
-                    : (data.name || `资源${nameCounter++}`);
-                
+                const name = data.name;
                 let navKey, type;
                 
                 if (existing) {
@@ -304,6 +300,62 @@ const zujianModule = {
         }
     },
 
+    // 下载模板文件
+    async downloadTemplate() {
+        if (!await this.ensureSheetJS()) return;
+
+        try {
+            Toast.show('正在生成模板文件...', 'info');
+
+            // 获取所有导航分类名称
+            const navNames = Object.entries(firebase.xiangmuData)
+                .filter(([_, v]) => v && typeof v === 'object' && v.name)
+                .sort((a, b) => (a[1].xuhao ?? 999) - (b[1].xuhao ?? 999))
+                .map(([_, v]) => v.name);
+
+            // 创建示例数据
+            const templateData = [
+                {
+                    '网站名称': '示例网站1',
+                    '网站链接': 'https://example.com',
+                    '导航分类': navNames[0] || '',
+                    '资源类型': '',
+                    '投稿人': '木小匣'
+                },
+                {
+                    '网站名称': '示例网站2',
+                    '网站链接': 'https://example2.com',
+                    '导航分类': navNames[1] || '',
+                    '资源类型': '',
+                    '投稿人': '张三'
+                }
+            ];
+
+            const worksheet = window.XLSX.utils.json_to_sheet(templateData);
+            
+            // 设置列宽
+            worksheet['!cols'] = [
+                { wch: 20 },
+                { wch: 40 },
+                { wch: 15 },
+                { wch: 15 },
+                { wch: 15 }
+            ];
+
+            const workbook = window.XLSX.utils.book_new();
+            window.XLSX.utils.book_append_sheet(workbook, worksheet, '资源模板');
+
+            const fileName = '批量上传模板.xlsx';
+            window.XLSX.writeFile(workbook, fileName);
+
+            Toast.show('模板下载成功', 'success');
+
+        } catch (error) {
+            console.error('模板下载失败:', error);
+            Toast.show('模板下载失败，请重试', 'error');
+        }
+    },
+
     // 刷新/重新归类所有资源
     async refresh() {
         Toast.show('开始重新归类所有资源...', 'info');
@@ -383,8 +435,14 @@ const zujianModule = {
         Toast.show(`成功更新 ${updateCount} 个字段`, 'success');
     },
 
-    // 初始化三个按钮
+    // 初始化四个按钮
     init() {
+        // 模板按钮
+        const templateBtn = document.querySelector('.template-btn');
+        if (templateBtn) {
+            templateBtn.onclick = () => this.downloadTemplate();
+        }
+
         // 上传按钮
         const uploadBtn = document.querySelector('.upload-btn');
         if (uploadBtn) {

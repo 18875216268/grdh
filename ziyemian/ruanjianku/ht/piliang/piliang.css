@@ -64,6 +64,12 @@
     grid-column: 2;
 }
 
+/* 模板按钮 - 第4行第1列 */
+.template-btn {
+    grid-row: 4;
+    grid-column: 1;
+}
+
 /* 批量操作按钮样式 */
 .batch-btn {
     width: 36px;

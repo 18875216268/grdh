@@ -8,7 +8,21 @@ const zhongjianNav = {
         
         const fragment = document.createDocumentFragment();
         
-        // 渲染weizhi='中部'的导航项（包括weizhi为空的兼容旧数据）
+        // 固定显示"全部"导航项(第一个位置)
+        const allNavItem = document.createElement('div');
+        allNavItem.className = 'admin-nav-item';
+        allNavItem.dataset.section = 'links';
+        allNavItem.dataset.navkey = 'all';
+        if (this.currentFilter === 'all') {
+            allNavItem.classList.add('active');
+        }
+        allNavItem.innerHTML = `
+            <span class="admin-nav-icon">📚</span>
+            <span>全部</span>
+        `;
+        fragment.appendChild(allNavItem);
+        
+        // 渲染weizhi='中部'的导航项(包括weizhi为空的兼容旧数据)
         const navItems = Object.entries(firebase.xiangmuData)
             .filter(([key, value]) => {
                 if (!value || typeof value !== 'object' || !value.name) return false;
@@ -67,6 +81,13 @@ const zhongjianNav = {
     },
     
     getFilteredLinks() {
+        // 全部导航项显示所有链接
+        if (this.currentFilter === 'all') {
+            return Object.entries(firebase.ruanjiankuData)
+                .filter(([key, value]) => value && typeof value === 'object')
+                .map(([key, value]) => ({ key, ...value }));
+        }
+        
         if (!this.currentFilter) return [];
         
         return Object.entries(firebase.ruanjiankuData)
@@ -133,7 +154,6 @@ const linksModule = {
         
         for (let i = startIndex; i < endIndex; i++) {
             const link = this.filteredLinks[i];
-            if (link.daohang !== zhongjianNav.currentFilter) continue;
             
             const footerParts = [link.tougao || '木小匣'];
             if (link.type && link.type !== '*') {
@@ -176,191 +196,115 @@ const linksModule = {
         container.appendChild(fragment);
         this.loadedCount = endIndex;
         
-        // 加载更多后更新选中状态
         if (typeof piliangModule !== 'undefined') {
             setTimeout(() => piliangModule.updateCardsSelection(), 0);
         }
     },
     
-    onUrlInput() {
-        const urlInput = document.getElementById('modalLinkUrl');
-        const navSelect = document.getElementById('modalLinkNav');
-        const typeSelect = document.getElementById('modalLinkType');
-        const url = urlInput.value.trim();
-        
-        if (!url) {
-            if (!this.isEditMode) {
-                navSelect.disabled = true;
-                typeSelect.disabled = true;
-                navSelect.value = '';
-                typeSelect.innerHTML = '<option value="">请选择</option>';
-            }
-            return;
-        }
-        
-        if (!this.isEditMode) {
-            const existingKey = zujianModule.checkUrlExists(url);
-            if (existingKey) {
-                Toast.show('该链接已存在，将加载现有信息', 'warning');
-                this.showModal(existingKey);
-                return;
-            }
-        }
-        
-        const { navKey, type } = utils.detectNavAndType(url, firebase.xiangmuData);
-        this.urlDetectedNav = navKey;
-        this.urlDetectedType = type;
-        
-        navSelect.disabled = false;
-        
-        if (navKey && type) {
-            navSelect.value = navKey;
-            this.populateTypeOptions(navKey);
-            typeSelect.value = type;
-        } else {
-            navSelect.value = zhongjianNav.currentFilter || 'other';
-            this.populateTypeOptions(navSelect.value);
-        }
-    },
-    
-    populateNavOptions() {
-        const select = document.getElementById('modalLinkNav');
-        const fragment = document.createDocumentFragment();
-        
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = '请选择';
-        fragment.appendChild(defaultOption);
-        
-        Object.entries(firebase.xiangmuData)
-            .filter(([key, value]) => value && typeof value === 'object' && value.name)
-            .sort((a, b) => (a[1].xuhao ?? 999) - (b[1].xuhao ?? 999))
-            .forEach(([key, navItem]) => {
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = navItem.name;
-                fragment.appendChild(option);
-            });
-        
-        select.innerHTML = '';
-        select.appendChild(fragment);
-    },
-    
-    populateTypeOptions(navKey) {
-        const typeSelect = document.getElementById('modalLinkType');
-        const fragment = document.createDocumentFragment();
-        
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = '请选择';
-        fragment.appendChild(defaultOption);
-        
-        if (!navKey) {
-            typeSelect.innerHTML = '';
-            typeSelect.appendChild(fragment);
-            typeSelect.disabled = true;
-            return;
-        }
-        
-        typeSelect.disabled = false;
-        const navItem = firebase.xiangmuData[navKey];
-        if (!navItem) return;
-        
-        const types = utils.getTypesFromNav(navItem);
-        if (types.length === 0) {
-            const option = document.createElement('option');
-            option.value = '*';
-            option.textContent = '*';
-            fragment.appendChild(option);
-            typeSelect.innerHTML = '';
-            typeSelect.appendChild(fragment);
-            typeSelect.value = '*';
-            typeSelect.disabled = true;
-        } else {
-            types.forEach(type => {
-                const option = document.createElement('option');
-                option.value = type;
-                option.textContent = type;
-                fragment.appendChild(option);
-            });
-            typeSelect.innerHTML = '';
-            typeSelect.appendChild(fragment);
-        }
-    },
-    
-    onNavChange() {
-        const navKey = document.getElementById('modalLinkNav').value;
-        this.populateTypeOptions(navKey);
-    },
-
-    showModal(key = null) {
+    async showModal(key = null) {
         this.currentEditKey = key;
         this.isEditMode = !!key;
-        this.urlDetectedNav = null;
-        this.urlDetectedType = null;
+        const link = key ? firebase.ruanjiankuData[key] : null;
         
-        const modal = document.getElementById('addLinkModal');
-        const urlInput = document.getElementById('modalLinkUrl');
+        document.getElementById('modalLinkName').value = link?.name || '';
+        document.getElementById('modalLinkUrl').value = link?.url || '';
+        document.getElementById('modalLinkContributor').value = link?.tougao || '';
+        
         const navSelect = document.getElementById('modalLinkNav');
-        const typeSelect = document.getElementById('modalLinkType');
-        const nameInput = document.getElementById('modalLinkName');
-        const contributorInput = document.getElementById('modalLinkContributor');
+        navSelect.innerHTML = '';
         
-        this.populateNavOptions();
+        const sortedNavItems = Object.entries(firebase.xiangmuData)
+            .filter(([_, v]) => v && typeof v === 'object' && v.name)
+            .sort((a, b) => (a[1].xuhao ?? 999) - (b[1].xuhao ?? 999));
         
-        if (this.isEditMode) {
-            const item = firebase.ruanjiankuData[key];
-            nameInput.value = item?.name || '';
-            urlInput.value = item?.url || '';
-            contributorInput.value = item?.tougao || '';
-            
-            navSelect.disabled = false;
-            navSelect.value = item?.daohang || '';
-            
-            this.populateTypeOptions(item?.daohang);
-            typeSelect.value = item?.type || '';
+        sortedNavItems.forEach(([navKey, navItem]) => {
+            const option = document.createElement('option');
+            option.value = navKey;
+            option.textContent = navItem.name;
+            if (link?.daohang === navKey) option.selected = true;
+            navSelect.appendChild(option);
+        });
+        
+        const selectedNavKey = navSelect.value;
+        this.updateTypeSelect(selectedNavKey, link?.type);
+        
+        if (link?.url) {
+            const detected = utils.detectNavAndType(link.url, firebase.xiangmuData);
+            this.urlDetectedNav = detected.navKey;
+            this.urlDetectedType = detected.type;
         } else {
-            nameInput.value = '';
-            urlInput.value = '';
-            contributorInput.value = '';
-            
-            navSelect.disabled = true;
-            typeSelect.disabled = true;
-            navSelect.value = '';
-            typeSelect.innerHTML = '<option value="">请选择</option>';
+            this.urlDetectedNav = null;
+            this.urlDetectedType = null;
         }
         
-        urlInput.oninput = () => this.onUrlInput();
-        navSelect.onchange = () => this.onNavChange();
-        
-        document.querySelector('#addLinkModal .modal-title').textContent = '@编辑资源';
-        modal.classList.add('show');
+        document.getElementById('addLinkModal').classList.add('show');
     },
-
+    
     hideModal() {
         document.getElementById('addLinkModal').classList.remove('show');
     },
-
+    
+    updateTypeSelect(navKey, selectedType = null) {
+        const typeSelect = document.getElementById('modalLinkType');
+        typeSelect.innerHTML = '';
+        
+        const navItem = firebase.xiangmuData[navKey];
+        const types = utils.getTypesFromNav(navItem);
+        
+        const allOption = document.createElement('option');
+        allOption.value = '*';
+        allOption.textContent = '通用';
+        typeSelect.appendChild(allOption);
+        
+        types.forEach(typeName => {
+            const option = document.createElement('option');
+            option.value = typeName;
+            option.textContent = typeName;
+            typeSelect.appendChild(option);
+        });
+        
+        if (selectedType) {
+            const cleanType = selectedType.replace(/^\*/, '');
+            if (types.includes(cleanType)) {
+                typeSelect.value = cleanType;
+            } else {
+                typeSelect.value = '*';
+            }
+        } else {
+            typeSelect.value = '*';
+        }
+    },
+    
     async save() {
+        const name = document.getElementById('modalLinkName').value.trim();
+        const url = document.getElementById('modalLinkUrl').value.trim();
+        const navKey = document.getElementById('modalLinkNav').value;
+        const type = document.getElementById('modalLinkType').value;
+        const contributor = document.getElementById('modalLinkContributor').value.trim();
+        
         const success = await zujianModule.saveResource({
             key: this.currentEditKey,
-            name: document.getElementById('modalLinkName').value,
-            url: document.getElementById('modalLinkUrl').value,
-            navKey: document.getElementById('modalLinkNav').value,
-            type: document.getElementById('modalLinkType').value,
-            contributor: document.getElementById('modalLinkContributor').value
+            name,
+            url,
+            navKey,
+            type,
+            contributor
         });
         
         if (success) {
             this.hideModal();
         }
     },
-
+    
+    async delete(key) {
+        const success = await zujianModule.deleteResource(key);
+        if (success) {
+            piliangModule.selectedKeys.delete(key);
+            piliangModule.updateButtonStates();
+        }
+    },
+    
     async toggleStatus(key, field) {
         await zujianModule.toggleStatus(key, field);
-    },
-
-    async delete(key) {
-        await zujianModule.deleteResource(key);
     }
 };
