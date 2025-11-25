@@ -138,7 +138,7 @@ const linksModule = {
             return;
         }
         
-        this.filteredLinks.sort((a, b) => (b.time || 0) - (a.time || 0));
+        this.filteredLinks.sort((a, b) => (b.visits || 0) - (a.visits || 0));
         this.loadedCount = 0;
         container.innerHTML = '';
         this.loadMore();
@@ -209,6 +209,7 @@ const linksModule = {
         document.getElementById('modalLinkName').value = link?.name || '';
         document.getElementById('modalLinkUrl').value = link?.url || '';
         document.getElementById('modalLinkContributor').value = link?.tougao || '';
+        document.getElementById('modalLinkVisits').value = link?.visits || 0;
         
         const navSelect = document.getElementById('modalLinkNav');
         navSelect.innerHTML = '';
@@ -281,6 +282,13 @@ const linksModule = {
         const navKey = document.getElementById('modalLinkNav').value;
         const type = document.getElementById('modalLinkType').value;
         const contributor = document.getElementById('modalLinkContributor').value.trim();
+        const visitsInput = document.getElementById('modalLinkVisits').value.trim();
+        
+        const visits = parseInt(visitsInput) || 0;
+        if (visits < 0) {
+            Toast.show('访问次数不能为负数', 'error');
+            return;
+        }
         
         const success = await zujianModule.saveResource({
             key: this.currentEditKey,
@@ -288,7 +296,8 @@ const linksModule = {
             url,
             navKey,
             type,
-            contributor
+            contributor,
+            visits
         });
         
         if (success) {

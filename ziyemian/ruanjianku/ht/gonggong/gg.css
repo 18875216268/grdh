@@ -293,7 +293,7 @@ body {
     background: rgba(255, 255, 255, 0.05);
 }
 
-/* 弹窗样式 - 统一高度 */
+/* 弹窗样式 */
 .modal {
     display: none;
     position: fixed;
@@ -316,7 +316,7 @@ body {
     border-radius: 8px;
     width: 90%;
     max-width: 450px;
-    max-height: 650px;
+    max-height: 60vh;
     display: flex;
     flex-direction: column;
     border: 1px solid var(--border);

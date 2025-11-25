@@ -85,7 +85,7 @@ const zujianModule = {
 
     // 保存单个资源
     async saveResource(data) {
-        const { key, name, url, navKey, type, contributor } = data;
+        const { key, name, url, navKey, type, contributor, visits } = data;
 
         if (!name?.trim() || !url?.trim()) {
             Toast.show('请填写网站名称和链接', 'error');
@@ -107,7 +107,7 @@ const zujianModule = {
             type: finalType,
             tougao: contributor?.trim() || '木小匣',
             time: existing?.time || Date.now(),
-            visits: existing?.visits || 0,
+            visits: visits !== undefined ? visits : (existing?.visits || 0),
             shenhe: existing?.shenhe || '已审',
             zhuangtai: existing?.zhuangtai || '有效'
         };
