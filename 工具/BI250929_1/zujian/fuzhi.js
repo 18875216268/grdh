@@ -1,4 +1,4 @@
-// 复制模块 - 路径健壮版 (v2.0)
+// 复制模块 - 最终优化版
 const FuzhiModule = (function() {
     
     function init() {
@@ -8,30 +8,6 @@ const FuzhiModule = (function() {
         btn.title = '复制为图片';
         btn.onclick = handleCopy;
         document.body.appendChild(btn);
-    }
-    
-    // 获取基础路径（确保无论部署在哪都能正确找到资源）
-    function getBasePath() {
-        const scripts = document.querySelectorAll('script[src]');
-        for (const script of scripts) {
-            if (script.src.includes('fuzhi.js')) {
-                // fuzhi.js 在 zujian/ 目录下，所以基础路径需要去掉 zujian/fuzhi.js
-                return script.src.replace(/zujian\/fuzhi\.js.*$/, '');
-            }
-        }
-        // 备用方案：使用当前页面路径
-        return window.location.href.replace(/\/[^/]*$/, '/');
-    }
-    
-    // 预加载图片
-    function preloadImage(src) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => resolve(img);
-            img.onerror = () => resolve(null); // 失败时返回null，不阻塞流程
-            img.src = src;
-        });
     }
     
     async function handleCopy() {
@@ -50,12 +26,6 @@ const FuzhiModule = (function() {
         try {
             window.showToast('正在生成截图...', 'info');
             
-            const basePath = getBasePath();
-            const bgImageUrl = basePath + 'beijing.png';
-            
-            // 预加载背景图片
-            const bgImage = await preloadImage(bgImageUrl);
-            
             const tableWidth = table.scrollWidth;
             const tableHeight = table.scrollHeight;
             const viewWidth = Math.max(window.innerWidth, tableWidth + 100);
@@ -63,13 +33,6 @@ const FuzhiModule = (function() {
             
             // 创建临时容器
             const tempContainer = document.createElement('div');
-            
-            // 构建背景样式（有图片用图片，没有用纯色）
-            let bgStyle = 'background-color: #0a0e1a;';
-            if (bgImage) {
-                bgStyle += ` background-image: url("${bgImageUrl}"); background-size: cover; background-position: center;`;
-            }
-            
             tempContainer.style.cssText = `
                 position: fixed;
                 left: -99999px;
@@ -78,7 +41,10 @@ const FuzhiModule = (function() {
                 height: ${viewHeight}px;
                 z-index: -1;
                 pointer-events: none;
-                ${bgStyle}
+                background-color: #0a0e1a;
+                background-image: url("beijing.png");
+                background-size: cover;
+                background-position: center;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -162,6 +128,7 @@ const FuzhiModule = (function() {
                     box-shadow: 0 0 20px rgba(0, 128, 255, 0.6);
                 `;
                 
+                // 使用经过验证有效的硬编码padding对齐方案
                 const icon = cloned.querySelector('i');
                 if (icon) {
                     icon.style.cssText = `
@@ -185,20 +152,20 @@ const FuzhiModule = (function() {
                 tempContainer.appendChild(cloned);
             }
             
-            // 克隆右下角按钮
-            cloneButton('.chakan-btn', '138px', false);
-            cloneButton('.shezhi-btn', '12px', true);
-            cloneButton('.xiazai-btn', '54px', false);
-            cloneButton('.fuzhi-btn', '96px', false);
+            // 克隆右下角按钮 - 补充遗漏的查看按钮
+            cloneButton('.chakan-btn', '138px', false);  // 查看按钮
+            cloneButton('.shezhi-btn', '12px', true);     // 设置按钮
+            cloneButton('.xiazai-btn', '54px', false);    // 下载按钮
+            cloneButton('.fuzhi-btn', '96px', false);     // 复制按钮
             
             document.body.appendChild(tempContainer);
             
-            // 等待渲染
+            // 简化的等待逻辑
             await new Promise(resolve => setTimeout(resolve, 300));
             
             // 截图
             const canvas = await html2canvas(tempContainer, {
-                backgroundColor: '#0a0e1a', // 始终设置兜底背景色
+                backgroundColor: null,
                 scale: 2,
                 width: viewWidth,
                 height: viewHeight,
@@ -211,26 +178,14 @@ const FuzhiModule = (function() {
             
             document.body.removeChild(tempContainer);
             
-            // 检查 canvas 是否有效
-            if (canvas.width === 0 || canvas.height === 0) {
-                throw new Error('生成的画布无效');
-            }
-            
-            // 复制到剪贴板
+            // 直接复制到剪贴板
             canvas.toBlob(async (blob) => {
-                if (!blob) {
-                    window.showToast('生成图片失败', 'error');
-                    return;
-                }
-                
                 try {
                     const item = new ClipboardItem({ 'image/png': blob });
                     await navigator.clipboard.write([item]);
                     window.showToast('已复制到剪贴板。', 'success');
                 } catch (err) {
-                    // 剪贴板API失败时，提供下载作为备选
-                    console.error('剪贴板写入失败:', err);
-                    downloadAsBackup(blob);
+                    window.showToast('复制失败：' + err.message, 'error');
                 }
             }, 'image/png', 1.0);
             
@@ -239,20 +194,8 @@ const FuzhiModule = (function() {
             const temp = document.querySelector('div[style*="left: -99999px"]');
             if (temp) temp.remove();
             
-            console.error('复制失败:', error);
             window.showToast('复制失败：' + error.message, 'error');
         }
-    }
-    
-    // 备用下载方案
-    function downloadAsBackup(blob) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `截图_${new Date().toISOString().slice(0,10)}.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-        window.showToast('已下载为图片（剪贴板不可用）', 'info');
     }
     
     return { init };
