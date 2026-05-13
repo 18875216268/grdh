@@ -1,0 +1,3411 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pms活动管理Pro</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f6bff'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-size='34' font-family='Segoe UI,Arial,sans-serif' fill='white'%3EP%3C/text%3E%3C/svg%3E">
+    <style>
+        :root {
+            --bg: #eef2f7;
+            --panel: #ffffff;
+            --text: #1f2a3d;
+            --muted: #6f7a8b;
+            --primary: #2f6bff;
+            --primary-hover: #2359da;
+            --border: #d9e1ec;
+            --shadow: 0 12px 30px rgba(30, 48, 80, 0.08);
+            --layout-gap: 14px;
+            --panel-inner-padding: 6px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: radial-gradient(1200px 520px at 0% -12%, #dde8ff 0%, transparent 48%),
+                        radial-gradient(900px 420px at 100% -8%, #e8f6ef 0%, transparent 50%),
+                        var(--bg);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: none;
+            height: 100vh;
+            margin: 0 auto;
+            padding: var(--layout-gap);
+            display: grid;
+            gap: var(--layout-gap);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+            gap: var(--layout-gap);
+            align-items: stretch;
+            min-height: 0;
+            height: 100%;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: var(--layout-gap);
+            height: 100%;
+            min-width: 0;
+            min-height: 0;
+        }
+
+        .left-column .panel {
+            padding: var(--panel-inner-padding);
+        }
+
+        .left-column .panel-title {
+            margin-bottom: 10px;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: var(--layout-gap);
+            height: 100%;
+            min-width: 0;
+            min-height: 0;
+        }
+
+        .hint {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 14px 13px;
+            box-shadow: var(--shadow);
+        }
+
+        .panel-title {
+            margin: 0 0 12px;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: .01em;
+        }
+
+        .auth-card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .auth-info-card {
+            border: 1px solid #dbe4f2;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #f8fbff 0%, #f3f7ff 100%);
+            padding: 8px 10px;
+            min-height: 56px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-card-label {
+            font-size: 11px;
+            color: #6e7b90;
+            margin-bottom: 3px;
+        }
+
+        .auth-card-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #20304a;
+            line-height: 1.25;
+            word-break: break-all;
+        }
+
+        .auth-info-card.status-ok {
+            border-color: #86efac;
+            background: linear-gradient(180deg, #f2fdf4 0%, #ecf9f0 100%);
+        }
+
+        .auth-info-card.status-ok .auth-card-value {
+            color: #166534;
+        }
+
+        .rule-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(200px, 1fr));
+            gap: 7px;
+        }
+
+        .rule-grid .wide { grid-column: 1 / 3; }
+
+        .config-card,
+        .area-config-box {
+            border: 1px solid #dbe3ef;
+            border-radius: 12px;
+            padding: 8px;
+            background: #fbfdff;
+            margin-bottom: 6px;
+            transition: opacity .2s;
+        }
+
+        .config-card.is-disabled,
+        .area-config-box.is-disabled {
+            opacity: 0.56;
+        }
+
+        .dual-config-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 7px;
+            margin-bottom: 6px;
+            align-items: stretch;
+        }
+
+        .dual-config-row .config-card {
+            margin-bottom: 0;
+        }
+
+        .time-range-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            gap: 7px;
+            align-items: center;
+        }
+
+        .time-range-sep {
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .area-config-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .area-config-title {
+            margin: 0;
+            font-size: 12px;
+            font-weight: 600;
+            color: #24324a;
+        }
+
+        .area-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(200px, 1fr));
+            gap: 7px;
+        }
+
+        .area-grid .wide { grid-column: 1 / 3; }
+
+        .radio-line {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: #344158;
+            padding-top: 3px;
+        }
+
+        .radio-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .radio-item input {
+            width: auto;
+            margin: 0;
+        }
+
+        .switch-line {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #344158;
+        }
+
+        .switch-line input {
+            width: auto;
+            margin: 0;
+        }
+
+        .autocomplete {
+            position: relative;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 4px);
+            z-index: 1200;
+            margin: 0;
+            padding: 4px;
+            list-style: none;
+            max-height: 190px;
+            overflow: auto;
+            background: #fff;
+            border: 1px solid #d3deeb;
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(25, 40, 70, 0.14);
+            display: none;
+        }
+
+        #area-config-box .autocomplete-list {
+            top: auto;
+            bottom: calc(100% + 4px);
+        }
+
+        .autocomplete-list.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 7px 8px;
+            border-radius: 7px;
+            font-size: 13px;
+            color: #24324a;
+            cursor: pointer;
+            line-height: 1.35;
+            word-break: break-all;
+        }
+
+        .autocomplete-item:hover {
+            background: #eef4ff;
+        }
+
+        .autocomplete-empty {
+            padding: 7px 8px;
+            font-size: 12px;
+            color: #6f7a8b;
+        }
+
+        .field {
+            display: grid;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        input, textarea, select, button { font: inherit; }
+
+        input:not([type="checkbox"]):not([type="radio"]), select {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            height: 32px;
+            padding: 0 10px;
+            font-size: 13px;
+            color: #111827;
+            background: #fff;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        textarea {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 13px;
+            color: #111827;
+            background: #fff;
+            line-height: 1.45;
+            white-space: pre;
+            resize: none;
+            min-height: 0;
+            height: 100%;
+            overflow: auto;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        input:not([type="checkbox"]):not([type="radio"]):focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #93b2ff;
+            box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.12);
+        }
+
+        input[readonly] { background: #f9fafb; }
+
+        .work-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: visible;
+        }
+
+        .work-panel .ids-config-card {
+            flex: 1 1 220px;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .work-panel .ids-box {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .work-panel #ids-input {
+            height: 100%;
+            max-height: 100%;
+        }
+
+        .actions {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .task-bar {
+            position: relative;
+            min-height: 62px;
+            padding: var(--panel-inner-padding);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .task-actions {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.33fr);
+            gap: 6px;
+            width: 100%;
+        }
+
+        .task-actions button {
+            width: 100%;
+            height: 50px;
+            padding: 0 12px;
+        }
+
+        button {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            background: #e5e7eb;
+            color: #111827;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        button.primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        button.primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+
+        button.warn {
+            background: #fff7ed;
+            color: #9a3412;
+            border: 1px solid #fdba74;
+        }
+
+        #btn-login.login-btn-ok {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        #btn-login.login-btn-ok:hover:not(:disabled) {
+            background: #15803d;
+        }
+
+        #btn-login.login-btn-warn {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+        #btn-login.login-btn-warn:hover:not(:disabled) {
+            background: #d97706;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: .6;
+        }
+
+        #log-box {
+            margin: 0;
+            background: #0b1020;
+            color: #c9d4ff;
+            border-radius: 8px;
+            border: 1px solid #1f2a44;
+            min-height: 320px;
+            max-height: 520px;
+            overflow: auto;
+            padding: 11px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 12px;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .right-column .log-panel {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            padding: var(--panel-inner-padding);
+        }
+
+        .right-column .log-panel #log-box {
+            min-height: 0;
+            max-height: none;
+            flex: 1;
+        }
+
+        .line-ok { color: #86efac; }
+        .line-warn { color: #fcd34d; }
+        .line-err { color: #fca5a5; }
+
+        .settings-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .settings-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .settings-dialog {
+            width: 440px;
+            max-width: calc(100vw - 24px);
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 20px 44px rgba(0, 0, 0, 0.24);
+            transform: translateY(8px) scale(0.98);
+            transition: transform 0.2s ease;
+            overflow: hidden;
+        }
+
+        .settings-overlay.active .settings-dialog {
+            transform: translateY(0) scale(1);
+        }
+
+        .settings-head {
+            padding: 16px 18px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .settings-head h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #111827;
+        }
+
+        .settings-body {
+            padding: 16px 18px;
+        }
+
+        .settings-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .settings-field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .settings-field label {
+            font-size: 13px;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .settings-foot {
+            padding: 12px 18px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .settings-foot button {
+            min-width: 84px;
+        }
+
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .login-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .login-container {
+            position: relative;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 380px;
+            max-height: 90vh;
+            overflow: hidden;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .login-container.active {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .login-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10;
+            padding: 0;
+        }
+
+        .login-close:hover {
+            background-color: #f5f5f5;
+            color: #666;
+        }
+
+        .login-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .login-header {
+            padding: 16px 20px 10px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+
+        .login-header h3 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+            text-align: left;
+        }
+
+        .login-body {
+            padding: 16px 20px;
+            overflow-y: auto;
+        }
+
+        .qrcode-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+        }
+
+        .qrcode-image {
+            width: 200px;
+            height: 200px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .qrcode-image:hover {
+            border-color: #3d6dff;
+            box-shadow: 0 0 0 2px rgba(61, 109, 255, 0.1);
+        }
+
+        .qrcode-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .qrcode-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            color: #4caf50;
+            font-size: 68px;
+            line-height: 1;
+        }
+
+        .qrcode-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .qrcode-error {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            color: #f44336;
+            padding: 20px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e0e0e0;
+            border-top-color: #3d6dff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .login-footer {
+            padding: 12px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            flex-shrink: 0;
+            gap: 10px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .login-btn.primary {
+            background-color: #3d6dff;
+            color: #fff;
+        }
+
+        .login-btn.primary:hover:not(:disabled) {
+            background-color: #2a5bff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(61, 109, 255, 0.3);
+        }
+
+        .login-btn.primary:disabled {
+            background-color: #a0b4ff;
+            cursor: not-allowed;
+        }
+
+        .success-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 40px 0;
+        }
+
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            background-color: #4caf50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 32px;
+        }
+
+        .success-message {
+            text-align: center;
+        }
+
+        .success-message h4 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .success-message p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                height: auto;
+                overflow: auto;
+            }
+            .page {
+                height: auto;
+                min-height: 100vh;
+                margin-top: 0;
+                padding: 10px;
+            }
+            .layout { grid-template-columns: 1fr; }
+            .auth-card-grid { grid-template-columns: 1fr; }
+            .rule-grid { grid-template-columns: 1fr; }
+            .rule-grid .wide { grid-column: auto; }
+            .area-grid { grid-template-columns: 1fr; }
+            .area-grid .wide { grid-column: auto; }
+            .dual-config-row { grid-template-columns: 1fr; }
+            .time-range-row { grid-template-columns: 1fr; }
+            .time-range-sep { text-align: left; }
+            .login-container { width: 90vw; }
+            .qrcode-image { width: 180px; height: 180px; }
+            .task-actions { grid-template-columns: 1fr; }
+            .settings-dialog { width: calc(100vw - 20px); }
+            .right-column .log-panel {
+                position: static;
+                min-height: auto;
+                height: auto;
+            }
+            .right-column .log-panel #log-box {
+                min-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="layout">
+        <div class="left-column">
+            <section class="panel">
+                <div class="auth-card-grid">
+                    <article id="auth-status-card" class="auth-info-card">
+                        <div class="auth-card-label">登录状态</div>
+                        <div id="auth-status" class="auth-card-value">未登录</div>
+                    </article>
+                    <article class="auth-info-card">
+                        <div class="auth-card-label">当前账号</div>
+                        <div id="auth-account" class="auth-card-value">-</div>
+                    </article>
+                    <article class="auth-info-card">
+                        <div class="auth-card-label">Provider ID</div>
+                        <div id="auth-provider-id" class="auth-card-value">-</div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel work-panel">
+                <div id="ids-config-box" class="config-card ids-config-card">
+                    <div class="area-config-head">
+                        <h3 class="area-config-title">活动ID</h3>
+                        <label class="switch-line">
+                            <input id="ids-enable" type="checkbox" checked>
+                            启用
+                        </label>
+                    </div>
+                    <div class="ids-box">
+                        <textarea id="ids-input" placeholder="支持：换行、逗号、空格、斜杠、方括号及常见符号自动分隔，例如：
+1122984967
+1122983382
+1122474535" disabled></textarea>
+                    </div>
+                </div>
+                <div id="rule-config-box" class="config-card">
+                    <div class="area-config-head">
+                        <h3 class="area-config-title">限购参数</h3>
+                        <label class="switch-line">
+                            <input id="rule-enable" type="checkbox">
+                            启用
+                        </label>
+                    </div>
+                    <div id="rule-config-fields" class="rule-grid">
+                        <label class="field">
+                            起订量
+                            <input id="rule-min-qty" type="number" min="1" step="1" placeholder="留空不修改">
+                        </label>
+                        <label class="field">
+                            购买倍数
+                            <input id="rule-step" type="number" min="1" step="1" placeholder="留空不修改">
+                        </label>
+                        <label class="field">
+                            单店采购上限
+                            <input id="rule-max-amount-per-store" type="text" placeholder="留空不修改；输入0表示不限" inputmode="numeric">
+                        </label>
+                        <label class="field">
+                            上限刷新周期
+                            <select id="rule-calculate-period">
+                                <option value="" selected>留空不修改</option>
+                                <option value="0">活动期内</option>
+                                <option value="1">每笔（单笔）</option>
+                                <option value="2">每天</option>
+                                <option value="3">每周</option>
+                                <option value="4">每月</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+                <div id="area-config-box" class="area-config-box">
+                    <div class="area-config-head">
+                        <h3 class="area-config-title">定向管理</h3>
+                        <label class="switch-line">
+                            <input id="area-enable" type="checkbox">
+                            启用
+                        </label>
+                    </div>
+                    <div id="area-config-fields" class="area-grid">
+                        <label class="field">
+                            商圈
+                            <div class="autocomplete">
+                                <input id="area-keyword" type="text" placeholder="输入商圈关键字，如：全国、重庆、四川" autocomplete="off">
+                                <ul id="area-keyword-list" class="autocomplete-list"></ul>
+                            </div>
+                        </label>
+                        <label class="field">
+                            供货对象
+                            <div class="autocomplete">
+                                <input id="supply-keyword" type="text" placeholder="输入供货对象关键字，如：单体、终端、批零" autocomplete="off">
+                                <ul id="supply-keyword-list" class="autocomplete-list"></ul>
+                            </div>
+                        </label>
+                        <div class="field wide">
+                            是否控销
+                            <div class="radio-line">
+                                <label class="radio-item"><input type="radio" name="restrict-mode" value="0"> 否</label>
+                                <label class="radio-item"><input type="radio" name="restrict-mode" value="1"> 控销</label>
+                                <label class="radio-item"><input type="radio" name="restrict-mode" value="2"> 禁销</label>
+                            </div>
+                        </div>
+                        <label id="restrict-wrap" class="field wide">
+                            <span id="restrict-label">控销/禁销组</span>
+                            <div class="autocomplete">
+                                <input id="restrict-keyword" type="text" placeholder="选择控销或禁销后可输入" autocomplete="off" disabled>
+                                <ul id="restrict-keyword-list" class="autocomplete-list"></ul>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div id="activity-time-config-box" class="config-card">
+                    <div class="area-config-head">
+                        <h3 class="area-config-title">活动期间</h3>
+                        <label class="switch-line">
+                            <input id="activity-time-enable" type="checkbox">
+                            启用
+                        </label>
+                    </div>
+                    <div id="activity-time-config-fields" class="rule-grid">
+                        <div class="field wide">
+                            <div class="time-range-row">
+                                <input id="activity-time-start" type="datetime-local" step="60">
+                                <span class="time-range-sep">~</span>
+                                <input id="activity-time-end" type="datetime-local" step="60">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dual-config-row">
+                    <div id="operation-config-box" class="config-card">
+                        <div class="area-config-head">
+                            <h3 class="area-config-title">运营策略</h3>
+                            <label class="switch-line">
+                                <input id="operation-enable" type="checkbox">
+                                启用
+                            </label>
+                        </div>
+                        <div id="operation-config-fields" class="rule-grid">
+                            <div class="field wide">
+                                <select id="operation-flag">
+                                    <option value="" selected>留空不修改</option>
+                                    <option value="1">自动运营</option>
+                                    <option value="2">手动运营</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="activity-status-config-box" class="config-card">
+                        <div class="area-config-head">
+                            <h3 class="area-config-title">活动状态</h3>
+                            <label class="switch-line">
+                                <input id="activity-status-enable" type="checkbox">
+                                启用
+                            </label>
+                        </div>
+                        <div id="activity-status-config-fields" class="rule-grid">
+                            <div class="field wide">
+                                <select id="activity-status-value">
+                                    <option value="" selected>留空不修改</option>
+                                    <option value="5">上架</option>
+                                    <option value="3">下架</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <div class="right-column">
+            <section class="panel log-panel">
+                <pre id="log-box"></pre>
+            </section>
+            <section class="panel task-bar">
+                <div class="task-actions">
+                    <button id="btn-login" class="login-btn-warn">Pms扫码登录</button>
+                    <button id="btn-start" class="primary">执行修改</button>
+                    <button id="btn-settings">设置</button>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div id="settings-overlay" class="settings-overlay" style="display:none;">
+    <div class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <div class="settings-head">
+            <h3 id="settings-title">设置</h3>
+        </div>
+        <div class="settings-body">
+            <div class="settings-grid">
+                <div class="settings-field">
+                    <label for="settings-concurrency">并发设置</label>
+                    <input id="settings-concurrency" type="number" min="1" max="100" step="1" inputmode="numeric" placeholder="1-100">
+                </div>
+                <div class="settings-field">
+                    <label for="settings-relay-url">云函数Url</label>
+                    <input id="settings-relay-url" type="text" autocomplete="off" spellcheck="false" placeholder="https://example.com">
+                </div>
+            </div>
+        </div>
+        <div class="settings-foot">
+            <button id="settings-cancel" type="button">取消</button>
+            <button id="settings-save" class="primary" type="button">保存</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    const SUCCESS_CODE = '40001';
+    const DEFAULT_CONCURRENCY = 20;
+    const CALCULATE_PERIOD_OPTIONS = Object.freeze([
+        { value: 0, label: '活动期内' },
+        { value: 1, label: '每笔（单笔）' },
+        { value: 2, label: '每天' },
+        { value: 3, label: '每周' },
+        { value: 4, label: '每月' }
+    ]);
+    const ENUM_TYPE_AREA = 1;
+    const ENUM_TYPE_SUPPLY = 2;
+    const ENUM_TYPE_RESTRICT = 3;
+    const RESTRICT_MODE_TEXT = Object.freeze({
+        0: '否',
+        1: '控销',
+        2: '禁销'
+    });
+    const OPERATION_STRATEGY_TEXT = Object.freeze({
+        1: '自动运营',
+        2: '手动运营'
+    });
+    const ACTIVITY_STATUS_TEXT = Object.freeze({
+        5: '上架',
+        3: '下架'
+    });
+    const ACTIVITY_STATUS_UPDATE_CODES = Object.freeze({
+        5: [2, 0],
+        3: [1]
+    });
+    const LOGIN_PROXY_URL = 'https://1317825751-g3ghjxcbeh.ap-guangzhou.tencentscf.com';
+    const DEFAULT_RELAY_URL = 'https://1317825751-i37syhgs45.ap-guangzhou.tencentscf.com';
+    const AUTH_CACHE_KEY = 'pms_batch_auth';
+    const PMS_LOGIN_CACHE_KEY = 'pms_login';
+    const SETTINGS_CACHE_KEY = 'pms_batch_settings';
+
+    const state = {
+        auth: null,
+        running: false,
+        stopRequested: false,
+        runId: 0,
+        enumRequestSeq: 0,
+        autocompleteZSeq: 0,
+        restrictModeTouched: false,
+        settings: {
+            concurrency: DEFAULT_CONCURRENCY,
+            relayUrl: String(DEFAULT_RELAY_URL || '').trim().replace(/\/+$/, '')
+        }
+    };
+
+    const els = {
+        btnLogin: document.getElementById('btn-login'),
+        btnStart: document.getElementById('btn-start'),
+        btnSettings: document.getElementById('btn-settings'),
+        authStatusCard: document.getElementById('auth-status-card'),
+        authStatus: document.getElementById('auth-status'),
+        authAccount: document.getElementById('auth-account'),
+        authProviderId: document.getElementById('auth-provider-id'),
+        idsEnable: document.getElementById('ids-enable'),
+        idsConfigBox: document.getElementById('ids-config-box'),
+        ruleEnable: document.getElementById('rule-enable'),
+        ruleConfigBox: document.getElementById('rule-config-box'),
+        ruleConfigFields: document.getElementById('rule-config-fields'),
+        ruleMinQty: document.getElementById('rule-min-qty'),
+        ruleStep: document.getElementById('rule-step'),
+        ruleMaxAmountPerStore: document.getElementById('rule-max-amount-per-store'),
+        ruleCalculatePeriod: document.getElementById('rule-calculate-period'),
+        areaEnable: document.getElementById('area-enable'),
+        areaConfigBox: document.getElementById('area-config-box'),
+        areaConfigFields: document.getElementById('area-config-fields'),
+        areaKeyword: document.getElementById('area-keyword'),
+        areaKeywordList: document.getElementById('area-keyword-list'),
+        supplyKeyword: document.getElementById('supply-keyword'),
+        supplyKeywordList: document.getElementById('supply-keyword-list'),
+        restrictWrap: document.getElementById('restrict-wrap'),
+        restrictLabel: document.getElementById('restrict-label'),
+        restrictKeyword: document.getElementById('restrict-keyword'),
+        restrictKeywordList: document.getElementById('restrict-keyword-list'),
+        activityTimeEnable: document.getElementById('activity-time-enable'),
+        activityTimeConfigBox: document.getElementById('activity-time-config-box'),
+        activityTimeStart: document.getElementById('activity-time-start'),
+        activityTimeEnd: document.getElementById('activity-time-end'),
+        operationEnable: document.getElementById('operation-enable'),
+        operationConfigBox: document.getElementById('operation-config-box'),
+        operationFlag: document.getElementById('operation-flag'),
+        activityStatusEnable: document.getElementById('activity-status-enable'),
+        activityStatusConfigBox: document.getElementById('activity-status-config-box'),
+        activityStatusValue: document.getElementById('activity-status-value'),
+        idsInput: document.getElementById('ids-input'),
+        summary: document.getElementById('summary'),
+        logBox: document.getElementById('log-box'),
+        settingsOverlay: document.getElementById('settings-overlay'),
+        settingsConcurrency: document.getElementById('settings-concurrency'),
+        settingsRelayUrl: document.getElementById('settings-relay-url'),
+        settingsCancel: document.getElementById('settings-cancel'),
+        settingsSave: document.getElementById('settings-save')
+    };
+
+    function nowTime() {
+        return new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    }
+
+    function log(message, level) {
+        const line = document.createElement('div');
+        if (level === 'ok') line.className = 'line-ok';
+        else if (level === 'warn') line.className = 'line-warn';
+        else if (level === 'err') line.className = 'line-err';
+        line.textContent = `[${nowTime()}] ${message}`;
+        els.logBox.appendChild(line);
+        els.logBox.scrollTop = els.logBox.scrollHeight;
+    }
+
+    function setSummary(text) {
+        if (!els.summary) return;
+        els.summary.textContent = text;
+    }
+
+    function setElementDisplayValue(el, value) {
+        if (!el) return;
+        if ('value' in el) {
+            el.value = value;
+            return;
+        }
+        el.textContent = value;
+    }
+
+    function setLoginButtonAuthStyle(isLoggedIn) {
+        if (!els.btnLogin) return;
+        if (isLoggedIn) {
+            els.btnLogin.classList.remove('login-btn-warn');
+            els.btnLogin.classList.add('login-btn-ok');
+        } else {
+            els.btnLogin.classList.remove('login-btn-ok');
+            els.btnLogin.classList.add('login-btn-warn');
+        }
+    }
+
+    function parseJsonSafe(text, fallback) {
+        try {
+            return JSON.parse(text);
+        } catch (_) {
+            return fallback;
+        }
+    }
+
+    function normalizeRelayUrl(raw) {
+        return String(raw == null ? '' : raw).trim().replace(/\/+$/, '');
+    }
+
+    function parseConcurrencyValue(raw) {
+        const text = String(raw == null ? '' : raw).trim();
+        if (!/^\d+$/.test(text)) return null;
+        const n = Number(text);
+        if (!Number.isInteger(n) || n < 1 || n > 100) return null;
+        return n;
+    }
+
+    function getDefaultSettings() {
+        return {
+            concurrency: DEFAULT_CONCURRENCY,
+            relayUrl: normalizeRelayUrl(DEFAULT_RELAY_URL)
+        };
+    }
+
+    function normalizeSettings(raw) {
+        const defaults = getDefaultSettings();
+        const source = raw && typeof raw === 'object' ? raw : {};
+        const concurrency = parseConcurrencyValue(source.concurrency);
+        const relayUrl = normalizeRelayUrl(source.relayUrl);
+        return {
+            concurrency: concurrency == null ? defaults.concurrency : concurrency,
+            relayUrl: relayUrl || defaults.relayUrl
+        };
+    }
+
+    function applySettings(nextSettings, persist) {
+        const normalized = normalizeSettings(nextSettings);
+        state.settings = normalized;
+        if (persist !== false) {
+            localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(normalized));
+        }
+        return normalized;
+    }
+
+    function loadSettings() {
+        const cached = parseJsonSafe(localStorage.getItem(SETTINGS_CACHE_KEY), null);
+        const normalized = applySettings(cached, false);
+        localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(normalized));
+    }
+
+    function getConcurrency() {
+        const n = state.settings ? parseConcurrencyValue(state.settings.concurrency) : null;
+        return n == null ? DEFAULT_CONCURRENCY : n;
+    }
+
+    function getRelayUrl() {
+        const relayUrl = state.settings ? normalizeRelayUrl(state.settings.relayUrl) : '';
+        return relayUrl || normalizeRelayUrl(DEFAULT_RELAY_URL);
+    }
+
+    function fillSettingsForm() {
+        if (els.settingsConcurrency) {
+            els.settingsConcurrency.value = String(getConcurrency());
+        }
+        if (els.settingsRelayUrl) {
+            els.settingsRelayUrl.value = getRelayUrl();
+        }
+    }
+
+    function openSettingsDialog() {
+        if (!els.settingsOverlay || state.running) return;
+        fillSettingsForm();
+        els.settingsOverlay.style.display = 'flex';
+        requestAnimationFrame(function () {
+            if (els.settingsOverlay) {
+                els.settingsOverlay.classList.add('active');
+            }
+        });
+    }
+
+    function closeSettingsDialog() {
+        if (!els.settingsOverlay) return;
+        els.settingsOverlay.classList.remove('active');
+        setTimeout(function () {
+            if (!els.settingsOverlay.classList.contains('active')) {
+                els.settingsOverlay.style.display = 'none';
+            }
+        }, 220);
+    }
+
+    function saveSettingsFromDialog() {
+        const concurrency = parseConcurrencyValue(els.settingsConcurrency ? els.settingsConcurrency.value : '');
+        if (concurrency == null) {
+            throw new Error('并发设置必须为 1-100 的整数。');
+        }
+
+        const relayUrl = normalizeRelayUrl(els.settingsRelayUrl ? els.settingsRelayUrl.value : '');
+        if (!relayUrl) {
+            throw new Error('云函数Url不能为空。');
+        }
+        if (!/^https?:\/\//i.test(relayUrl)) {
+            throw new Error('云函数Url必须以 http:// 或 https:// 开头。');
+        }
+
+        const saved = applySettings({ concurrency: concurrency, relayUrl: relayUrl }, true);
+        closeSettingsDialog();
+        log(`设置已保存：并发=${saved.concurrency}，云函数地址=${saved.relayUrl}`, 'ok');
+    }
+
+    function formatBuildTime(date) {
+        const d = date || new Date();
+        const y = d.getFullYear();
+        const m = d.getMonth() + 1;
+        const day = d.getDate();
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        const ss = String(d.getSeconds()).padStart(2, '0');
+        return `${y}-${m}-${day} ${hh}:${mm}:${ss}`;
+    }
+
+    function toFiniteNumber(raw, fallback) {
+        const n = Number(raw);
+        return Number.isFinite(n) ? n : fallback;
+    }
+
+    function readRuleValues(row) {
+        return {
+            minQty: toFiniteNumber(row && row.minQty, null),
+            step: toFiniteNumber(row && row.step, null),
+            maxAmountPerStore: toFiniteNumber(row && row.maxAmountPerStore, null),
+            calculatePeriod: toFiniteNumber(row && row.calculatePeriod, null)
+        };
+    }
+
+    function getPeriodLabel(value) {
+        const item = CALCULATE_PERIOD_OPTIONS.find(function (x) { return x.value === value; });
+        return item ? item.label : `未知(${value})`;
+    }
+
+    function isTargetRule(values, targetConfig) {
+        if (!targetConfig || !targetConfig.enabled) return true;
+        if (!values) return false;
+        if (targetConfig.hasMinQtyUpdate && values.minQty !== targetConfig.minQty) {
+            return false;
+        }
+        if (targetConfig.hasStepUpdate && values.step !== targetConfig.step) {
+            return false;
+        }
+        if (targetConfig.hasMaxAmountPerStoreUpdate && values.maxAmountPerStore !== targetConfig.maxAmountPerStore) {
+            return false;
+        }
+        if (targetConfig.hasCalculatePeriodUpdate && values.calculatePeriod !== targetConfig.calculatePeriod) {
+            return false;
+        }
+        return true;
+    }
+
+    function ruleText(values) {
+        if (!values) return 'n/a';
+        return `起订量=${values.minQty}, 购买倍数=${values.step}, 单店采购上限=${values.maxAmountPerStore}, 上限刷新周期=${values.calculatePeriod}(${getPeriodLabel(values.calculatePeriod)})`;
+    }
+
+    function ruleTargetText(config) {
+        if (!config || !config.enabled) return '未启用';
+        const minQtyText = config.hasMinQtyUpdate ? String(config.minQty) : '保持原值';
+        const stepText = config.hasStepUpdate ? String(config.step) : '保持原值';
+        const maxAmountText = config.hasMaxAmountPerStoreUpdate ? String(config.maxAmountPerStore) : '保持原值';
+        const periodText = config.hasCalculatePeriodUpdate
+            ? `${config.calculatePeriod}(${getPeriodLabel(config.calculatePeriod)})`
+            : '保持原值';
+        return `起订量=${minQtyText}, 购买倍数=${stepText}, 单店采购上限=${maxAmountText}, 上限刷新周期=${periodText}`;
+    }
+
+    function parseIntegerInput(raw, fieldName) {
+        const text = String(raw == null ? '' : raw).trim();
+        if (!/^-?\d+$/.test(text)) {
+            throw new Error(`${fieldName}必须为整数。`);
+        }
+        return Number(text);
+    }
+
+    function parseMaxAmountPerStoreInput(raw) {
+        const text = String(raw == null ? '' : raw).trim();
+        if (!text || text === '0' || text === '不限') {
+            return 0;
+        }
+        if (!/^\d+$/.test(text)) {
+            throw new Error('单店采购上限必须为整数，或输入0/不限。');
+        }
+        return Number(text);
+    }
+
+    function parseOptionalIntegerInput(raw, fieldName) {
+        const text = String(raw == null ? '' : raw).trim();
+        if (!text) return null;
+        return parseIntegerInput(text, fieldName);
+    }
+
+    function parseOptionalMaxAmountPerStoreInput(raw) {
+        const text = String(raw == null ? '' : raw).trim();
+        if (!text) return null;
+        return parseMaxAmountPerStoreInput(text);
+    }
+
+    function pad2(num) {
+        return String(num).padStart(2, '0');
+    }
+
+    function getDefaultTimeParts(mode) {
+        if (mode === 'end') {
+            return { hour: 23, minute: 59, second: 59 };
+        }
+        return { hour: 0, minute: 0, second: 0 };
+    }
+
+    function parseDateTimeParts(raw, fieldName, mode) {
+        const text = String(raw == null ? '' : raw).trim();
+        const normalizedInput = text
+            .replace('T', ' ')
+            .replace(/\//g, '-')
+            .replace(/\s+/g, ' ')
+            .trim();
+        const match = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?)?$/.exec(normalizedInput);
+        if (!match) {
+            throw new Error(`${fieldName}格式支持 yyyy/mm/dd hh:mm 或 yyyy-mm-dd hh:mm（时间可省略）。`);
+        }
+        const year = Number(match[1]);
+        const month = Number(match[2]);
+        const day = Number(match[3]);
+        const hasTime = match[4] !== undefined;
+        const defaults = getDefaultTimeParts(mode);
+        const hour = hasTime ? Number(match[4]) : defaults.hour;
+        const minute = hasTime ? Number(match[5] || 0) : defaults.minute;
+        const second = hasTime ? Number(match[6] || 0) : defaults.second;
+        const dt = new Date(year, month - 1, day, hour, minute, second);
+        if (
+            dt.getFullYear() !== year
+            || dt.getMonth() + 1 !== month
+            || dt.getDate() !== day
+            || dt.getHours() !== hour
+            || dt.getMinutes() !== minute
+            || dt.getSeconds() !== second
+        ) {
+            throw new Error(`${fieldName}不是有效时间。`);
+        }
+        return {
+            normalized: `${year}-${pad2(month)}-${pad2(day)} ${pad2(hour)}:${pad2(minute)}:${pad2(second)}`,
+            timestamp: dt.getTime()
+        };
+    }
+
+    function parseDateTimeInput(raw, fieldName, mode) {
+        return parseDateTimeParts(raw, fieldName, mode).normalized;
+    }
+
+    function parseOptionalDateTimeInput(raw, fieldName, mode) {
+        const text = String(raw == null ? '' : raw).trim();
+        if (!text) return null;
+        return parseDateTimeInput(text, fieldName, mode);
+    }
+
+    function normalizeDateTimeMaybe(raw, mode) {
+        const text = String(raw == null ? '' : raw).trim();
+        if (!text) return '';
+        try {
+            return parseDateTimeParts(text, '时间', mode).normalized;
+        } catch (_) {
+            return text;
+        }
+    }
+
+    function readAreaValues(row) {
+        return {
+            areaGroupId: row && row.areaGroupId !== undefined && row.areaGroupId !== null ? String(row.areaGroupId) : '',
+            storetypeGroupId: row && row.storetypeGroupId !== undefined && row.storetypeGroupId !== null ? String(row.storetypeGroupId) : '',
+            isRestrict: toFiniteNumber(row && row.isRestrict, 0),
+            restrictId: toFiniteNumber(row && row.restrictId, 0)
+        };
+    }
+
+    function areaText(values) {
+        if (!values) return 'n/a';
+        return `商圈组ID=${values.areaGroupId || ''}, 供货对象组ID=${values.storetypeGroupId || ''}, 是否控销=${values.isRestrict}(${RESTRICT_MODE_TEXT[values.isRestrict] || '未知'}), 控销/禁销组ID=${values.restrictId || 0}`;
+    }
+
+    function isTargetArea(values, targetConfig) {
+        if (!targetConfig || !targetConfig.enabled) return true;
+        if (!values) return false;
+        if (targetConfig.hasAreaGroupUpdate && String(values.areaGroupId) !== String(targetConfig.areaGroupId)) {
+            return false;
+        }
+        if (targetConfig.hasStoretypeGroupUpdate && String(values.storetypeGroupId) !== String(targetConfig.storetypeGroupId)) {
+            return false;
+        }
+        if (targetConfig.hasRestrictUpdate) {
+            if (Number(values.isRestrict) !== Number(targetConfig.isRestrict)) {
+                return false;
+            }
+            if (Number(targetConfig.isRestrict) === 0) {
+                return Number(values.restrictId || 0) === 0;
+            }
+            return Number(values.restrictId || 0) === Number(targetConfig.restrictId || 0);
+        }
+        return true;
+    }
+
+    function readActivityTimeValues(row) {
+        return {
+            beginDate: normalizeDateTimeMaybe(row && (row.beginDateStr || row.beginDate || ''), 'start'),
+            endDate: normalizeDateTimeMaybe(row && (row.endDateStr || row.endDate || ''), 'end')
+        };
+    }
+
+    function activityTimeText(values) {
+        if (!values) return 'n/a';
+        return `活动期间=${values.beginDate || '-'} ~ ${values.endDate || '-'}`;
+    }
+
+    function isTargetActivityTime(values, targetConfig) {
+        if (!targetConfig || !targetConfig.enabled) return true;
+        if (!values) return false;
+        if (targetConfig.hasBeginDateUpdate) {
+            const currentBeginDate = normalizeDateTimeMaybe(values.beginDate || '', 'start');
+            if (currentBeginDate !== normalizeDateTimeMaybe(targetConfig.beginDate, 'start')) {
+                return false;
+            }
+        }
+        if (targetConfig.hasEndDateUpdate) {
+            const currentEndDate = normalizeDateTimeMaybe(values.endDate || '', 'end');
+            if (currentEndDate !== normalizeDateTimeMaybe(targetConfig.endDate, 'end')) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function readOperationValues(row) {
+        return {
+            operationFlag: toFiniteNumber(row && row.operationFlag, null)
+        };
+    }
+
+    function operationText(values) {
+        if (!values) return 'n/a';
+        const flag = toFiniteNumber(values.operationFlag, null);
+        return `运营策略=${OPERATION_STRATEGY_TEXT[flag] || `未知(${flag})`}`;
+    }
+
+    function isTargetOperation(values, targetConfig) {
+        if (!targetConfig || !targetConfig.enabled) return true;
+        return values && Number(values.operationFlag) === Number(targetConfig.operationFlag);
+    }
+
+    function readActivityStatusValues(row) {
+        return {
+            wholesaleStatus: toFiniteNumber(row && row.wholesaleStatus, null)
+        };
+    }
+
+    function activityStatusText(values) {
+        if (!values) return 'n/a';
+        const status = toFiniteNumber(values.wholesaleStatus, null);
+        return `活动状态=${ACTIVITY_STATUS_TEXT[status] || `未知(${status})`}`;
+    }
+
+    function isTargetActivityStatus(values, targetConfig) {
+        if (!targetConfig || !targetConfig.enabled) return true;
+        return values && Number(values.wholesaleStatus) === Number(targetConfig.wholesaleStatus);
+    }
+
+    function clearSelectedOption(inputEl) {
+        if (!inputEl) return;
+        delete inputEl.dataset.selectedId;
+        delete inputEl.dataset.selectedName;
+    }
+
+    function setSelectedOption(inputEl, item) {
+        if (!inputEl || !item) return;
+        inputEl.value = String(item.name || '');
+        inputEl.dataset.selectedId = String(item.id);
+        inputEl.dataset.selectedName = String(item.name || '');
+    }
+
+    function readSelectedOption(inputEl, fieldName) {
+        const text = String(inputEl && inputEl.value ? inputEl.value : '').trim();
+        const selectedId = String(inputEl && inputEl.dataset && inputEl.dataset.selectedId ? inputEl.dataset.selectedId : '').trim();
+        const selectedName = String(inputEl && inputEl.dataset && inputEl.dataset.selectedName ? inputEl.dataset.selectedName : '').trim();
+
+        if (!text) {
+            throw new Error(`${fieldName}不能为空。`);
+        }
+        if (!selectedId) {
+            throw new Error(`请从候选列表选择${fieldName}。`);
+        }
+        return {
+            id: selectedId,
+            name: selectedName || text
+        };
+    }
+
+    function readOptionalSelectedOption(inputEl, fieldName) {
+        const textValue = String(inputEl && inputEl.value ? inputEl.value : '').trim();
+        const selectedId = String(inputEl && inputEl.dataset && inputEl.dataset.selectedId ? inputEl.dataset.selectedId : '').trim();
+        const selectedName = String(inputEl && inputEl.dataset && inputEl.dataset.selectedName ? inputEl.dataset.selectedName : '').trim();
+
+        if (!textValue && !selectedId) {
+            return null;
+        }
+        if (!selectedId) {
+            throw new Error(`请从候选列表选择${fieldName}。`);
+        }
+        return {
+            id: selectedId,
+            name: selectedName || textValue
+        };
+    }
+
+    function getRestrictModeFromUi() {
+        const checked = document.querySelector('input[name="restrict-mode"]:checked');
+        const mode = checked ? Number(checked.value) : 0;
+        if (mode !== 0 && mode !== 1 && mode !== 2) {
+            throw new Error(`不支持的控销模式：${mode}`);
+        }
+        return mode;
+    }
+
+    function readAreaTargetConfigFromUi() {
+        const enabled = !!(els.areaEnable && els.areaEnable.checked);
+        if (!enabled) {
+            return { enabled: false };
+        }
+
+        const area = readOptionalSelectedOption(els.areaKeyword, '商圈');
+        const supply = readOptionalSelectedOption(els.supplyKeyword, '供货对象');
+        const mode = getRestrictModeFromUi();
+        const hasAreaGroupUpdate = !!area;
+        const hasStoretypeGroupUpdate = !!supply;
+
+        let hasRestrictUpdate = false;
+        let isRestrict = 0;
+        let restrictId = null;
+        let restrictName = '';
+        if (mode === 0) {
+            if (state.restrictModeTouched) {
+                hasRestrictUpdate = true;
+                isRestrict = 0;
+                restrictId = 0;
+                restrictName = '';
+            }
+        } else if (mode === 1 || mode === 2) {
+            const restrict = readOptionalSelectedOption(els.restrictKeyword, mode === 1 ? '控销组' : '禁销组');
+            if (restrict) {
+                const parsedRestrictId = toFiniteNumber(restrict.id, null);
+                if (parsedRestrictId === null) throw new Error('控销/禁销组ID必须为数字。');
+                hasRestrictUpdate = true;
+                isRestrict = mode;
+                restrictId = parsedRestrictId;
+                restrictName = restrict.name;
+            }
+        } else {
+            throw new Error(`不支持的控销模式：${mode}`);
+        }
+
+        if (!hasAreaGroupUpdate && !hasStoretypeGroupUpdate && !hasRestrictUpdate) {
+            return { enabled: false };
+        }
+
+        const areaGroupId = hasAreaGroupUpdate ? toFiniteNumber(area.id, null) : null;
+        const storetypeGroupId = hasStoretypeGroupUpdate ? toFiniteNumber(supply.id, null) : null;
+        if (hasAreaGroupUpdate && areaGroupId === null) {
+            throw new Error('商圈ID必须为数字。');
+        }
+        if (hasStoretypeGroupUpdate && storetypeGroupId === null) {
+            throw new Error('供货对象ID必须为数字。');
+        }
+
+        return {
+            enabled: true,
+            hasAreaGroupUpdate: hasAreaGroupUpdate,
+            areaGroupId: areaGroupId,
+            areaGroupName: area ? area.name : '',
+            hasStoretypeGroupUpdate: hasStoretypeGroupUpdate,
+            storetypeGroupId: storetypeGroupId,
+            storetypeGroupName: supply ? supply.name : '',
+            hasRestrictUpdate: hasRestrictUpdate,
+            isRestrict: hasRestrictUpdate ? isRestrict : null,
+            restrictId: hasRestrictUpdate ? restrictId : null,
+            restrictName: hasRestrictUpdate ? restrictName : ''
+        };
+    }
+
+    function areaTargetText(config) {
+        if (!config || !config.enabled) return '未启用';
+        const areaTextPart = config.hasAreaGroupUpdate
+            ? `${config.areaGroupName}(${config.areaGroupId})`
+            : '保持原值';
+        const supplyTextPart = config.hasStoretypeGroupUpdate
+            ? `${config.storetypeGroupName}(${config.storetypeGroupId})`
+            : '保持原值';
+        let restrictTextPart = '保持原值';
+        if (config.hasRestrictUpdate) {
+            restrictTextPart = `是否控销=${RESTRICT_MODE_TEXT[config.isRestrict] || config.isRestrict}, 控销/禁销组=${config.restrictName || '-'}(${config.restrictId || 0})`;
+        }
+        return `商圈=${areaTextPart}, 供货对象=${supplyTextPart}, 定向限制=${restrictTextPart}`;
+    }
+
+    function readActivityTimeTargetConfigFromUi() {
+        const enabled = !!(els.activityTimeEnable && els.activityTimeEnable.checked);
+        if (!enabled) {
+            return { enabled: false };
+        }
+        const beginDate = parseOptionalDateTimeInput(els.activityTimeStart ? els.activityTimeStart.value : '', '开始时间', 'start');
+        const endDate = parseOptionalDateTimeInput(els.activityTimeEnd ? els.activityTimeEnd.value : '', '结束时间', 'end');
+        const hasBeginDateUpdate = beginDate !== null;
+        const hasEndDateUpdate = endDate !== null;
+        if (!hasBeginDateUpdate && !hasEndDateUpdate) {
+            return { enabled: false };
+        }
+
+        const beginTimestamp = hasBeginDateUpdate ? parseDateTimeParts(beginDate, '开始时间', 'start').timestamp : null;
+        const endTimestamp = hasEndDateUpdate ? parseDateTimeParts(endDate, '结束时间', 'end').timestamp : null;
+        if (beginTimestamp !== null && endTimestamp !== null && beginTimestamp > endTimestamp) {
+            throw new Error('开始时间不能晚于结束时间。');
+        }
+
+        return {
+            enabled: true,
+            hasBeginDateUpdate: hasBeginDateUpdate,
+            beginDate: beginDate,
+            hasEndDateUpdate: hasEndDateUpdate,
+            endDate: endDate
+        };
+    }
+
+    function activityTimeTargetText(config) {
+        if (!config || !config.enabled) return '未启用';
+        const beginText = config.hasBeginDateUpdate ? config.beginDate : '保持原值';
+        const endText = config.hasEndDateUpdate ? config.endDate : '保持原值';
+        return `活动期间=${beginText} ~ ${endText}`;
+    }
+
+    function readOperationTargetConfigFromUi() {
+        const enabled = !!(els.operationEnable && els.operationEnable.checked);
+        if (!enabled) {
+            return { enabled: false };
+        }
+        const operationFlag = parseOptionalIntegerInput(els.operationFlag ? els.operationFlag.value : '', '运营策略');
+        if (operationFlag === null) {
+            return { enabled: false };
+        }
+        if (!Object.prototype.hasOwnProperty.call(OPERATION_STRATEGY_TEXT, operationFlag)) {
+            throw new Error(`不支持的运营策略：${operationFlag}`);
+        }
+        return {
+            enabled: true,
+            operationFlag: operationFlag
+        };
+    }
+
+    function operationTargetText(config) {
+        if (!config || !config.enabled) return '未启用';
+        return `运营策略=${OPERATION_STRATEGY_TEXT[config.operationFlag] || config.operationFlag}`;
+    }
+
+    function readActivityStatusTargetConfigFromUi() {
+        const enabled = !!(els.activityStatusEnable && els.activityStatusEnable.checked);
+        if (!enabled) {
+            return { enabled: false };
+        }
+        const wholesaleStatus = parseOptionalIntegerInput(els.activityStatusValue ? els.activityStatusValue.value : '', '活动状态');
+        if (wholesaleStatus === null) {
+            return { enabled: false };
+        }
+        if (!Object.prototype.hasOwnProperty.call(ACTIVITY_STATUS_TEXT, wholesaleStatus)) {
+            throw new Error(`不支持的活动状态：${wholesaleStatus}`);
+        }
+        return {
+            enabled: true,
+            wholesaleStatus: wholesaleStatus
+        };
+    }
+
+    function activityStatusTargetText(config) {
+        if (!config || !config.enabled) return '未启用';
+        return `活动状态=${ACTIVITY_STATUS_TEXT[config.wholesaleStatus] || config.wholesaleStatus}`;
+    }
+
+    function getActivityStatusUpdateCodes(targetStatus) {
+        const key = Number(targetStatus);
+        const codes = ACTIVITY_STATUS_UPDATE_CODES[key];
+        if (!codes || codes.length === 0) {
+            throw new Error(`不支持的活动状态：${targetStatus}`);
+        }
+        return codes;
+    }
+
+    function closeAutocompleteList(listEl) {
+        if (!listEl) return;
+        listEl.classList.remove('show');
+        listEl.innerHTML = '';
+    }
+
+    function bringAutocompleteToFront(listEl) {
+        if (!listEl) return;
+        state.autocompleteZSeq += 1;
+        listEl.style.zIndex = String(2000 + state.autocompleteZSeq);
+    }
+
+    function closeAllAutocompleteLists() {
+        closeAutocompleteList(els.areaKeywordList);
+        closeAutocompleteList(els.supplyKeywordList);
+        closeAutocompleteList(els.restrictKeywordList);
+    }
+
+    function renderAutocompleteList(listEl, items, onSelect, emptyText) {
+        if (!listEl) return;
+        bringAutocompleteToFront(listEl);
+        listEl.innerHTML = '';
+        if (!items || items.length === 0) {
+            const empty = document.createElement('li');
+            empty.className = 'autocomplete-empty';
+            empty.textContent = emptyText || '未找到候选项。';
+            listEl.appendChild(empty);
+            listEl.classList.add('show');
+            return;
+        }
+
+        items.forEach(function (item) {
+            const li = document.createElement('li');
+            li.className = 'autocomplete-item';
+            li.textContent = `${item.name} (${item.id})`;
+            li.addEventListener('mousedown', function (event) {
+                event.preventDefault();
+                onSelect(item);
+            });
+            listEl.appendChild(li);
+        });
+        listEl.classList.add('show');
+    }
+
+    async function fetchEnumOptions(auth, type, keyword, pageSize) {
+        const payload = {
+            providerId: toFiniteNumber(auth.providerId, auth.providerId),
+            page: 1,
+            pageSize: pageSize || 100,
+            searchInfo: String(keyword || '').trim(),
+            type: type,
+            token: auth.token,
+            buildTime: formatBuildTime()
+        };
+        const data = await relayPmsApi('getYKJEnumConf', auth.token, payload);
+        assertBizOk(data, `加载候选列表(type=${type})`);
+        const list = data && data.data && Array.isArray(data.data.list) ? data.data.list : [];
+        return list.map(function (x) {
+            return {
+                id: String(x.id),
+                name: String(x.name || '')
+            };
+        }).filter(function (x) { return x.id && x.name; });
+    }
+
+    function readTargetConfigFromUi() {
+        const enabled = !!(els.ruleEnable && els.ruleEnable.checked);
+        if (!enabled) {
+            return { enabled: false };
+        }
+
+        const minQty = parseOptionalIntegerInput(els.ruleMinQty ? els.ruleMinQty.value : '', '起订量');
+        const step = parseOptionalIntegerInput(els.ruleStep ? els.ruleStep.value : '', '购买倍数');
+        const maxAmountPerStore = parseOptionalMaxAmountPerStoreInput(
+            els.ruleMaxAmountPerStore ? els.ruleMaxAmountPerStore.value : ''
+        );
+        const calculatePeriod = parseOptionalIntegerInput(
+            els.ruleCalculatePeriod ? els.ruleCalculatePeriod.value : '',
+            '上限刷新周期'
+        );
+
+        const hasMinQtyUpdate = minQty !== null;
+        const hasStepUpdate = step !== null;
+        const hasMaxAmountPerStoreUpdate = maxAmountPerStore !== null;
+        const hasCalculatePeriodUpdate = calculatePeriod !== null;
+
+        if (!hasMinQtyUpdate && !hasStepUpdate && !hasMaxAmountPerStoreUpdate && !hasCalculatePeriodUpdate) {
+            return { enabled: false };
+        }
+
+        if (hasMinQtyUpdate && minQty <= 0) {
+            throw new Error('起订量必须大于0。');
+        }
+        if (hasStepUpdate && step <= 0) {
+            throw new Error('购买倍数必须大于0。');
+        }
+        if (hasMaxAmountPerStoreUpdate && maxAmountPerStore < 0) {
+            throw new Error('单店采购上限必须为0或正整数。');
+        }
+        if (hasCalculatePeriodUpdate && !CALCULATE_PERIOD_OPTIONS.some(function (x) { return x.value === calculatePeriod; })) {
+            throw new Error(`不支持的上限刷新周期：${calculatePeriod}`);
+        }
+
+        return {
+            enabled: true,
+            hasMinQtyUpdate: hasMinQtyUpdate,
+            minQty: minQty,
+            hasStepUpdate: hasStepUpdate,
+            step: step,
+            hasMaxAmountPerStoreUpdate: hasMaxAmountPerStoreUpdate,
+            maxAmountPerStore: maxAmountPerStore,
+            hasCalculatePeriodUpdate: hasCalculatePeriodUpdate,
+            calculatePeriod: calculatePeriod
+        };
+    }
+
+    function normalizeProviderId(raw) {
+        if (raw === null || raw === undefined || raw === '') return '';
+        const n = Number(raw);
+        return Number.isFinite(n) ? n : String(raw);
+    }
+
+    function setAuth(auth, persist) {
+        state.auth = auth;
+        const valid = auth && auth.token && auth.providerId !== '' && auth.providerId !== null && auth.providerId !== undefined;
+        if (valid) {
+            setElementDisplayValue(els.authStatus, '已登录');
+            if (els.authStatusCard) els.authStatusCard.classList.add('status-ok');
+            setLoginButtonAuthStyle(true);
+            setElementDisplayValue(els.authAccount, auth.account || '-');
+            setElementDisplayValue(els.authProviderId, String(auth.providerId));
+
+            if (persist !== false) {
+                localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(auth));
+                localStorage.setItem(PMS_LOGIN_CACHE_KEY, JSON.stringify({
+                    account: auth.account || '',
+                    credentials: {
+                        pms_token: auth.token,
+                        providerId: auth.providerId
+                    },
+                    login_time: Date.now()
+                }));
+            }
+            return;
+        }
+
+        setElementDisplayValue(els.authStatus, '未登录');
+        if (els.authStatusCard) els.authStatusCard.classList.remove('status-ok');
+        setLoginButtonAuthStyle(false);
+        setElementDisplayValue(els.authAccount, '-');
+        setElementDisplayValue(els.authProviderId, '-');
+        if (persist !== false) {
+            localStorage.removeItem(AUTH_CACHE_KEY);
+        }
+    }
+
+    function loadAuth() {
+        const direct = parseJsonSafe(localStorage.getItem(AUTH_CACHE_KEY), null);
+        if (direct && direct.token && direct.providerId !== '' && direct.providerId !== null && direct.providerId !== undefined) {
+            setAuth(direct, false);
+            log(`已加载登录缓存：providerId=${direct.providerId}`, 'ok');
+            return;
+        }
+
+        const pmsLogin = parseJsonSafe(localStorage.getItem(PMS_LOGIN_CACHE_KEY), null);
+        const token = pmsLogin && pmsLogin.credentials ? (pmsLogin.credentials.pms_token || pmsLogin.credentials.token || '') : '';
+        const providerId = pmsLogin && pmsLogin.credentials ? (pmsLogin.credentials.providerId || pmsLogin.credentials.provider_id || '') : '';
+        if (token && providerId !== '') {
+            setAuth({
+                token: String(token),
+                providerId: normalizeProviderId(providerId),
+                account: pmsLogin.account || ''
+            }, true);
+            log(`已加载 pms_login 缓存：providerId=${providerId}`, 'ok');
+        }
+    }
+
+    async function fetchJson(url, options) {
+        const opts = options || {};
+        const method = opts.method || 'POST';
+        const headers = opts.headers || {};
+        const body = opts.body;
+        const timeoutMs = opts.timeoutMs || 20000;
+
+        const controller = new AbortController();
+        const timer = setTimeout(function () { controller.abort(); }, timeoutMs);
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: headers,
+                body: body === undefined ? undefined : JSON.stringify(body),
+                signal: controller.signal
+            });
+            const text = await response.text();
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${text.slice(0, 240)}`);
+            }
+            const data = text ? parseJsonSafe(text, null) : {};
+            if (data === null) {
+                throw new Error(`返回内容不是JSON：${text.slice(0, 240)}`);
+            }
+            return data;
+        } catch (error) {
+            if (error && error.name === 'AbortError') {
+                throw new Error(`请求超时：${url}`);
+            }
+            if (error && error.name === 'TypeError' && /Failed to fetch/i.test(String(error.message || ''))) {
+                const origin = window.location.protocol === 'file:' ? 'file://' : window.location.origin;
+                throw new Error(`请求失败（可能被CORS拦截），页面来源=${origin}`);
+            }
+            throw error;
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    async function relayPmsApi(apiName, token, body) {
+        const relayUrl = getRelayUrl();
+        if (!relayUrl) {
+            throw new Error('云函数地址为空，请先在设置中填写云函数Url。');
+        }
+
+        const response = await fetchJson(relayUrl, {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: {
+                action: 'pms_forward',
+                api: apiName,
+                token: token,
+                body: body
+            }
+        });
+
+        // Compatible with gateways that wrap SCF output as { statusCode, body }.
+        if (response && typeof response === 'object' && Object.prototype.hasOwnProperty.call(response, 'body')) {
+            const wrappedBody = typeof response.body === 'string' ? parseJsonSafe(response.body, null) : response.body;
+            if (wrappedBody && typeof wrappedBody === 'object') {
+                return wrappedBody;
+            }
+        }
+
+        return response;
+    }
+
+    function assertBizOk(data, context) {
+        if (!data || String(data.code) !== SUCCESS_CODE) {
+            const code = data && data.code !== undefined ? data.code : '未知';
+            const message = data && data.message ? data.message : '未知';
+            const unsupportedRelay = String(code) === '50000' && /unsupported api\/path/i.test(String(message));
+            const authInvalid = /(token|auth|expired|login|登录|过期|失效)/i.test(String(message || ''));
+
+            if (authInvalid) {
+                setAuth(null, true);
+            }
+
+            if (unsupportedRelay) {
+                const allowedApis = data && data.data && Array.isArray(data.data.allowedApis)
+                    ? data.data.allowedApis.join(', ')
+                    : '';
+                throw new Error(
+                    `云函数版本过旧，缺少API白名单。请部署最新的 scr/index.js。${allowedApis ? ` 当前allowedApis=${allowedApis}` : ''}`
+                );
+            }
+
+            throw new Error(`${context}失败：code=${code}，message=${message}`);
+        }
+    }
+
+    function createListBody(auth, wholesaleId, wholesaleStatus, buildTime) {
+        return {
+            providerId: String(auth.providerId),
+            wholesaleId: String(wholesaleId),
+            wholesaleStatus: wholesaleStatus,
+            provDrugCode: '',
+            drugKeyword: '',
+            approval: '',
+            contactor: '',
+            operator: '',
+            busiFlag: '',
+            checkFlag: 1,
+            leyoTagIdList: [],
+            provTagIdList: [],
+            pricingStatusList: [],
+            abnPricingTypeList: [],
+            specialFlag: '',
+            operationFlag: '',
+            linkFlag: '',
+            beClickAbnWaitCheck: '',
+            beClickMyAbnWaitCheck: '',
+            page: 1,
+            pageSize: 10,
+            token: auth.token,
+            buildTime: buildTime
+        };
+    }
+
+    async function queryActivityById(auth, activityId) {
+        const buildTime = formatBuildTime();
+
+        const first = await relayPmsApi('pageOneFixedWsList', auth.token, createListBody(auth, activityId, '5', buildTime));
+        assertBizOk(first, '查询活动');
+
+        let row = first.data && Array.isArray(first.data.results)
+            ? first.data.results.find(function (x) { return String(x.wholesaleId) === String(activityId); })
+            : null;
+
+        if (!row) {
+            const second = await relayPmsApi('pageOneFixedWsList', auth.token, createListBody(auth, activityId, '', buildTime));
+            assertBizOk(second, '查询活动(兜底)');
+            row = second.data && Array.isArray(second.data.results)
+                ? second.data.results.find(function (x) { return String(x.wholesaleId) === String(activityId); })
+                : null;
+        }
+
+        return row || null;
+    }
+
+    function resolveRulePayloadValues(row, targetConfig) {
+        const currentMinQty = toFiniteNumber(row && row.minQty, null);
+        const currentStep = toFiniteNumber(row && row.step, null);
+        const currentMaxAmountPerStore = toFiniteNumber(row && row.maxAmountPerStore, null);
+        const currentCalculatePeriod = toFiniteNumber(row && row.calculatePeriod, null);
+
+        const minQty = targetConfig.hasMinQtyUpdate ? targetConfig.minQty : currentMinQty;
+        const step = targetConfig.hasStepUpdate ? targetConfig.step : currentStep;
+        const maxAmountPerStore = targetConfig.hasMaxAmountPerStoreUpdate ? targetConfig.maxAmountPerStore : currentMaxAmountPerStore;
+        const calculatePeriod = targetConfig.hasCalculatePeriodUpdate ? targetConfig.calculatePeriod : currentCalculatePeriod;
+
+        if (minQty === null || step === null || maxAmountPerStore === null || calculatePeriod === null) {
+            throw new Error('当前活动缺少限购参数配置，无法执行限购参数更新。');
+        }
+        if (minQty <= 0) {
+            throw new Error('起订量必须大于0。');
+        }
+        if (step <= 0) {
+            throw new Error('购买倍数必须大于0。');
+        }
+        if (minQty < step || minQty % step !== 0) {
+            throw new Error('起订量必须大于等于购买倍数，且起订量必须是购买倍数的整数倍。');
+        }
+        if (maxAmountPerStore < 0) {
+            throw new Error('单店采购上限必须为0或正整数。');
+        }
+        if (!CALCULATE_PERIOD_OPTIONS.some(function (x) { return x.value === calculatePeriod; })) {
+            throw new Error(`不支持的上限刷新周期：${calculatePeriod}`);
+        }
+
+        return {
+            minQty: minQty,
+            step: step,
+            maxAmountPerStore: maxAmountPerStore,
+            calculatePeriod: calculatePeriod
+        };
+    }
+
+    async function updateSaleLimitRule(auth, row, targetConfig) {
+        const resolvedRule = resolveRulePayloadValues(row, targetConfig);
+        const payload = {
+            wholesaleId: toFiniteNumber(row.wholesaleId, row.wholesaleId),
+            providerId: toFiniteNumber(row.providerId, toFiniteNumber(auth.providerId, auth.providerId)),
+            calculatePeriod: resolvedRule.calculatePeriod,
+            maxAmountPerStore: resolvedRule.maxAmountPerStore,
+            minQty: resolvedRule.minQty,
+            step: resolvedRule.step,
+            token: auth.token,
+            buildTime: formatBuildTime()
+        };
+
+        const data = await relayPmsApi('updateGoodsSaleLimitConf', auth.token, payload);
+        assertBizOk(data, '更新限购参数');
+    }
+
+    async function updateSaleAreaRule(auth, row, areaConfig) {
+        const currentAreaGroupId = toFiniteNumber(row.areaGroupId, null);
+        const currentStoretypeGroupId = toFiniteNumber(row.storetypeGroupId, null);
+        const currentIsRestrict = toFiniteNumber(row.isRestrict, 0);
+        const currentRestrictId = toFiniteNumber(row.restrictId, 0);
+
+        const areaGroupId = areaConfig.hasAreaGroupUpdate ? areaConfig.areaGroupId : currentAreaGroupId;
+        const storetypeGroupId = areaConfig.hasStoretypeGroupUpdate ? areaConfig.storetypeGroupId : currentStoretypeGroupId;
+        const isRestrict = areaConfig.hasRestrictUpdate ? areaConfig.isRestrict : currentIsRestrict;
+        const restrictId = areaConfig.hasRestrictUpdate
+            ? (areaConfig.isRestrict === 0 ? 0 : areaConfig.restrictId)
+            : (currentIsRestrict === 0 ? 0 : currentRestrictId);
+
+        if (areaGroupId === null || storetypeGroupId === null) {
+            throw new Error('当前活动缺少商圈或供货对象配置，无法执行定向管理更新。');
+        }
+
+        const payload = {
+            wholesaleId: toFiniteNumber(row.wholesaleId, row.wholesaleId),
+            providerId: toFiniteNumber(row.providerId, toFiniteNumber(auth.providerId, auth.providerId)),
+            areaGroupId: areaGroupId,
+            storetypeGroupId: storetypeGroupId,
+            isRestrict: isRestrict,
+            restrictId: restrictId,
+            token: auth.token,
+            buildTime: formatBuildTime()
+        };
+
+        const data = await relayPmsApi('updateGoodsSaleAreaConf', auth.token, payload);
+        assertBizOk(data, '更新定向管理');
+    }
+
+    async function updateActivityTime(auth, row, timeConfig) {
+        const currentTime = readActivityTimeValues(row);
+        const beginDate = timeConfig.hasBeginDateUpdate ? timeConfig.beginDate : normalizeDateTimeMaybe(currentTime.beginDate, 'start');
+        const endDate = timeConfig.hasEndDateUpdate ? timeConfig.endDate : normalizeDateTimeMaybe(currentTime.endDate, 'end');
+
+        if (!beginDate || !endDate) {
+            throw new Error('当前活动缺少开始或结束时间配置，无法执行活动期间更新。');
+        }
+        const beginTimestamp = parseDateTimeParts(beginDate, '开始时间', 'start').timestamp;
+        const endTimestamp = parseDateTimeParts(endDate, '结束时间', 'end').timestamp;
+        if (beginTimestamp > endTimestamp) {
+            throw new Error('开始时间不能晚于结束时间。');
+        }
+
+        const payload = {
+            wholeSaleId: toFiniteNumber(row.wholesaleId, row.wholesaleId),
+            beginDate: beginDate,
+            endDate: endDate,
+            wholeSaleType: toFiniteNumber(row.wholesaleType, 1),
+            token: auth.token,
+            buildTime: formatBuildTime()
+        };
+
+        const data = await relayPmsApi('updateYkjWsActivityTime', auth.token, payload);
+        assertBizOk(data, '更新活动期间');
+        if (extractActionResult(data) !== 1) {
+            throw new Error(`更新活动期间失败：${extractActionError(data) || 'result!=1'}`);
+        }
+    }
+
+    function extractActionResult(data) {
+        return toFiniteNumber(data && data.data && data.data.result, null);
+    }
+
+    function extractActionError(data) {
+        return String(data && data.data && data.data.errorMsg ? data.data.errorMsg : '').trim();
+    }
+
+    async function updateOperationStrategy(auth, row, operationConfig) {
+        const wholesaleId = toFiniteNumber(row.wholesaleId, row.wholesaleId);
+        const checkPayload = {
+            wholesaleId: wholesaleId,
+            operationFlag: operationConfig.operationFlag,
+            token: auth.token,
+            buildTime: formatBuildTime()
+        };
+        const checkData = await relayPmsApi('checkUpdateOneFixedWsOpFlag', auth.token, checkPayload);
+        assertBizOk(checkData, '校验运营策略');
+        if (extractActionResult(checkData) !== 1) {
+            throw new Error(`校验运营策略失败：${extractActionError(checkData) || 'result!=1'}`);
+        }
+
+        const updatePayload = {
+            wholesaleId: wholesaleId,
+            operationFlag: operationConfig.operationFlag,
+            token: auth.token,
+            buildTime: formatBuildTime()
+        };
+        const updateData = await relayPmsApi('updateOneFixedWsOpFlag', auth.token, updatePayload);
+        assertBizOk(updateData, '更新运营策略');
+        if (extractActionResult(updateData) !== 1) {
+            throw new Error(`更新运营策略失败：${extractActionError(updateData) || 'result!=1'}`);
+        }
+    }
+
+    async function updateActivityStatus(auth, row, statusConfig) {
+        const wholeSaleId = toFiniteNumber(row.wholesaleId, row.wholesaleId);
+        const wholeSaleType = toFiniteNumber(row.wholesaleType, 1);
+        const candidates = getActivityStatusUpdateCodes(statusConfig.wholesaleStatus);
+        const errors = [];
+
+        for (const statusCode of candidates) {
+            try {
+                const payload = {
+                    wholeSaleId: wholeSaleId,
+                    wholeSaleType: wholeSaleType,
+                    status: statusCode,
+                    token: auth.token,
+                    buildTime: formatBuildTime()
+                };
+                const data = await relayPmsApi('updateYkjWholeSaleStatus', auth.token, payload);
+                assertBizOk(data, '更新活动状态');
+                if (extractActionResult(data) === 1) {
+                    return;
+                }
+                errors.push(`status=${statusCode}, result=${extractActionResult(data)}, error=${extractActionError(data) || '-'}`);
+            } catch (error) {
+                errors.push(`status=${statusCode}, error=${error.message}`);
+            }
+        }
+
+        throw new Error(`更新活动状态失败：${errors.join(' | ') || '未知错误'}`);
+    }
+
+    async function processOneActivity(auth, activityId, targetConfig, areaConfig, timeConfig, operationConfig, statusConfig) {
+        const before = await queryActivityById(auth, activityId);
+        if (!before) {
+            return { id: activityId, status: 'not_found', before: null, after: null, error: 'activity not found' };
+        }
+
+        const beforeValues = readRuleValues(before);
+        const beforeAreaValues = readAreaValues(before);
+        const beforeTimeValues = readActivityTimeValues(before);
+        const beforeOperationValues = readOperationValues(before);
+        const beforeStatusValues = readActivityStatusValues(before);
+        const needLimitUpdate = targetConfig && targetConfig.enabled && !isTargetRule(beforeValues, targetConfig);
+        const needAreaUpdate = areaConfig && areaConfig.enabled && !isTargetArea(beforeAreaValues, areaConfig);
+        const needTimeUpdate = timeConfig && timeConfig.enabled && !isTargetActivityTime(beforeTimeValues, timeConfig);
+        const needOperationUpdate = operationConfig && operationConfig.enabled && !isTargetOperation(beforeOperationValues, operationConfig);
+        const needStatusUpdate = statusConfig && statusConfig.enabled && !isTargetActivityStatus(beforeStatusValues, statusConfig);
+
+        if (!needLimitUpdate && !needAreaUpdate && !needTimeUpdate && !needOperationUpdate && !needStatusUpdate) {
+            return {
+                id: activityId,
+                status: 'already_target',
+                before: beforeValues,
+                after: beforeValues,
+                beforeArea: beforeAreaValues,
+                afterArea: beforeAreaValues,
+                beforeTime: beforeTimeValues,
+                afterTime: beforeTimeValues,
+                beforeOperation: beforeOperationValues,
+                afterOperation: beforeOperationValues,
+                beforeStatus: beforeStatusValues,
+                afterStatus: beforeStatusValues,
+                error: null,
+                applied: { limit: false, area: false, activityTime: false, operation: false, activityStatus: false }
+            };
+        }
+
+        if (needLimitUpdate) {
+            await updateSaleLimitRule(auth, before, targetConfig);
+        }
+        if (needAreaUpdate) {
+            await updateSaleAreaRule(auth, before, areaConfig);
+        }
+        if (needTimeUpdate) {
+            await updateActivityTime(auth, before, timeConfig);
+        }
+        if (needOperationUpdate) {
+            await updateOperationStrategy(auth, before, operationConfig);
+        }
+        if (needStatusUpdate) {
+            await updateActivityStatus(auth, before, statusConfig);
+        }
+
+        const after = await queryActivityById(auth, activityId);
+        const afterValues = after ? readRuleValues(after) : null;
+        const afterAreaValues = after ? readAreaValues(after) : null;
+        const afterTimeValues = after ? readActivityTimeValues(after) : null;
+        const afterOperationValues = after ? readOperationValues(after) : null;
+        const afterStatusValues = after ? readActivityStatusValues(after) : null;
+        const limitOk = targetConfig && targetConfig.enabled ? isTargetRule(afterValues, targetConfig) : true;
+        const areaOk = isTargetArea(afterAreaValues, areaConfig);
+        const timeOk = isTargetActivityTime(afterTimeValues, timeConfig);
+        const operationOk = isTargetOperation(afterOperationValues, operationConfig);
+        const statusOk = isTargetActivityStatus(afterStatusValues, statusConfig);
+
+        if (limitOk && areaOk && timeOk && operationOk && statusOk) {
+            return {
+                id: activityId,
+                status: 'updated',
+                before: beforeValues,
+                after: afterValues,
+                beforeArea: beforeAreaValues,
+                afterArea: afterAreaValues,
+                beforeTime: beforeTimeValues,
+                afterTime: afterTimeValues,
+                beforeOperation: beforeOperationValues,
+                afterOperation: afterOperationValues,
+                beforeStatus: beforeStatusValues,
+                afterStatus: afterStatusValues,
+                error: null,
+                applied: {
+                    limit: needLimitUpdate,
+                    area: needAreaUpdate,
+                    activityTime: needTimeUpdate,
+                    operation: needOperationUpdate,
+                    activityStatus: needStatusUpdate
+                }
+            };
+        }
+        return {
+            id: activityId,
+            status: 'unverified',
+            before: beforeValues,
+            after: afterValues,
+            beforeArea: beforeAreaValues,
+            afterArea: afterAreaValues,
+            beforeTime: beforeTimeValues,
+            afterTime: afterTimeValues,
+            beforeOperation: beforeOperationValues,
+            afterOperation: afterOperationValues,
+            beforeStatus: beforeStatusValues,
+            afterStatus: afterStatusValues,
+            error: 'post-check failed',
+            applied: {
+                limit: needLimitUpdate,
+                area: needAreaUpdate,
+                activityTime: needTimeUpdate,
+                operation: needOperationUpdate,
+                activityStatus: needStatusUpdate
+            }
+        };
+    }
+
+    function parseIds(raw) {
+        const text = String(raw == null ? '' : raw);
+        const normalized = text.replace(/[０-９]/g, function (ch) {
+            return String.fromCharCode(ch.charCodeAt(0) - 65248);
+        });
+        const parts = normalized.match(/\d+/g) || [];
+        const ids = [];
+        const invalid = [];
+        const seen = new Set();
+
+        parts.forEach(function (part) {
+            if (!seen.has(part)) {
+                seen.add(part);
+                ids.push(part);
+            }
+        });
+
+        return { ids: ids, invalid: invalid };
+    }
+
+    function formatIdList(ids) {
+        return ids && ids.length > 0 ? ids.join(', ') : '无';
+    }
+
+    function formatFailedDetails(items) {
+        if (!items || items.length === 0) return '无';
+        return items.map(function (item) {
+            return `${item.id}: ${item.error}`;
+        }).join('；');
+    }
+
+    function logBatchResultSummary(stats, title) {
+        log(`【${title}】总数 ${stats.total}，已处理 ${stats.done}。`);
+        log(`修改成功：${stats.updated} 个；活动ID：${formatIdList(stats.updatedIds)}`, stats.updated > 0 ? 'ok' : undefined);
+        log(`已是目标值：${stats.already} 个；活动ID：${formatIdList(stats.alreadyIds)}`, 'warn');
+        log(`未找到活动：${stats.notFound} 个；活动ID：${formatIdList(stats.notFoundIds)}`, 'warn');
+        log(`已提交但复核失败：${stats.unverified} 个；活动ID：${formatIdList(stats.unverifiedIds)}`, 'warn');
+        log(`执行失败：${stats.failed} 个；活动ID：${formatIdList(stats.failedIds)}`, stats.failed > 0 ? 'err' : undefined);
+        if (stats.failed > 0) {
+            log(`失败详情：${formatFailedDetails(stats.failedDetails)}`, 'err');
+        }
+    }
+
+    async function runPool(items, limit, worker) {
+        let cursor = 0;
+        const total = items.length;
+        const workerCount = Math.max(1, Math.min(limit, total));
+
+        async function runner() {
+            while (true) {
+                if (state.stopRequested) return;
+                const index = cursor;
+                cursor += 1;
+                if (index >= total) return;
+                await worker(items[index], index);
+            }
+        }
+
+        await Promise.all(Array.from({ length: workerCount }, function () { return runner(); }));
+    }
+
+    function setRunningUi(isRunning) {
+        state.running = isRunning;
+        if (isRunning) closeSettingsDialog();
+        if (els.btnStart) {
+            els.btnStart.disabled = false;
+            if (isRunning) {
+                els.btnStart.textContent = '停止任务';
+                els.btnStart.classList.remove('primary');
+                els.btnStart.classList.add('warn');
+            } else {
+                els.btnStart.textContent = '执行修改';
+                els.btnStart.classList.remove('warn');
+                els.btnStart.classList.add('primary');
+            }
+        }
+        const idsEnabled = !!(els.idsEnable && els.idsEnable.checked);
+        if (els.idsEnable) els.idsEnable.disabled = isRunning;
+        els.idsInput.disabled = isRunning || !idsEnabled;
+        els.btnLogin.disabled = isRunning;
+        if (els.btnSettings) els.btnSettings.disabled = isRunning;
+        const ruleEnabled = !!(els.ruleEnable && els.ruleEnable.checked);
+        if (els.ruleEnable) els.ruleEnable.disabled = isRunning;
+        if (els.ruleMinQty) els.ruleMinQty.disabled = isRunning || !ruleEnabled;
+        if (els.ruleStep) els.ruleStep.disabled = isRunning || !ruleEnabled;
+        if (els.ruleMaxAmountPerStore) els.ruleMaxAmountPerStore.disabled = isRunning || !ruleEnabled;
+        if (els.ruleCalculatePeriod) els.ruleCalculatePeriod.disabled = isRunning || !ruleEnabled;
+        if (els.areaEnable) els.areaEnable.disabled = isRunning;
+        if (els.areaKeyword) els.areaKeyword.disabled = isRunning || !(els.areaEnable && els.areaEnable.checked);
+        if (els.supplyKeyword) els.supplyKeyword.disabled = isRunning || !(els.areaEnable && els.areaEnable.checked);
+        if (els.restrictKeyword) els.restrictKeyword.disabled = isRunning || !(els.areaEnable && els.areaEnable.checked && getRestrictModeFromUi() !== 0);
+        document.querySelectorAll('input[name="restrict-mode"]').forEach(function (radio) {
+            radio.disabled = isRunning || !(els.areaEnable && els.areaEnable.checked);
+        });
+        const activityTimeEnabled = !!(els.activityTimeEnable && els.activityTimeEnable.checked);
+        if (els.activityTimeEnable) els.activityTimeEnable.disabled = isRunning;
+        if (els.activityTimeStart) els.activityTimeStart.disabled = isRunning || !activityTimeEnabled;
+        if (els.activityTimeEnd) els.activityTimeEnd.disabled = isRunning || !activityTimeEnabled;
+        const operationEnabled = !!(els.operationEnable && els.operationEnable.checked);
+        if (els.operationEnable) els.operationEnable.disabled = isRunning;
+        if (els.operationFlag) els.operationFlag.disabled = isRunning || !operationEnabled;
+        const activityStatusEnabled = !!(els.activityStatusEnable && els.activityStatusEnable.checked);
+        if (els.activityStatusEnable) els.activityStatusEnable.disabled = isRunning;
+        if (els.activityStatusValue) els.activityStatusValue.disabled = isRunning || !activityStatusEnabled;
+        if (isRunning) closeAllAutocompleteLists();
+    }
+
+    async function startBatchUpdate() {
+        if (state.running) return;
+
+        if (window.location.protocol === 'file:') {
+            log('当前页面通过 file:// 打开，仍将使用内置云函数地址。', 'warn');
+        }
+
+        const auth = state.auth ? {
+            token: String(state.auth.token || '').trim(),
+            providerId: normalizeProviderId(state.auth.providerId),
+            account: state.auth.account || ''
+        } : null;
+
+        if (!auth || !auth.token || auth.providerId === '') {
+            log('请先完成登录（扫码登录或缓存登录）。', 'err');
+            return;
+        }
+
+        const relayUrl = getRelayUrl();
+        if (!relayUrl) {
+            log('云函数地址为空，请先在设置中填写云函数Url。', 'err');
+            return;
+        }
+
+        if (!(els.idsEnable && els.idsEnable.checked)) {
+            log('请先启用活动ID。', 'err');
+            return;
+        }
+
+        const parsed = parseIds(els.idsInput.value || '');
+        if (parsed.invalid.length > 0) {
+            log(`活动ID格式错误：${parsed.invalid.slice(0, 8).join(', ')}${parsed.invalid.length > 8 ? ' ...' : ''}`, 'err');
+            return;
+        }
+        if (parsed.ids.length === 0) {
+            log('请先输入活动ID。', 'err');
+            return;
+        }
+
+        let targetConfig;
+        try {
+            targetConfig = readTargetConfigFromUi();
+        } catch (error) {
+            log(`限购参数校验失败：${error.message}`, 'err');
+            return;
+        }
+        let areaConfig;
+        try {
+            areaConfig = readAreaTargetConfigFromUi();
+        } catch (error) {
+            log(`定向管理参数校验失败：${error.message}`, 'err');
+            return;
+        }
+        let timeConfig;
+        try {
+            timeConfig = readActivityTimeTargetConfigFromUi();
+        } catch (error) {
+            log(`活动期间参数校验失败：${error.message}`, 'err');
+            return;
+        }
+        let operationConfig;
+        try {
+            operationConfig = readOperationTargetConfigFromUi();
+        } catch (error) {
+            log(`运营策略参数校验失败：${error.message}`, 'err');
+            return;
+        }
+        let statusConfig;
+        try {
+            statusConfig = readActivityStatusTargetConfigFromUi();
+        } catch (error) {
+            log(`活动状态参数校验失败：${error.message}`, 'err');
+            return;
+        }
+        if (
+            !(targetConfig && targetConfig.enabled)
+            && !(areaConfig && areaConfig.enabled)
+            && !(timeConfig && timeConfig.enabled)
+            && !(operationConfig && operationConfig.enabled)
+            && !(statusConfig && statusConfig.enabled)
+        ) {
+            log('请至少启用一个修改项：限购参数、定向管理、活动期间、运营策略、活动状态。', 'err');
+            return;
+        }
+
+        state.runId += 1;
+        const thisRun = state.runId;
+        state.stopRequested = false;
+
+        setAuth({
+            token: auth.token,
+            providerId: auth.providerId,
+            account: auth.account || (state.auth ? state.auth.account : '')
+        }, true);
+
+        setRunningUi(true);
+        setSummary(`处理中：0/${parsed.ids.length}`);
+        const concurrency = getConcurrency();
+        log(`任务开始：共 ${parsed.ids.length} 个活动ID，并发数 ${concurrency}。`);
+        log(`限购参数目标：${ruleTargetText(targetConfig)}`);
+        log(`定向管理目标：${areaTargetText(areaConfig)}`);
+        log(`活动期间目标：${activityTimeTargetText(timeConfig)}`);
+        log(`运营策略目标：${operationTargetText(operationConfig)}`);
+        log(`活动状态目标：${activityStatusTargetText(statusConfig)}`);
+
+        const stats = {
+            total: parsed.ids.length,
+            done: 0,
+            updated: 0,
+            already: 0,
+            notFound: 0,
+            unverified: 0,
+            failed: 0,
+            updatedIds: [],
+            alreadyIds: [],
+            notFoundIds: [],
+            unverifiedIds: [],
+            failedIds: [],
+            failedDetails: []
+        };
+
+        try {
+            await runPool(parsed.ids, concurrency, async function (id, idx) {
+                if (state.stopRequested || state.runId !== thisRun) return;
+                log(`(${idx + 1}/${parsed.ids.length}) 开始处理活动ID=${id}`);
+
+                try {
+                    const result = await processOneActivity(state.auth, id, targetConfig, areaConfig, timeConfig, operationConfig, statusConfig);
+                    if (result.status === 'updated') {
+                        stats.updated += 1;
+                        stats.updatedIds.push(id);
+                        const detailParts = [];
+                        if (result.applied && result.applied.limit) {
+                            detailParts.push(`限购参数 [${ruleText(result.before)}] -> [${ruleText(result.after)}]`);
+                        }
+                        if (result.applied && result.applied.area) {
+                            detailParts.push(`定向管理 [${areaText(result.beforeArea)}] -> [${areaText(result.afterArea)}]`);
+                        }
+                        if (result.applied && result.applied.activityTime) {
+                            detailParts.push(`活动期间 [${activityTimeText(result.beforeTime)}] -> [${activityTimeText(result.afterTime)}]`);
+                        }
+                        if (result.applied && result.applied.operation) {
+                            detailParts.push(`运营策略 [${operationText(result.beforeOperation)}] -> [${operationText(result.afterOperation)}]`);
+                        }
+                        if (result.applied && result.applied.activityStatus) {
+                            detailParts.push(`活动状态 [${activityStatusText(result.beforeStatus)}] -> [${activityStatusText(result.afterStatus)}]`);
+                        }
+                        log(`活动ID=${id} 修改成功：${detailParts.join('；')}`, 'ok');
+                    } else if (result.status === 'already_target') {
+                        stats.already += 1;
+                        stats.alreadyIds.push(id);
+                        log(
+                            `活动ID=${id} 已是目标值：限购参数[${ruleText(result.before)}]，定向管理[${areaText(result.beforeArea)}]，活动期间[${activityTimeText(result.beforeTime)}]，运营策略[${operationText(result.beforeOperation)}]，活动状态[${activityStatusText(result.beforeStatus)}]`,
+                            'warn'
+                        );
+                    } else if (result.status === 'not_found') {
+                        stats.notFound += 1;
+                        stats.notFoundIds.push(id);
+                        log(`活动ID=${id} 未找到。`, 'warn');
+                    } else if (result.status === 'unverified') {
+                        stats.unverified += 1;
+                        stats.unverifiedIds.push(id);
+                        log(
+                            `活动ID=${id} 已提交但复核失败：限购参数提交后[${ruleText(result.after)}]，定向管理提交后[${areaText(result.afterArea)}]，活动期间提交后[${activityTimeText(result.afterTime)}]，运营策略提交后[${operationText(result.afterOperation)}]，活动状态提交后[${activityStatusText(result.afterStatus)}]`,
+                            'warn'
+                        );
+                    } else {
+                        stats.failed += 1;
+                        stats.failedIds.push(id);
+                        stats.failedDetails.push({ id: id, error: result.error || '未知错误' });
+                        log(`活动ID=${id} 修改失败：${result.error || '未知错误'}`, 'err');
+                    }
+                } catch (error) {
+                    stats.failed += 1;
+                    stats.failedIds.push(id);
+                    stats.failedDetails.push({ id: id, error: error.message });
+                    log(`活动ID=${id} 执行异常：${error.message}`, 'err');
+                } finally {
+                    stats.done += 1;
+                    setSummary(
+                        `处理中 ${stats.done}/${stats.total}；成功 ${stats.updated}；已是目标 ${stats.already}；未找到 ${stats.notFound}；复核失败 ${stats.unverified}；失败 ${stats.failed}`
+                    );
+                }
+            });
+        } finally {
+            setRunningUi(false);
+        }
+
+        if (state.stopRequested) {
+            log('任务已按用户请求停止。', 'warn');
+            logBatchResultSummary(stats, '任务中止汇总');
+            setSummary(`已停止：${stats.done}/${stats.total}`);
+            return;
+        }
+
+        logBatchResultSummary(stats, '任务完成汇总');
+        setSummary(`已完成：总数 ${stats.total}；成功 ${stats.updated}；失败 ${stats.failed}`);
+    }
+
+    const PmsLoginModule = {
+        config: {
+            apiBase: LOGIN_PROXY_URL,
+            pollInterval: 1000,
+            qrcodeTimeout: 300000
+        },
+        state: {
+            currentStep: 'init',
+            webKey: null,
+            lastStatus: 'QRCODE_SCAN_NEVER',
+            openDataSid: null,
+            pollingTimer: null,
+            qrcodeTimer: null,
+            authCode: null,
+            credentials: null,
+            userInfo: null,
+            permissions: null
+        },
+        init: function () {
+            this.resetState();
+        },
+        resetState: function () {
+            this.state = {
+                currentStep: 'init',
+                webKey: null,
+                lastStatus: 'QRCODE_SCAN_NEVER',
+                openDataSid: null,
+                pollingTimer: null,
+                qrcodeTimer: null,
+                authCode: null,
+                credentials: null,
+                userInfo: null,
+                permissions: null
+            };
+        },
+        apiRequest: async function (params) {
+            const query = new URLSearchParams(params || {}).toString();
+            const url = `${this.config.apiBase}?${query}`;
+            return fetchJson(url, { method: 'GET', timeoutMs: 20000 });
+        },
+        getQrcode: async function () {
+            const data = await this.apiRequest({ action: 'get_qrcode' });
+            if (String(data.code) !== SUCCESS_CODE) throw new Error(data.message || '获取二维码失败');
+            return data;
+        },
+        checkStatus: async function (webKey, lastStatus, openDataSid) {
+            const params = { action: 'check_status', web_key: webKey };
+            if (lastStatus) params.last_status = lastStatus;
+            if (openDataSid) params.open_data_sid = openDataSid;
+            const data = await this.apiRequest(params);
+            if (String(data.code) !== SUCCESS_CODE) throw new Error(data.message || '轮询扫码状态失败');
+            return data;
+        },
+        login: async function (authCode) {
+            const data = await this.apiRequest({ action: 'login', auth_code: authCode });
+            if (String(data.code) !== SUCCESS_CODE) throw new Error(data.message || '登录失败');
+            return data;
+        },
+        startLogin: async function () {
+            this.state.currentStep = 'qrcode';
+            const qrcodeResult = await this.getQrcode();
+            this.state.webKey = qrcodeResult.data.web_key;
+            this.state.qrcodeTimer = setTimeout(() => {
+                if (this.state.currentStep === 'qrcode' || this.state.currentStep === 'polling') {
+                    this.stopPolling();
+                    this.state.currentStep = 'expired';
+                }
+            }, this.config.qrcodeTimeout);
+            return {
+                step: 'qrcode',
+                qrcodeUrl: qrcodeResult.data.qrcode_url,
+                message: '请使用企微扫码'
+            };
+        },
+        startPolling: async function () {
+            if (!this.state.webKey) throw new Error('二维码未初始化');
+            this.state.currentStep = 'polling';
+            return new Promise((resolve, reject) => {
+                const poll = async () => {
+                    try {
+                        if (this.state.currentStep === 'expired') {
+                            reject(new Error('二维码已过期，请刷新重试'));
+                            return;
+                        }
+                        const statusResult = await this.checkStatus(this.state.webKey, this.state.lastStatus, this.state.openDataSid);
+                        const statusData = statusResult.data || {};
+                        this.state.lastStatus = statusData.status;
+                        if (statusData.open_data_sid) this.state.openDataSid = statusData.open_data_sid;
+
+                        switch (statusData.status) {
+                            case 'QRCODE_SCAN_NEVER':
+                            case 'QRCODE_SCAN_ING':
+                                this.state.pollingTimer = setTimeout(poll, this.config.pollInterval);
+                                break;
+                            case 'QRCODE_SCAN_SUCC':
+                                this.state.authCode = statusData.auth_code;
+                                this.stopPolling();
+                                await this.finalizeLogin();
+                                resolve({ step: 'success', message: '登录成功' });
+                                break;
+                            case 'QRCODE_SCAN_ERR':
+                            case 'QRCODE_SCAN_TIMEOUT':
+                            case 'QRCODE_SCAN_CANCEL':
+                                this.stopPolling();
+                                reject(new Error('二维码已失效，请刷新重试'));
+                                break;
+                            default:
+                                this.state.pollingTimer = setTimeout(poll, this.config.pollInterval);
+                                break;
+                        }
+                    } catch (error) {
+                        this.stopPolling();
+                        reject(error);
+                    }
+                };
+                poll();
+            });
+        },
+        stopPolling: function () {
+            if (this.state.pollingTimer) {
+                clearTimeout(this.state.pollingTimer);
+                this.state.pollingTimer = null;
+            }
+            if (this.state.qrcodeTimer) {
+                clearTimeout(this.state.qrcodeTimer);
+                this.state.qrcodeTimer = null;
+            }
+        },
+        finalizeLogin: async function () {
+            const loginResult = await this.login(this.state.authCode);
+            const loginData = loginResult.data || {};
+            this.state.credentials = loginData.credentials || {};
+            if (loginData.provider_id) this.state.credentials.providerId = loginData.provider_id;
+            this.state.userInfo = loginData.user || null;
+            this.state.permissions = loginData.permissions || null;
+            this.state.currentStep = 'success';
+        },
+        getState: function () {
+            return { ...this.state };
+        },
+        restart: function () {
+            this.stopPolling();
+            this.resetState();
+        }
+    };
+
+    const LoginDialog = {
+        state: {
+            overlay: null,
+            container: null,
+            main: null,
+            isOpen: false,
+            statusTimer: null,
+            onSuccess: null
+        },
+        init: function () {
+            if (this.state.overlay) return;
+            const overlay = document.createElement('div');
+            overlay.className = 'login-overlay';
+            overlay.style.display = 'none';
+
+            const container = document.createElement('div');
+            container.className = 'login-container';
+
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'login-close';
+            closeBtn.textContent = 'x';
+            closeBtn.addEventListener('click', () => this.close());
+
+            const main = document.createElement('div');
+            main.className = 'login-main';
+
+            container.appendChild(closeBtn);
+            container.appendChild(main);
+            overlay.appendChild(container);
+            document.body.appendChild(overlay);
+
+            this.state.overlay = overlay;
+            this.state.container = container;
+            this.state.main = main;
+        },
+        open: function (onSuccess) {
+            this.init();
+            this.state.onSuccess = onSuccess;
+            this.state.isOpen = true;
+            this.state.overlay.style.display = 'flex';
+            setTimeout(() => {
+                this.state.overlay.classList.add('active');
+                this.state.container.classList.add('active');
+            }, 10);
+
+            PmsLoginModule.init();
+            this.renderPmsQrcodeView();
+        },
+        close: function () {
+            if (!this.state.isOpen) return;
+            this.state.isOpen = false;
+            this.clearStatusTimer();
+            PmsLoginModule.stopPolling();
+            this.state.overlay.classList.remove('active');
+            this.state.container.classList.remove('active');
+            setTimeout(() => {
+                this.state.overlay.style.display = 'none';
+            }, 300);
+        },
+        clearStatusTimer: function () {
+            if (this.state.statusTimer) {
+                clearTimeout(this.state.statusTimer);
+                this.state.statusTimer = null;
+            }
+        },
+        renderPmsQrcodeView: function () {
+            this.state.main.innerHTML = '';
+            const header = document.createElement('div');
+            header.className = 'login-header';
+            header.innerHTML = '<h3>PMS系统登录</h3>';
+
+            const body = document.createElement('div');
+            body.className = 'login-body';
+            body.innerHTML = `
+                <div class="qrcode-container">
+                    <div class="qrcode-image" id="pms-qrcode-image" style="position: relative;">
+                        <div class="qrcode-loading">
+                            <div class="spinner"></div>
+                            <span>正在生成二维码...</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const footer = document.createElement('div');
+            footer.className = 'login-footer';
+            footer.innerHTML = '<button id="pms-login-btn" class="login-btn primary" disabled>等待二维码...</button>';
+
+            this.state.main.appendChild(header);
+            this.state.main.appendChild(body);
+            this.state.main.appendChild(footer);
+
+            const qrcodeImage = body.querySelector('#pms-qrcode-image');
+            qrcodeImage.addEventListener('click', () => this.refreshPmsQrcode());
+
+            this.loadPmsQrcode();
+        },
+        loadPmsQrcode: async function () {
+            const qrcodeImage = this.state.main.querySelector('#pms-qrcode-image');
+            const loginBtn = this.state.main.querySelector('#pms-login-btn');
+            if (!qrcodeImage || !loginBtn) return;
+            try {
+                const result = await PmsLoginModule.startLogin();
+                qrcodeImage.innerHTML = `
+                    <img src="${result.qrcodeUrl}" alt="wecom qrcode" id="pms-qrcode-img">
+                    <div class="qrcode-overlay" id="pms-qrcode-overlay" style="display:none;">OK</div>
+                `;
+                loginBtn.disabled = true;
+                loginBtn.textContent = '等待扫码...';
+                this.startPmsPolling();
+            } catch (error) {
+                qrcodeImage.innerHTML = `
+                    <div class="qrcode-error">
+                        <div style="font-size:32px;">!</div>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                loginBtn.disabled = false;
+                loginBtn.textContent = '重试';
+                loginBtn.onclick = () => this.refreshPmsQrcode();
+            }
+        },
+        refreshPmsQrcode: async function () {
+            const qrcodeImage = this.state.main.querySelector('#pms-qrcode-image');
+            const loginBtn = this.state.main.querySelector('#pms-login-btn');
+            if (!qrcodeImage || !loginBtn) return;
+            try {
+                qrcodeImage.innerHTML = `
+                    <div class="qrcode-loading">
+                        <div class="spinner"></div>
+                        <span>刷新中...</span>
+                    </div>
+                `;
+                loginBtn.disabled = true;
+                loginBtn.textContent = '刷新中...';
+                PmsLoginModule.restart();
+                const result = await PmsLoginModule.startLogin();
+                qrcodeImage.innerHTML = `
+                    <img src="${result.qrcodeUrl}" alt="wecom qrcode" id="pms-qrcode-img">
+                    <div class="qrcode-overlay" id="pms-qrcode-overlay" style="display:none;">OK</div>
+                `;
+                loginBtn.disabled = true;
+                loginBtn.textContent = '等待扫码...';
+                this.startPmsPolling();
+            } catch (error) {
+                qrcodeImage.innerHTML = `
+                    <div class="qrcode-error">
+                        <div style="font-size:32px;">!</div>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                loginBtn.disabled = false;
+                loginBtn.textContent = '重试';
+            }
+        },
+        startPmsPolling: function () {
+            const overlay = this.state.main.querySelector('#pms-qrcode-overlay');
+            const loginBtn = this.state.main.querySelector('#pms-login-btn');
+            if (!overlay || !loginBtn) return;
+
+            PmsLoginModule.startPolling().then(() => {
+                this.showSuccess();
+            }).catch((error) => {
+                overlay.style.display = 'none';
+                loginBtn.disabled = false;
+                loginBtn.textContent = '重试';
+                log(`扫码登录轮询失败：${error.message}`, 'err');
+            });
+
+            const checkStatus = () => {
+                if (!this.state.isOpen) return;
+                const s = PmsLoginModule.getState();
+                if (s.currentStep === 'polling') {
+                    if (s.lastStatus === 'QRCODE_SCAN_ING') {
+                        overlay.style.display = 'flex';
+                        loginBtn.disabled = true;
+                        loginBtn.textContent = '扫码成功，请确认...';
+                    } else if (s.lastStatus === 'QRCODE_SCAN_SUCC') {
+                        overlay.style.display = 'flex';
+                        loginBtn.disabled = true;
+                        loginBtn.textContent = '登录中...';
+                    } else {
+                        overlay.style.display = 'none';
+                        loginBtn.disabled = true;
+                        loginBtn.textContent = '等待扫码...';
+                    }
+                    this.state.statusTimer = setTimeout(checkStatus, 300);
+                }
+            };
+            checkStatus();
+        },
+        showSuccess: function () {
+            const s = PmsLoginModule.getState();
+            const token = s.credentials ? (s.credentials.pms_token || s.credentials.token || '') : '';
+            const providerId = s.credentials ? (s.credentials.providerId || s.credentials.provider_id || '') : '';
+            const account = s.userInfo && s.userInfo.account ? s.userInfo.account : '';
+
+            this.state.main.innerHTML = `
+                <div class="login-header"><h3>PMS系统登录</h3></div>
+                <div class="login-body">
+                    <div class="success-container">
+                        <div class="success-icon">OK</div>
+                        <div class="success-message">
+                            <h4>登录成功！</h4>
+                            <p>即将返回页面...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="login-footer"><button class="login-btn primary" disabled>登录</button></div>
+            `;
+
+            if (token && providerId !== '' && providerId !== null && providerId !== undefined) {
+                const auth = {
+                    token: String(token),
+                    providerId: normalizeProviderId(providerId),
+                    account: account || ''
+                };
+                if (typeof this.state.onSuccess === 'function') {
+                    this.state.onSuccess(auth);
+                }
+            } else {
+                log('登录成功但未拿到完整鉴权信息(token/providerId)，请重新扫码。', 'warn');
+            }
+
+            setTimeout(() => this.close(), 1500);
+        }
+    };
+
+    function renderLoadingList(listEl) {
+        if (!listEl) return;
+        bringAutocompleteToFront(listEl);
+        listEl.innerHTML = '';
+        const li = document.createElement('li');
+        li.className = 'autocomplete-empty';
+        li.textContent = '加载中...';
+        listEl.appendChild(li);
+        listEl.classList.add('show');
+    }
+
+    function resetRestrictSelection() {
+        if (!els.restrictKeyword) return;
+        els.restrictKeyword.value = '';
+        clearSelectedOption(els.restrictKeyword);
+        closeAutocompleteList(els.restrictKeywordList);
+    }
+
+    function updateRestrictUi(options) {
+        const opts = options || {};
+        const mode = getRestrictModeFromUi();
+        const clear = !!opts.clearSelection;
+
+        if (els.restrictWrap) els.restrictWrap.style.display = '';
+        if (mode === 0) {
+            if (els.restrictLabel) {
+                els.restrictLabel.textContent = '控销/禁销组';
+            }
+            if (els.restrictKeyword) {
+                els.restrictKeyword.placeholder = '选择控销或禁销后可输入';
+            }
+            if (clear || !state.running) {
+                resetRestrictSelection();
+            }
+            return;
+        }
+
+        if (els.restrictLabel) {
+            els.restrictLabel.textContent = mode === 1 ? '控销组' : '禁销组';
+        }
+        if (els.restrictKeyword) {
+            els.restrictKeyword.placeholder = mode === 1
+                ? '输入关键字搜索控销组，如：华、马应龙、控销'
+                : '输入关键字搜索禁销组，如：SP、禁销';
+        }
+        if (clear) {
+            resetRestrictSelection();
+        }
+    }
+
+    function setConfigCardState(cardEl, enabled) {
+        if (!cardEl) return;
+        cardEl.classList.toggle('is-disabled', !enabled);
+    }
+
+    function applyRuleConfigEnabledUi() {
+        const enabled = !!(els.ruleEnable && els.ruleEnable.checked);
+        setConfigCardState(els.ruleConfigBox, enabled);
+        setRunningUi(state.running);
+    }
+
+    function applyIdsConfigEnabledUi() {
+        const enabled = !!(els.idsEnable && els.idsEnable.checked);
+        setConfigCardState(els.idsConfigBox, enabled);
+        setRunningUi(state.running);
+    }
+
+    function applyAreaConfigEnabledUi() {
+        const enabled = !!(els.areaEnable && els.areaEnable.checked);
+        setConfigCardState(els.areaConfigBox, enabled);
+
+        if (!enabled) {
+            state.restrictModeTouched = false;
+            closeAllAutocompleteLists();
+        }
+        updateRestrictUi({ clearSelection: false });
+        setRunningUi(state.running);
+    }
+
+    function applyActivityTimeConfigEnabledUi() {
+        const enabled = !!(els.activityTimeEnable && els.activityTimeEnable.checked);
+        setConfigCardState(els.activityTimeConfigBox, enabled);
+        setRunningUi(state.running);
+    }
+
+    function applyOperationConfigEnabledUi() {
+        const enabled = !!(els.operationEnable && els.operationEnable.checked);
+        setConfigCardState(els.operationConfigBox, enabled);
+        setRunningUi(state.running);
+    }
+
+    function applyActivityStatusConfigEnabledUi() {
+        const enabled = !!(els.activityStatusEnable && els.activityStatusEnable.checked);
+        setConfigCardState(els.activityStatusConfigBox, enabled);
+        setRunningUi(state.running);
+    }
+
+    function bindEnumAutocomplete(inputEl, listEl, type) {
+        if (!inputEl || !listEl) return;
+        let debounceTimer = null;
+        let localRequestSeq = 0;
+
+        async function doSearch() {
+            if (!(els.areaEnable && els.areaEnable.checked)) {
+                closeAutocompleteList(listEl);
+                return;
+            }
+
+            const auth = state.auth;
+            if (!auth || !auth.token || auth.providerId === '' || auth.providerId === null || auth.providerId === undefined) {
+                renderAutocompleteList(listEl, [], function () {}, '请先登录后搜索候选列表。');
+                return;
+            }
+
+            if (type === ENUM_TYPE_RESTRICT && getRestrictModeFromUi() === 0) {
+                closeAutocompleteList(listEl);
+                return;
+            }
+
+            const keyword = String(inputEl.value || '').trim();
+            const requestSeq = ++state.enumRequestSeq;
+            localRequestSeq = requestSeq;
+            bringAutocompleteToFront(listEl);
+            renderLoadingList(listEl);
+
+            try {
+                const items = await fetchEnumOptions(auth, type, keyword, 100);
+                if (localRequestSeq !== state.enumRequestSeq) return;
+                renderAutocompleteList(listEl, items, function (item) {
+                    setSelectedOption(inputEl, item);
+                    closeAutocompleteList(listEl);
+                }, '未找到候选项。');
+            } catch (error) {
+                if (localRequestSeq !== state.enumRequestSeq) return;
+                renderAutocompleteList(listEl, [], function () {}, `查询失败：${error.message}`);
+            }
+        }
+
+        inputEl.addEventListener('input', function () {
+            const current = String(inputEl.value || '').trim();
+            const selectedName = String(inputEl.dataset.selectedName || '').trim();
+            if (current !== selectedName) {
+                clearSelectedOption(inputEl);
+            }
+            if (debounceTimer) clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function () {
+                doSearch().catch(function () {});
+            }, 260);
+        });
+
+        inputEl.addEventListener('focus', function () {
+            bringAutocompleteToFront(listEl);
+            doSearch().catch(function () {});
+        });
+
+        inputEl.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeAutocompleteList(listEl);
+            }
+        });
+    }
+
+    function bindDateTimeSelectOnly(inputEl) {
+        if (!inputEl) return;
+        inputEl.addEventListener('keydown', function (event) {
+            if (event.key === 'Tab') return;
+            event.preventDefault();
+        });
+        inputEl.addEventListener('paste', function (event) {
+            event.preventDefault();
+        });
+        inputEl.addEventListener('drop', function (event) {
+            event.preventDefault();
+        });
+    }
+
+    function bindDateTimeAutoOpen(inputEl) {
+        if (!inputEl) return;
+
+        function tryOpenPicker() {
+            if (state.running) return;
+            if (!(els.activityTimeEnable && els.activityTimeEnable.checked)) return;
+            if (inputEl.disabled) return;
+            if (typeof inputEl.showPicker !== 'function') return;
+            try {
+                inputEl.showPicker();
+            } catch (_) {}
+        }
+
+        inputEl.addEventListener('click', tryOpenPicker);
+        inputEl.addEventListener('focus', tryOpenPicker);
+    }
+
+    function bindEvents() {
+        bindEnumAutocomplete(els.areaKeyword, els.areaKeywordList, ENUM_TYPE_AREA);
+        bindEnumAutocomplete(els.supplyKeyword, els.supplyKeywordList, ENUM_TYPE_SUPPLY);
+        bindEnumAutocomplete(els.restrictKeyword, els.restrictKeywordList, ENUM_TYPE_RESTRICT);
+        bindDateTimeSelectOnly(els.activityTimeStart);
+        bindDateTimeSelectOnly(els.activityTimeEnd);
+        bindDateTimeAutoOpen(els.activityTimeStart);
+        bindDateTimeAutoOpen(els.activityTimeEnd);
+
+        document.addEventListener('click', function (event) {
+            if (event.target && event.target.closest && event.target.closest('.autocomplete')) return;
+            closeAllAutocompleteLists();
+        });
+
+        if (els.ruleEnable) {
+            els.ruleEnable.addEventListener('change', function () {
+                applyRuleConfigEnabledUi();
+            });
+        }
+
+        if (els.idsEnable) {
+            els.idsEnable.addEventListener('change', function () {
+                applyIdsConfigEnabledUi();
+            });
+        }
+
+        if (els.areaEnable) {
+            els.areaEnable.addEventListener('change', function () {
+                applyAreaConfigEnabledUi();
+            });
+        }
+
+        if (els.activityTimeEnable) {
+            els.activityTimeEnable.addEventListener('change', function () {
+                applyActivityTimeConfigEnabledUi();
+            });
+        }
+
+        if (els.operationEnable) {
+            els.operationEnable.addEventListener('change', function () {
+                applyOperationConfigEnabledUi();
+            });
+        }
+
+        if (els.activityStatusEnable) {
+            els.activityStatusEnable.addEventListener('change', function () {
+                applyActivityStatusConfigEnabledUi();
+            });
+        }
+
+        document.querySelectorAll('input[name="restrict-mode"]').forEach(function (radio) {
+            radio.addEventListener('click', function () {
+                state.restrictModeTouched = true;
+            });
+            radio.addEventListener('change', function () {
+                state.restrictModeTouched = true;
+                updateRestrictUi({ clearSelection: true });
+                setRunningUi(state.running);
+            });
+        });
+
+        els.btnLogin.addEventListener('click', () => {
+            LoginDialog.open((auth) => {
+                setAuth(auth, true);
+                log(`登录成功：providerId=${auth.providerId}${auth.account ? `，账号=${auth.account}` : ''}`, 'ok');
+            });
+        });
+
+        els.btnStart.addEventListener('click', () => {
+            if (state.running) {
+                if (state.stopRequested) return;
+                state.stopRequested = true;
+                els.btnStart.textContent = '执行修改';
+                els.btnStart.classList.remove('warn');
+                els.btnStart.classList.add('primary');
+                els.btnStart.disabled = true;
+                log('已请求停止，正在等待进行中的请求结束...', 'warn');
+                return;
+            }
+
+            startBatchUpdate().catch((error) => {
+                setRunningUi(false);
+                log(`任务异常终止：${error.message}`, 'err');
+                setSummary('任务异常');
+            });
+        });
+
+        if (els.btnSettings) {
+            els.btnSettings.addEventListener('click', function () {
+                openSettingsDialog();
+            });
+        }
+        if (els.settingsCancel) {
+            els.settingsCancel.addEventListener('click', function () {
+                closeSettingsDialog();
+            });
+        }
+        if (els.settingsSave) {
+            els.settingsSave.addEventListener('click', function () {
+                try {
+                    saveSettingsFromDialog();
+                } catch (error) {
+                    log(`设置保存失败：${error.message}`, 'err');
+                }
+            });
+        }
+    }
+
+    function init() {
+        loadSettings();
+        bindEvents();
+        fillSettingsForm();
+        loadAuth();
+        applyIdsConfigEnabledUi();
+        applyRuleConfigEnabledUi();
+        applyAreaConfigEnabledUi();
+        applyActivityTimeConfigEnabledUi();
+        applyOperationConfigEnabledUi();
+        applyActivityStatusConfigEnabledUi();
+        setSummary('');
+        log('页面已就绪，请先扫码登录或使用缓存登录。');
+        log(`当前云函数地址：${getRelayUrl()}`, 'ok');
+        log(`当前并发设置：${getConcurrency()}`, 'ok');
+    }
+
+    init();
+})();
+
+</script>
+</body>
+</html>
+
