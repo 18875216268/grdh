@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
@@ -1662,7 +1662,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
         await FirebaseModule.init();
         await FirebaseModule.markAccountInvalid("scm", username);
       } catch (error) {
-        log(`标记失效账号失败: ${error.message}`, "warn");
+        log(`标记失效账号失败: ${error.message}。`, "warn");
       }
     }
 
@@ -1690,7 +1690,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
           await markScmInvalidInFirebase(item.username);
         }
       } catch (error) {
-        log(`数据库自动恢复失败: ${error.message}`, "warn");
+        log(`数据库自动恢复失败: ${error.message}。`, "warn");
       }
       return null;
     }
@@ -1706,7 +1706,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
           { account, password }
         );
       } catch (error) {
-        log(`写入登录数据库失败: ${error.message}`, "warn");
+        log(`写入登录数据库失败: ${error.message}。`, "warn");
       }
     }
 
@@ -1763,7 +1763,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
           return { ...direct, source: `当前账户 ${direct.username || currentUsername}` };
         }
       } catch (error) {
-        log(`读取当前账户密码失败: ${error.message}`, "warn");
+        log(`读取当前账户密码失败: ${error.message}。`, "warn");
       }
 
       if (!providerId) return null;
@@ -1773,7 +1773,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
           return { ...byProvider, source: `同供应商ID(${providerId}) 账户 ${byProvider.username || "-"}` };
         }
       } catch (error) {
-        log(`按供应商ID读取账户密码失败: ${error.message}`, "warn");
+        log(`按供应商ID读取账户密码失败: ${error.message}。`, "warn");
       }
       return null;
     }
@@ -1882,7 +1882,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
           return data.data;
         } catch (error) {
           lastError = error;
-          log(`请求失败，尝试下一个地址: ${error.message}`, "warn");
+          log(`请求失败，尝试下一个地址: ${error.message}。`, "warn");
         }
       }
       throw lastError || new Error("所有云函数地址均调用失败");
@@ -1895,7 +1895,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
 
       if (!state.auth) {
         renderGroupResultPanel([]);
-        log("未登录，跳过控销组搜索", "warn");
+        log("未登录，跳过控销组搜索。", "warn");
         return;
       }
       if (!kw) {
@@ -1921,14 +1921,14 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
         });
 
         if (requestNo !== state.searchRequestNo) {
-          log("候选结果过期，忽略", "warn");
+          log("候选结果过期，忽略。", "warn");
           return;
         }
 
         state.suggestions = normalizeGroupList(result.list);
         renderGroupResultPanel(state.suggestions);
         state.selectedGroup = null;
-        log(`控销组候选加载完成，共 ${state.suggestions.length} 条`, "ok");
+        log(`控销组候选加载完成，共 ${state.suggestions.length} 条。`, "ok");
 
         const exact = state.suggestions.filter((x) => x.groupName === kw);
         if (exact.length === 1) {
@@ -2155,7 +2155,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
           passwordNow.placeholder = "请输入密码";
           log(`已自动填充账号密码（${prefill.source}）。`, "ok");
         } catch (error) {
-          log(`自动填充账号密码失败: ${error.message}`, "warn");
+          log(`自动填充账号密码失败: ${error.message}。`, "warn");
           accountInput.disabled = false;
           passwordInput.disabled = false;
           accountInput.placeholder = "请输入账号";
@@ -2222,7 +2222,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
             cookies: state.loginUi.captchaData.cookies
           });
           this.renderScmQrcodeView(result.qrcodeUrl);
-          log("账号校验成功，进入扫码阶段", "ok");
+          log("账号校验成功，进入扫码阶段。", "ok");
         } catch (error) {
           notify(`登录校验失败: ${error.message}`, "error");
           this.loadCaptcha();
@@ -2392,7 +2392,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
         saveLegacyScmLocal(s.account || "", credentials, s.providerInfo || null);
         persistScmLoginToFirebase(s.account || "", s.password || "", credentials, s.providerInfo || null);
         $("loginBtn").textContent = "重新登录";
-        log("登录成功，已获取 token/cookies", "ok");
+        log("登录成功，已获取 token/cookies。", "ok");
 
         setTimeout(() => this.close(), 900);
       }
@@ -2436,9 +2436,6 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
         notify("请填写药店ID（每行一个）", "warn");
         return;
       }
-
-      const ok = window.confirm(`确认从控销组 [${state.selectedGroup.groupName}] 删除 ${ids.length} 个药店ID？`);
-      if (!ok) return;
 
       const btn = $("deleteBtn");
       btn.disabled = true;
@@ -2552,23 +2549,23 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
         clearLegacyScmLocal();
         await markScmInvalidInFirebase(legacyLocal.username || "");
       } else {
-        log("未发现 SCM 本地凭证", "warn");
+        log("未发现 SCM 本地凭证。", "warn");
       }
 
       if (!preferredProviderId) {
-        log("缺少供应商ID，跳过数据库自动恢复，请手动登录", "warn");
+        log("缺少供应商ID，跳过数据库自动恢复，请手动登录。", "warn");
         return;
       }
 
       const restored = await tryRestoreAuthFromFirebaseByProvider(preferredProviderId);
       if (!restored) {
-        log("按供应商ID自动恢复失败，请重新登录", "warn");
+        log("按供应商ID自动恢复失败，请重新登录。", "warn");
         return;
       } else {
         state.auth = restored;
         saveAuth();
         $("loginBtn").textContent = "重新登录";
-        log("已按供应商ID从数据库自动恢复登录", "ok");
+        log("已按供应商ID从数据库自动恢复登录。", "ok");
       }
     }
 
