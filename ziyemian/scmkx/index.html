@@ -1,11 +1,325 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scm控销管理Pro</title>
-  <link rel="stylesheet" href="./yh-main/denglu/gg.css" />
   <style>
+    /* 登录弹窗样式 */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .login-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .login-container {
+      position: relative;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      width: 380px;
+      max-height: 90vh;
+      overflow: hidden;
+      transform: scale(0.9);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .login-container.active {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .login-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: none;
+      font-size: 24px;
+      color: #999;
+      cursor: pointer;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+
+    .login-close:hover {
+      background-color: #f5f5f5;
+      color: #666;
+    }
+
+    .login-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .login-header {
+      padding: 16px 20px 10px;
+      border-bottom: 1px solid #eee;
+      flex-shrink: 0;
+    }
+
+    .login-header h3 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 600;
+      color: #333;
+      text-align: left;
+    }
+
+    .login-body {
+      padding: 16px 20px;
+      overflow-y: auto;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .form-group input {
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #3d6dff;
+      box-shadow: 0 0 0 2px rgba(61, 109, 255, 0.1);
+    }
+
+    .captcha-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .captcha-row input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .captcha-image {
+      width: 110px;
+      height: 40px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f9f9f9;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .captcha-image:hover {
+      border-color: #3d6dff;
+      box-shadow: 0 0 0 2px rgba(61, 109, 255, 0.1);
+    }
+
+    .captcha-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .captcha-loading {
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      padding: 0 8px;
+    }
+
+    .qrcode-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+    }
+
+    .qrcode-image {
+      width: 200px;
+      height: 200px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f9f9f9;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .qrcode-image:hover {
+      border-color: #3d6dff;
+      box-shadow: 0 0 0 2px rgba(61, 109, 255, 0.1);
+    }
+
+    .qrcode-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .qrcode-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+    }
+
+    .qrcode-overlay i {
+      font-size: 64px;
+      color: #4caf50;
+    }
+
+    .success-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 40px 0;
+    }
+
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background-color: #4caf50;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 32px;
+    }
+
+    .success-message {
+      text-align: center;
+    }
+
+    .success-message h4 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .success-message p {
+      margin: 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .login-footer {
+      padding: 12px 20px;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: center;
+      flex-shrink: 0;
+      gap: 10px;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .login-btn.primary {
+      background-color: #3d6dff;
+      color: white;
+    }
+
+    .login-btn.primary:hover:not(:disabled) {
+      background-color: #2a5bff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(61, 109, 255, 0.3);
+    }
+
+    .login-btn.primary:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .login-btn.primary:disabled {
+      background-color: #a0b4ff;
+      cursor: not-allowed;
+    }
+
+    .login-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .login-body::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    .login-body::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+
+    .login-body::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+
+    /* 主应用样式 */
     :root {
       --bg: #f3f7ff;
       --panel: #ffffff;
@@ -552,8 +866,332 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
 
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="./yh-main/denglu/zhiwen.js"></script>
-  <script src="./yh-main/denglu/fir.js"></script>
+  <script>
+    // 设备指纹模块
+    const ZhiwenModule = {
+      async _sha256Bytes(str) {
+        const buf = new TextEncoder().encode(str);
+        const hash = await crypto.subtle.digest('SHA-256', buf);
+        return new Uint8Array(hash);
+      },
+
+      _getWebGL() {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) return {};
+        const ext = gl.getExtension('WEBGL_debug_renderer_info');
+
+        function prec(shaderType, precisionType) {
+          const p = gl.getShaderPrecisionFormat(shaderType, precisionType);
+          return p ? `${p.rangeMin},${p.rangeMax},${p.precision}` : '';
+        }
+
+        return {
+          vendor: ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : '',
+          renderer: ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : '',
+          maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE),
+          maxViewport: gl.getParameter(gl.MAX_VIEWPORT_DIMS)?.join('x'),
+          maxRenderbuffer: gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),
+          maxVertexAttribs: gl.getParameter(gl.MAX_VERTEX_ATTRIBS),
+          maxVaryingVectors: gl.getParameter(gl.MAX_VARYING_VECTORS),
+          maxFragUniforms: gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS),
+          maxVertexUniforms: gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS),
+          aliasedLineRange: gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE)?.join('-'),
+          aliasedPointRange: gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)?.join('-'),
+          maxAnisotropy: (() => {
+            const e = gl.getExtension('EXT_texture_filter_anisotropic');
+            return e ? gl.getParameter(e.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : '';
+          })(),
+          vertexHighFloat: prec(gl.VERTEX_SHADER, gl.HIGH_FLOAT),
+          vertexHighInt: prec(gl.VERTEX_SHADER, gl.HIGH_INT),
+          fragHighFloat: prec(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT),
+          fragHighInt: prec(gl.FRAGMENT_SHADER, gl.HIGH_INT),
+          combinedTexUnits: gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS),
+          vertexTexUnits: gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS),
+          texUnits: gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS)
+        };
+      },
+
+      _getWebGL2() {
+        const canvas = document.createElement('canvas');
+        const gl2 = canvas.getContext('webgl2');
+        if (!gl2) return null;
+        return {
+          max3dTexture: gl2.getParameter(gl2.MAX_3D_TEXTURE_SIZE),
+          maxArrayTexLayers: gl2.getParameter(gl2.MAX_ARRAY_TEXTURE_LAYERS),
+          maxDrawBuffers: gl2.getParameter(gl2.MAX_DRAW_BUFFERS),
+          maxColorAttachments: gl2.getParameter(gl2.MAX_COLOR_ATTACHMENTS),
+          maxSamples: gl2.getParameter(gl2.MAX_SAMPLES),
+          maxUniformBlockSize: gl2.getParameter(gl2.MAX_UNIFORM_BLOCK_SIZE),
+          maxElementIndex: gl2.getParameter(gl2.MAX_ELEMENT_INDEX),
+          maxTransformFeedback: gl2.getParameter(gl2.MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS)
+        };
+      },
+
+      _getAudioSampleRate() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const rate = ctx.sampleRate;
+          ctx.close();
+          return rate;
+        } catch (e) { return ''; }
+      },
+
+      _collectSignals() {
+        const gl = this._getWebGL();
+        const gl2 = this._getWebGL2();
+        const intl = Intl.DateTimeFormat().resolvedOptions();
+
+        return {
+          gpu_renderer: gl.renderer || '',
+          gpu_vendor: gl.vendor || '',
+          gpu_maxTexture: gl.maxTextureSize,
+          gpu_maxViewport: gl.maxViewport,
+          gpu_maxRenderbuffer: gl.maxRenderbuffer,
+          gpu_maxAnisotropy: gl.maxAnisotropy,
+          gpu_maxVertexAttribs: gl.maxVertexAttribs,
+          gpu_maxVaryingVectors: gl.maxVaryingVectors,
+          gpu_maxFragUniforms: gl.maxFragUniforms,
+          gpu_maxVertexUniforms: gl.maxVertexUniforms,
+          gpu_aliasedLine: gl.aliasedLineRange,
+          gpu_aliasedPoint: gl.aliasedPointRange,
+          gpu_vertexHighFloat: gl.vertexHighFloat,
+          gpu_vertexHighInt: gl.vertexHighInt,
+          gpu_fragHighFloat: gl.fragHighFloat,
+          gpu_fragHighInt: gl.fragHighInt,
+          gpu_combinedTexUnits: gl.combinedTexUnits,
+          gpu_vertexTexUnits: gl.vertexTexUnits,
+          gpu_texUnits: gl.texUnits,
+          gl2_max3dTex: gl2?.max3dTexture ?? '',
+          gl2_maxArrayLayers: gl2?.maxArrayTexLayers ?? '',
+          gl2_maxDrawBuffers: gl2?.maxDrawBuffers ?? '',
+          gl2_maxColorAttach: gl2?.maxColorAttachments ?? '',
+          gl2_maxSamples: gl2?.maxSamples ?? '',
+          gl2_maxUniformBlock: gl2?.maxUniformBlockSize ?? '',
+          gl2_maxElementIdx: gl2?.maxElementIndex ?? '',
+          gl2_maxTransformFB: gl2?.maxTransformFeedback ?? '',
+          screen_w: screen.width,
+          screen_h: screen.height,
+          pixel_ratio: window.devicePixelRatio,
+          color_depth: screen.colorDepth,
+          cpu_cores: navigator.hardwareConcurrency || 0,
+          touch_points: navigator.maxTouchPoints,
+          language: navigator.language,
+          audioSampleRate: this._getAudioSampleRate(),
+          intlLocale: intl.locale,
+          intlNumbering: intl.numberingSystem || '',
+          intlCalendar: intl.calendar || ''
+        };
+      },
+
+      async getFingerprint() {
+        const signals = this._collectSignals();
+        const source = Object.values(signals).join('|');
+        const bytes = await this._sha256Bytes(source);
+
+        const folded = new Uint8Array(3);
+        for (let i = 0; i < 32; i++) {
+          folded[i % 3] ^= bytes[i];
+        }
+
+        return Array.from(folded).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+      }
+    };
+
+    window.ZhiwenModule = ZhiwenModule;
+  </script>
+  <script>
+    // Firebase数据库模块
+    const FirebaseModule = {
+      config: {
+        apiKey: "AIzaSyAbBSiwBNgBsVfwt5bHORpNTvSthMIaeM0",
+        authDomain: "ai-moxing.firebaseapp.com",
+        databaseURL: "https://ai-moxing-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "ai-moxing",
+        storageBucket: "ai-moxing.firebasestorage.app",
+        messagingSenderId: "295148076780",
+        appId: "1:295148076780:web:c777bca192d4ea54cbefc9",
+        measurementId: "G-S7NF2KTEBF"
+      },
+
+      state: {
+        app: null,
+        database: null,
+        deviceId: null
+      },
+
+      async init() {
+        if (this.state.app) return;
+
+        try {
+          await this.loadFirebaseSDK();
+
+          if (firebase.apps.length > 0) {
+            this.state.app = firebase.app();
+          } else {
+            this.state.app = firebase.initializeApp(this.config);
+          }
+
+          this.state.database = firebase.database();
+          this.state.deviceId = await this.generateDeviceId();
+        } catch (error) {
+          console.error('Firebase初始化失败:', error);
+          throw error;
+        }
+      },
+
+      async loadFirebaseSDK() {
+        return new Promise((resolve, reject) => {
+          if (window.firebase && window.firebase.database) {
+            resolve();
+            return;
+          }
+
+          if (document.querySelector('script[src*="firebase-app.js"]')) {
+            const checkLoaded = setInterval(() => {
+              if (window.firebase && window.firebase.database) {
+                clearInterval(checkLoaded);
+                resolve();
+              }
+            }, 50);
+            return;
+          }
+
+          if (window.firebase && !window.firebase.database) {
+            const script = document.createElement('script');
+            script.src = 'https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+            return;
+          }
+
+          const script = document.createElement('script');
+          script.src = 'https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js';
+          script.onload = () => {
+            const script2 = document.createElement('script');
+            script2.src = 'https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js';
+            script2.onload = resolve;
+            script2.onerror = reject;
+            document.head.appendChild(script2);
+          };
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      },
+
+      async generateDeviceId() {
+        const fingerprint = await window.ZhiwenModule.getFingerprint();
+        return 'device_' + fingerprint;
+      },
+
+      async saveScmLogin(username, credentials, providerInfo, accountPassword = null) {
+        await this.init();
+        const timestamp = Date.now();
+
+        try {
+          const accountRef = this.state.database.ref(`zhanghu/scm/${username}`);
+          const snapshot = await accountRef.once('value');
+          const existingData = snapshot.val() || {};
+
+          let deviceIds = existingData.sb_id || [];
+          if (!deviceIds.includes(this.state.deviceId)) {
+            deviceIds.push(this.state.deviceId);
+          }
+
+          const updateData = {
+            username: username,
+            credentials: credentials,
+            provider_info: providerInfo,
+            login_time: timestamp,
+            sb_id: deviceIds,
+            last_update: timestamp,
+            invalid: false
+          };
+
+          if (accountPassword) {
+            updateData.account_password = accountPassword;
+          }
+
+          await accountRef.update(updateData);
+          return true;
+        } catch (error) {
+          console.error('存储SCM登录信息失败:', error);
+          return false;
+        }
+      },
+
+      async getScmLogin(username) {
+        await this.init();
+        try {
+          const snapshot = await this.state.database.ref(`zhanghu/scm/${username}`).once('value');
+          return snapshot.val();
+        } catch (error) {
+          console.error('获取SCM登录信息失败:', error);
+          return null;
+        }
+      },
+
+      async findAllScmByProviderId(providerId) {
+        await this.init();
+        try {
+          const snapshot = await this.state.database.ref('zhanghu/scm').once('value');
+          const accounts = [];
+          snapshot.forEach((child) => {
+            const data = child.val();
+            if (data.credentials?.provider_id == providerId && data.credentials) {
+              accounts.push(data);
+            }
+          });
+          return accounts.sort((a, b) => (b.login_time || 0) - (a.login_time || 0));
+        } catch (error) {
+          console.error('按供应商ID查找所有SCM失败:', error);
+          return [];
+        }
+      },
+
+      async markAccountInvalid(system, id) {
+        await this.init();
+        try {
+          await this.state.database.ref(`zhanghu/${system}/${id}`).update({
+            invalid: true,
+            invalid_time: Date.now()
+          });
+          return true;
+        } catch (error) {
+          console.error(`标记${system}账户失效失败:`, error);
+          return false;
+        }
+      },
+
+      async getDeviceLogins() {
+        await this.init();
+
+        try {
+          const result = { scm: [], pms: [], bi: [] };
+
+          const scmSnapshot = await this.state.database.ref('zhanghu/scm').once('value');
+          scmSnapshot.forEach((childSnapshot) => {
+            const data = childSnapshot.val();
+            if (data.sb_id && data.sb_id.includes(this.state.deviceId)) {
+              result.scm.push({
+                username: data.username,
+                login_time: data.login_time,
+                provider_name: data.provider_info?.provider_name || '未知'
+              });
+            }
+          });
+
+          return result;
+        } catch (error) {
+          console.error('获取设备登录信息失败:', error);
+          return { scm: [], pms: [], bi: [] };
+        }
+      }
+    };
+
+    window.FirebaseModule = FirebaseModule;
+  </script>
   <script>
     // 仅迁移 SCM 登录所需最小模块（来自 yh-main/denglu/yw/scm.js）
     (function () {
@@ -1196,7 +1834,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
       state.selectedGroup = chosen;
       $("groupInput").value = chosen.groupName;
       syncActiveGroupRow();
-      log(`已选择控销组: ${chosen.groupName} (ID:${chosen.storeGroupId})`, "ok");
+      log(`已选择控销组: ${chosen.groupName} (ID:${chosen.storeGroupId})。`, "ok");
     }
 
     function tryPickExactGroupFromInput() {
@@ -1207,7 +1845,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
       const picked = matched[0];
       state.selectedGroup = picked;
       syncActiveGroupRow();
-      log(`按完整名称自动匹配控销组: ${picked.groupName} (ID:${picked.storeGroupId})`, "ok");
+      log(`按完整名称自动匹配控销组: ${picked.groupName} (ID:${picked.storeGroupId})。`, "ok");
       return picked;
     }
 
@@ -1515,7 +2153,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
           passwordNow.disabled = false;
           accountNow.placeholder = "请输入账号";
           passwordNow.placeholder = "请输入密码";
-          log(`已自动填充账号密码（${prefill.source}）`, "ok");
+          log(`已自动填充账号密码（${prefill.source}）。`, "ok");
         } catch (error) {
           log(`自动填充账号密码失败: ${error.message}`, "warn");
           accountInput.disabled = false;
@@ -1907,7 +2545,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
           state.auth = mapCredentialsToAuth(legacyLocal.credentials);
           saveAuth();
           $("loginBtn").textContent = "重新登录";
-          log("SCM本地凭证有效，可直接使用", "ok");
+          log("SCM本地凭证有效，可直接使用。", "ok");
           return;
         }
         log("SCM本地凭证失效，尝试按供应商ID自动恢复。", "warn");
