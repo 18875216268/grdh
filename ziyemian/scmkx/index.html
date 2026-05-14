@@ -1877,7 +1877,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
             throw new Error(data && data.message ? data.message : `HTTP ${status}`);
           }
           if (Number(data.code) !== 0) {
-            throw new Error(data.message || "云函数业务失败");
+            throw new Error(data.message || "云函数业务失败！");
           }
           return data.data;
         } catch (error) {
@@ -1885,7 +1885,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
           log(`请求失败，尝试下一个地址: ${error.message}。`, "warn");
         }
       }
-      throw lastError || new Error("所有云函数地址均调用失败");
+      throw lastError || new Error("所有云函数地址均调用失败！");
     }
 
     async function searchGroupCandidates(keyword) {
@@ -1902,7 +1902,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
         renderGroupResultPanel([]);
         state.suggestions = [];
         state.selectedGroup = null;
-        notify("请输入控销组关键字", "warn");
+        notify("请输入控销组关键字！", "warn");
         return;
       }
 
