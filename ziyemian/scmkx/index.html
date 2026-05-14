@@ -1,0 +1,1940 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scm控销管理Pro</title>
+  <link rel="stylesheet" href="./yh-main/denglu/gg.css" />
+  <style>
+    :root {
+      --bg: #f3f7ff;
+      --panel: #ffffff;
+      --line: #d9e4f5;
+      --text: #1f2a3d;
+      --muted: #6b7280;
+      --brand: #2f6bff;
+      --brand-2: #5c86ff;
+      --danger: #dc2626;
+      --ok: #059669;
+      --warn: #d97706;
+      --shadow: 0 12px 30px rgba(18, 52, 102, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2vh 0;
+      overflow: auto;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% 15%, rgba(92, 134, 255, 0.15), transparent 36%),
+        radial-gradient(circle at 92% 10%, rgba(47, 107, 255, 0.14), transparent 30%),
+        var(--bg);
+    }
+
+    .page {
+      width: min(1240px, 96vw);
+      margin: 0;
+      display: grid;
+      grid-template-columns: minmax(420px, 1fr) minmax(420px, 1fr);
+      gap: 18px;
+      align-items: stretch;
+      height: min(78vh, 820px);
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid #e7edf8;
+      background: linear-gradient(135deg, #f9fbff 0%, #eef4ff 100%);
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 650;
+      letter-spacing: 0.2px;
+    }
+
+    .card-subtitle {
+      margin: 6px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .card-body {
+      padding: 16px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .log-panel {
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      gap: 10px;
+    }
+
+    .section-label {
+      font-size: 13px;
+      color: #334155;
+      margin-bottom: 6px;
+      display: block;
+      font-weight: 550;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .group-search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .group-search-input {
+      height: 42px;
+    }
+
+    .group-search-btn {
+      height: 42px;
+      border: 1px solid #bfd2f6;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 0 18px;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(47, 107, 255, 0.2);
+    }
+
+    .group-search-btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .group-result-wrap {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      z-index: 260;
+      border: 1px solid #cadbfd;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(47, 107, 255, 0.18);
+      overflow: hidden;
+    }
+
+    .group-result-wrap.show {
+      display: block;
+      animation: group-slide-down .16s ease;
+    }
+
+    .group-result-list {
+      width: 100%;
+      max-height: 240px;
+      overflow: auto;
+    }
+
+    .group-result-item {
+      padding: 9px 10px;
+      border-bottom: 1px solid #edf2ff;
+      font-size: 13px;
+      color: #233047;
+      cursor: pointer;
+      line-height: 1.4;
+      transition: background .15s ease;
+    }
+
+    .group-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .group-result-item:hover {
+      background: #edf4ff;
+    }
+
+    .group-result-item.active {
+      background: #e7f0ff;
+      color: #124197;
+      font-weight: 600;
+    }
+
+    .group-result-empty {
+      padding: 10px;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    @keyframes group-slide-down {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    input, textarea, button {
+      font: inherit;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      border: 1px solid #c9d6ea;
+      border-radius: 10px;
+      color: #111827;
+      background: #fff;
+      padding: 10px 12px;
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+
+    input[type="text"] {
+      height: 42px;
+    }
+
+    textarea {
+      min-height: 0;
+      resize: none;
+      line-height: 1.45;
+    }
+
+    .ids-area {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ids-area textarea {
+      flex: 1;
+      min-height: 0;
+      height: 100%;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
+    }
+
+    input:disabled {
+      background: #f3f6fc;
+      color: #95a1b3;
+      cursor: not-allowed;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .actions .btn {
+      flex: 1;
+      width: 100%;
+    }
+
+    .btn {
+      height: 42px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 0 18px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 560;
+      transition: transform .12s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+
+    .btn:active { transform: translateY(1px); }
+
+    .btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(47, 107, 255, 0.26);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(220, 38, 38, 0.24);
+    }
+
+    .log-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tag {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #eef4ff;
+      color: #355ca8;
+      border: 1px solid #d4e3ff;
+    }
+
+    .log-body {
+      background: #08111f;
+      border: 1px solid #12213b;
+      border-radius: 12px;
+      padding: 10px;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #dbeafe;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .log-line { margin: 0 0 3px; }
+    .log-info { color: #bfdbfe; }
+    .log-ok { color: #86efac; }
+    .log-warn { color: #fde68a; }
+    .log-error { color: #fca5a5; }
+
+    .qrcode-overlay i,
+    .success-icon i {
+      font-style: normal;
+      font-weight: 700;
+      line-height: 1;
+      font-family: Arial, sans-serif;
+    }
+
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .toast {
+      max-width: 420px;
+      padding: 16px 20px;
+      background: var(--panel);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      pointer-events: auto;
+      animation: toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      border-left: 4px solid;
+    }
+
+    .toast.toast-info { border-left-color: #3b82f6; }
+    .toast.toast-ok { border-left-color: #10b981; }
+    .toast.toast-warn { border-left-color: #f59e0b; }
+    .toast.toast-error { border-left-color: #ef4444; }
+
+    .toast.toast-exit {
+      animation: toast-fade-out 0.3s ease forwards;
+    }
+
+    .toast-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .toast-info .toast-icon {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .toast-ok .toast-icon {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .toast-warn .toast-icon {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .toast-error .toast-icon {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .toast-content {
+      flex: 1;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .toast-close {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 0;
+      transition: color 0.15s ease;
+    }
+
+    .toast-close:hover {
+      color: var(--text);
+    }
+
+    @keyframes toast-slide-in {
+      from {
+        opacity: 0;
+        transform: translateX(100%) translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0) translateY(0);
+      }
+    }
+
+    @keyframes toast-fade-out {
+      to {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      body {
+        align-items: flex-start;
+        padding: 12px 0;
+      }
+
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        min-height: 52vh;
+      }
+
+      .group-search-row {
+        grid-template-columns: 1fr;
+      }
+
+      .group-search-btn {
+        width: 100%;
+      }
+
+      .ids-area textarea {
+        min-height: 250px;
+      }
+
+      .toast-container {
+        top: 12px;
+        right: 12px;
+        left: 12px;
+      }
+
+      .toast {
+        min-width: auto;
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="card">
+      <div class="card-header">
+        <h1 class="card-title">Scm控销管理Pro</h1>
+        <p class="card-subtitle">登录后输入关键字并点击搜索，选择控销组后填写药店ID一键删除。</p>
+      </div>
+      <div class="card-body left-panel">
+        <div class="input-wrap">
+          <div class="group-search-row">
+            <input id="groupInput" class="group-search-input" type="text" placeholder="输入关键字或完整名称搜索......" autocomplete="off" />
+            <button id="groupSearchBtn" class="group-search-btn" type="button">搜索</button>
+          </div>
+          <div id="groupResultWrap" class="group-result-wrap">
+            <div id="groupResultList" class="group-result-list"></div>
+          </div>
+        </div>
+
+        <div class="ids-area">
+          <textarea id="storeIdsInput" placeholder="药店ID（6~10位纯数字）输入区域！
+支持一行一个、逗号、空格等场景符号分隔：
+
+265412
+635484
+123547
+...
+......
+
+Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行测试。"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div class="log-toolbar">
+          <h2 class="card-title" style="font-size:17px;">运行日志</h2>
+          <button id="clearLogBtn" class="btn" style="height:34px;padding:0 12px;">清空日志</button>
+        </div>
+        <p class="card-subtitle">系统内部过程与异常输出。</p>
+      </div>
+      <div class="card-body log-panel">
+        <div id="logBody" class="log-body"></div>
+        <div class="actions">
+          <button id="loginBtn" class="btn btn-primary">登录系统</button>
+          <button id="deleteBtn" class="btn btn-danger">批量删除</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="./yh-main/denglu/zhiwen.js"></script>
+  <script src="./yh-main/denglu/fir.js"></script>
+  <script>
+    // 仅迁移 SCM 登录所需最小模块（来自 yh-main/denglu/yw/scm.js）
+    (function () {
+      const ScmLoginModule = {
+        config: {
+          apiBase: "https://1317825751-7n6chwizun.ap-guangzhou.tencentscf.com",
+          ocrUrl: "https://1317825751-0h646no0fx.ap-guangzhou.tencentscf.com",
+          pollInterval: 1000,
+          qrcodeTimeout: 300000
+        },
+
+        state: {
+          currentStep: "init",
+          account: "",
+          password: "",
+          captcha: "",
+          cookies: null,
+          webKey: null,
+          lastStatus: "QRCODE_SCAN_NEVER",
+          openDataSid: null,
+          pollingTimer: null,
+          qrcodeTimer: null,
+          authCode: null,
+          credentials: null,
+          providerInfo: null
+        },
+
+        init() {
+          this.resetState();
+        },
+
+        resetState() {
+          this.state = {
+            currentStep: "init",
+            account: "",
+            password: "",
+            captcha: "",
+            cookies: null,
+            webKey: null,
+            lastStatus: "QRCODE_SCAN_NEVER",
+            openDataSid: null,
+            pollingTimer: null,
+            qrcodeTimer: null,
+            authCode: null,
+            credentials: null,
+            providerInfo: null
+          };
+        },
+
+        async apiRequest(path, body = null) {
+          const options = {
+            method: body ? "POST" : "GET",
+            headers: { "Content-Type": "application/json; charset=UTF-8" }
+          };
+          if (body) options.body = JSON.stringify(body);
+
+          const resp = await fetch(`${this.config.apiBase}${path}`, options);
+          const text = await resp.text();
+          let data = null;
+          try {
+            data = JSON.parse(text);
+          } catch {
+            throw new Error(`登录服务响应非JSON(${resp.status})`);
+          }
+          return data;
+        },
+
+        async getCaptcha() {
+          const data = await this.apiRequest("/captcha");
+          if (!data.success) {
+            throw new Error(data.message || "获取验证码失败");
+          }
+          return data;
+        },
+
+        async recognizeCaptcha(captchaBase64) {
+          if (!this.config.ocrUrl) return null;
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            const resp = await fetch(this.config.ocrUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json; charset=UTF-8" },
+              body: JSON.stringify({ image: captchaBase64 }),
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            const text = await resp.text();
+            let result = null;
+            try {
+              result = JSON.parse(text);
+            } catch {
+              return null;
+            }
+            return result.success ? result.result : null;
+          } catch {
+            return null;
+          }
+        },
+
+        async verifyAccountPassword(account, password, captcha, cookies) {
+          const data = await this.apiRequest("/login/step1", {
+            account,
+            password,
+            captcha,
+            cookies
+          });
+          if (!data.success) {
+            throw new Error(data.info || data.message || "账号密码校验失败");
+          }
+          return data;
+        },
+
+        async initQrcode(account) {
+          const data = await this.apiRequest("/qrcode/init", { account });
+          if (!data.success) {
+            throw new Error(data.message || "初始化二维码失败");
+          }
+          return data;
+        },
+
+        async pollQrcodeStatus(webKey, lastStatus, openDataSid) {
+          const data = await this.apiRequest("/qrcode/status", {
+            web_key: webKey,
+            last_status: lastStatus,
+            open_data_sid: openDataSid
+          });
+          if (!data.success) {
+            throw new Error(data.message || "查询扫码状态失败");
+          }
+          return data;
+        },
+
+        async completeLogin(authCode, account, cookies) {
+          const data = await this.apiRequest("/login/step2", {
+            auth_code: authCode,
+            account,
+            cookies
+          });
+          if (!data.success) {
+            throw new Error(data.info || data.message || "完成登录失败");
+          }
+          return data;
+        },
+
+        async getFullCredentials(cookies) {
+          const data = await this.apiRequest("/credentials/full", { cookies });
+          if (!data.success) {
+            throw new Error(data.message || "获取完整凭证失败");
+          }
+          return data;
+        },
+
+        async startLogin(account, password, captchaData) {
+          this.state.account = String(account || "");
+          this.state.password = String(password || "");
+
+          const captchaObj = captchaData && typeof captchaData === "object" ? captchaData : {};
+          const captcha = String(captchaObj.captcha || "");
+          const inputCookies = captchaObj.cookies || null;
+
+          this.state.currentStep = "captcha";
+          if (inputCookies) {
+            this.state.cookies = inputCookies;
+          } else {
+            const c = await this.getCaptcha();
+            this.state.cookies = c.cookies;
+          }
+
+          this.state.currentStep = "verify";
+          const verifyResult = await this.verifyAccountPassword(
+            this.state.account,
+            this.state.password,
+            captcha,
+            this.state.cookies
+          );
+          this.state.cookies = verifyResult.cookies || this.state.cookies;
+
+          this.state.currentStep = "qrcode";
+          const qrcodeResult = await this.initQrcode(this.state.account);
+          this.state.webKey = qrcodeResult.web_key;
+          this.state.lastStatus = "QRCODE_SCAN_NEVER";
+          this.state.openDataSid = null;
+
+          this.stopPolling();
+          this.state.qrcodeTimer = setTimeout(() => {
+            if (this.state.currentStep === "qrcode" || this.state.currentStep === "polling") {
+              this.state.currentStep = "expired";
+              this.stopPolling();
+            }
+          }, this.config.qrcodeTimeout);
+
+          return {
+            step: "qrcode",
+            qrcodeUrl: qrcodeResult.qrcode_url,
+            message: "请使用企业微信扫码"
+          };
+        },
+
+        async startPolling() {
+          if (!this.state.webKey) {
+            throw new Error("二维码未初始化");
+          }
+
+          this.state.currentStep = "polling";
+          return new Promise((resolve, reject) => {
+            const poll = async () => {
+              try {
+                if (this.state.currentStep === "expired") {
+                  reject(new Error("二维码已过期，请刷新重试"));
+                  return;
+                }
+
+                const statusResult = await this.pollQrcodeStatus(
+                  this.state.webKey,
+                  this.state.lastStatus,
+                  this.state.openDataSid
+                );
+
+                this.state.lastStatus = statusResult.status;
+                if (statusResult.open_data_sid) {
+                  this.state.openDataSid = statusResult.open_data_sid;
+                }
+
+                switch (statusResult.status) {
+                  case "QRCODE_SCAN_NEVER":
+                  case "QRCODE_SCAN_ING":
+                    this.state.pollingTimer = setTimeout(poll, this.config.pollInterval);
+                    break;
+                  case "QRCODE_SCAN_SUCC":
+                    this.state.authCode = statusResult.auth_code;
+                    this.stopPolling();
+                    await this.finalizeLogin();
+                    resolve({ step: "success", message: "登录成功" });
+                    break;
+                  case "QRCODE_SCAN_ERR":
+                  case "QRCODE_SCAN_TIMEOUT":
+                  case "QRCODE_SCAN_CANCEL":
+                    this.stopPolling();
+                    reject(new Error("二维码已失效，请刷新重试"));
+                    break;
+                  default:
+                    this.state.pollingTimer = setTimeout(poll, this.config.pollInterval);
+                    break;
+                }
+              } catch (error) {
+                this.stopPolling();
+                reject(error);
+              }
+            };
+
+            poll();
+          });
+        },
+
+        stopPolling() {
+          if (this.state.pollingTimer) {
+            clearTimeout(this.state.pollingTimer);
+            this.state.pollingTimer = null;
+          }
+          if (this.state.qrcodeTimer) {
+            clearTimeout(this.state.qrcodeTimer);
+            this.state.qrcodeTimer = null;
+          }
+        },
+
+        async finalizeLogin() {
+          const loginResult = await this.completeLogin(
+            this.state.authCode,
+            this.state.account,
+            this.state.cookies
+          );
+
+          const finalCookies = loginResult.cookies || this.state.cookies;
+          const fullCreds = await this.getFullCredentials(finalCookies);
+
+          this.state.credentials = fullCreds.credentials || {};
+          this.state.providerInfo = fullCreds.provider_info || null;
+          if (!this.state.credentials.cookies && finalCookies) {
+            this.state.credentials.cookies = finalCookies;
+          }
+          this.state.currentStep = "success";
+
+          return {
+            success: true,
+            credentials: this.state.credentials,
+            providerInfo: this.state.providerInfo,
+            message: "登录成功"
+          };
+        },
+
+        getState() {
+          return { ...this.state };
+        },
+
+        restart() {
+          this.stopPolling();
+          this.resetState();
+        }
+      };
+
+      window.ScmLoginModule = ScmLoginModule;
+    })();
+  </script>
+  <script>
+    const CONFIG = {
+      scmManageApiUrls: [
+        "https://1317825751-0zx6xeb5of.ap-guangzhou.tencentscf.com",
+        "http://1317825751-0zx6xeb5of.ap-guangzhou.tencentscf.com",
+        "https://1317825751-0zx6xeb5of.in.ap-guangzhou.tencentscf.com",
+        "http://1317825751-0zx6xeb5of.in.ap-guangzhou.tencentscf.com"
+      ],
+      storageKey: "scm_kx_batch_auth",
+      legacyStorageKey: "scm_login"
+    };
+
+    const state = {
+      auth: null,
+      selectedGroup: null,
+      suggestions: [],
+      searchRequestNo: 0,
+      logSeq: 0,
+      loginUi: {
+        container: null,
+        overlay: null,
+        main: null,
+        closeBtn: null,
+        eventListeners: [],
+        captchaData: null,
+        isOpen: false,
+        prefillLoading: false,
+        accountPasswordPrefill: null
+      }
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function log(message, level = "info") {
+      const body = $("logBody");
+      const time = new Date();
+      const hh = String(time.getHours()).padStart(2, "0");
+      const mm = String(time.getMinutes()).padStart(2, "0");
+      const ss = String(time.getSeconds()).padStart(2, "0");
+      state.logSeq += 1;
+      const line = document.createElement("div");
+      line.className = `log-line log-${level}`;
+      line.textContent = `${hh}:${mm}:${ss} [${String(state.logSeq).padStart(4, "0")}] ${message}`;
+      body.prepend(line);
+    }
+
+    function notify(message, level = "info") {
+      log(message, level === "ok" ? "ok" : level === "error" ? "error" : level === "warn" ? "warn" : "info");
+      showToast(message, level);
+    }
+
+    function showToast(message, level = "info") {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
+
+      const toast = document.createElement("div");
+      toast.className = `toast toast-${level}`;
+
+      const iconMap = { info: "ℹ", ok: "✓", warn: "⚠", error: "✕" };
+      const icon = document.createElement("div");
+      icon.className = "toast-icon";
+      icon.textContent = iconMap[level] || iconMap.info;
+
+      const content = document.createElement("div");
+      content.className = "toast-content";
+      content.textContent = message;
+
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "toast-close";
+      closeBtn.innerHTML = "×";
+      closeBtn.onclick = () => removeToast(toast);
+
+      toast.appendChild(icon);
+      toast.appendChild(content);
+      toast.appendChild(closeBtn);
+      container.appendChild(toast);
+
+      const duration = level === "error" ? 5000 : level === "warn" ? 4000 : 3000;
+      setTimeout(() => removeToast(toast), duration);
+    }
+
+    function removeToast(toast) {
+      if (!toast || !toast.parentElement) return;
+      toast.classList.add("toast-exit");
+      setTimeout(() => toast.remove(), 300);
+    }
+
+    function normalizeIdList(raw) {
+      const ids = String(raw || "")
+        .replace(/[\[\]{}()]/g, " ")
+        .split(/[\s,，;；|、\n\r\t]+/g)
+        .map((x) => {
+          const num = Math.floor(Number(x.trim()));
+          return Number.isFinite(num) && num >= 10000 && num <= 9999999999 ? num : null;
+        })
+        .filter((x) => x !== null);
+      return [...new Set(ids)];
+    }
+
+    function saveAuth() {
+      if (!state.auth) {
+        localStorage.removeItem(CONFIG.storageKey);
+        return;
+      }
+      localStorage.setItem(CONFIG.storageKey, JSON.stringify({ auth: state.auth, time: Date.now() }));
+    }
+
+    function loadAuth() {
+      try {
+        const raw = localStorage.getItem(CONFIG.storageKey);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.auth) return null;
+        return parsed.auth;
+      } catch {
+        return null;
+      }
+    }
+
+    function saveLegacyScmLocal(username, credentials, providerInfo) {
+      if (!username || !credentials) return;
+      const displayName = providerInfo?.username || credentials?.username || username;
+      localStorage.setItem(CONFIG.legacyStorageKey, JSON.stringify({
+        username,
+        credentials,
+        provider_info: providerInfo || null,
+        displayName,
+        login_time: Date.now()
+      }));
+    }
+
+    function loadLegacyScmLocal() {
+      try {
+        const raw = localStorage.getItem(CONFIG.legacyStorageKey);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed?.credentials) return null;
+        return parsed;
+      } catch {
+        return null;
+      }
+    }
+
+    function clearLegacyScmLocal() {
+      localStorage.removeItem(CONFIG.legacyStorageKey);
+    }
+
+    function mapCredentialsToAuth(credentials) {
+      const token = credentials?.token || "";
+      const cookies = credentials?.cookies || "";
+      const providerIdM = credentials?.provider_id_m || credentials?.provider_id || "";
+      return { token, cookies, providerIdM };
+    }
+
+    async function validateScmCredentials(credentials) {
+      const authObj = mapCredentialsToAuth(credentials);
+      if (!authObj.token || !authObj.cookies) return false;
+      return tryValidateCachedAuth(authObj);
+    }
+
+    async function markScmInvalidInFirebase(username) {
+      try {
+        if (!window.FirebaseModule || !username) return;
+        await FirebaseModule.init();
+        await FirebaseModule.markAccountInvalid("scm", username);
+      } catch (error) {
+        log(`标记失效账号失败: ${error.message}`, "warn");
+      }
+    }
+
+    async function tryRestoreAuthFromFirebaseByProvider(preferredProviderId) {
+      if (!preferredProviderId) return null;
+      if (!window.FirebaseModule) return null;
+      try {
+        await FirebaseModule.init();
+        const deviceLogins = await FirebaseModule.getDeviceLogins();
+        if (!Array.isArray(deviceLogins?.scm) || !deviceLogins.scm.length) return null;
+
+        const sorted = [...deviceLogins.scm].sort((a, b) => (b.login_time || 0) - (a.login_time || 0));
+        for (const item of sorted) {
+          const info = await FirebaseModule.getScmLogin(item.username);
+          if (!info?.credentials || info?.invalid) continue;
+          if (info.credentials?.provider_id != preferredProviderId) continue;
+
+          const valid = await validateScmCredentials(info.credentials);
+          if (valid) {
+            const mapped = mapCredentialsToAuth(info.credentials);
+            saveLegacyScmLocal(item.username, info.credentials, info.provider_info || null);
+            return mapped;
+          }
+
+          await markScmInvalidInFirebase(item.username);
+        }
+      } catch (error) {
+        log(`数据库自动恢复失败: ${error.message}`, "warn");
+      }
+      return null;
+    }
+
+    async function persistScmLoginToFirebase(account, password, credentials, providerInfo) {
+      if (!window.FirebaseModule) return;
+      if (!account || !credentials) return;
+      try {
+        await FirebaseModule.saveScmLogin(
+          account,
+          credentials,
+          providerInfo || null,
+          { account, password }
+        );
+      } catch (error) {
+        log(`写入登录数据库失败: ${error.message}`, "warn");
+      }
+    }
+
+    function parseScmAccountPassword(raw) {
+      if (!raw) return null;
+      let data = raw;
+      if (typeof data === "string") {
+        try {
+          data = JSON.parse(data);
+        } catch {
+          return null;
+        }
+      }
+      if (!data || typeof data !== "object") return null;
+      const account = String(data.account || "").trim();
+      const password = String(data.password || "").trim();
+      if (!account || !password) return null;
+      return { account, password };
+    }
+
+    async function findScmAccountPasswordByUsername(username) {
+      if (!username || !window.FirebaseModule) return null;
+      await FirebaseModule.init();
+      const info = await FirebaseModule.getScmLogin(username);
+      const parsed = parseScmAccountPassword(info?.account_password);
+      if (!parsed) return null;
+      return { ...parsed, username };
+    }
+
+    async function findScmAccountPasswordByProviderId(providerId, excludeUsername = "") {
+      if (!providerId || !window.FirebaseModule) return null;
+      await FirebaseModule.init();
+      const list = await FirebaseModule.findAllScmByProviderId(providerId);
+      if (!Array.isArray(list) || !list.length) return null;
+      for (const row of list) {
+        if (row?.invalid) continue;
+        if (excludeUsername && row?.username === excludeUsername) continue;
+        const parsed = parseScmAccountPassword(row?.account_password);
+        if (parsed) {
+          return { ...parsed, username: row?.username || "" };
+        }
+      }
+      return null;
+    }
+
+    async function resolveScmLoginFormPrefill() {
+      const legacyLocal = loadLegacyScmLocal();
+      const currentUsername = String(legacyLocal?.username || "").trim();
+      const providerId = String(legacyLocal?.credentials?.provider_id || "").trim();
+
+      try {
+        const direct = await findScmAccountPasswordByUsername(currentUsername);
+        if (direct) {
+          return { ...direct, source: `当前账户 ${direct.username || currentUsername}` };
+        }
+      } catch (error) {
+        log(`读取当前账户密码失败: ${error.message}`, "warn");
+      }
+
+      if (!providerId) return null;
+      try {
+        const byProvider = await findScmAccountPasswordByProviderId(providerId, currentUsername);
+        if (byProvider) {
+          return { ...byProvider, source: `同供应商ID(${providerId}) 账户 ${byProvider.username || "-"}` };
+        }
+      } catch (error) {
+        log(`按供应商ID读取账户密码失败: ${error.message}`, "warn");
+      }
+      return null;
+    }
+
+    function normalizeGroupList(list) {
+      const rows = Array.isArray(list) ? list : [];
+      const map = new Map();
+      for (const row of rows) {
+        const id = Number(row.storeGroupId);
+        const name = String(row.groupName || "").trim();
+        if (!id || !name) continue;
+        if (!map.has(id)) map.set(id, { storeGroupId: id, groupName: name });
+      }
+      return [...map.values()];
+    }
+
+    function hideGroupResultPanel() {
+      const wrap = $("groupResultWrap");
+      wrap.classList.remove("show");
+    }
+
+    function renderGroupResultPanel(items) {
+      const wrap = $("groupResultWrap");
+      const list = $("groupResultList");
+      list.innerHTML = "";
+
+      if (!Array.isArray(items) || !items.length) {
+        hideGroupResultPanel();
+        return;
+      }
+
+      items.forEach((item, idx) => {
+        const row = document.createElement("div");
+        row.className = "group-result-item";
+        row.dataset.idx = String(idx);
+        row.textContent = `${item.groupName} (ID:${item.storeGroupId})`;
+        list.appendChild(row);
+      });
+      wrap.classList.add("show");
+      syncActiveGroupRow();
+    }
+
+    function syncActiveGroupRow() {
+      const list = $("groupResultList");
+      if (!list) return;
+      const rows = list.querySelectorAll(".group-result-item");
+      rows.forEach((row) => row.classList.remove("active"));
+      if (!state.selectedGroup) return;
+      const idx = state.suggestions.findIndex((x) => x.storeGroupId === state.selectedGroup.storeGroupId);
+      if (idx < 0) return;
+      const active = list.querySelector(`.group-result-item[data-idx="${idx}"]`);
+      if (active) active.classList.add("active");
+    }
+
+    function chooseGroupByIndex(idx) {
+      const chosen = state.suggestions[idx];
+      if (!chosen) return;
+      state.selectedGroup = chosen;
+      $("groupInput").value = chosen.groupName;
+      syncActiveGroupRow();
+      log(`已选择控销组: ${chosen.groupName} (ID:${chosen.storeGroupId})`, "ok");
+    }
+
+    function tryPickExactGroupFromInput() {
+      const inputName = String($("groupInput").value || "").trim();
+      if (!inputName) return null;
+      const matched = state.suggestions.filter((x) => x.groupName === inputName);
+      if (matched.length !== 1) return null;
+      const picked = matched[0];
+      state.selectedGroup = picked;
+      syncActiveGroupRow();
+      log(`按完整名称自动匹配控销组: ${picked.groupName} (ID:${picked.storeGroupId})`, "ok");
+      return picked;
+    }
+
+    async function fetchJson(url, payload) {
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=UTF-8" },
+        body: JSON.stringify(payload)
+      });
+      const text = await resp.text();
+      let data = null;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`响应非JSON(${resp.status})`);
+      }
+      return { status: resp.status, data };
+    }
+
+    async function callManageApi(action, query, auth = state.auth) {
+      if (!auth) throw new Error("请先登录系统");
+
+      let lastError = null;
+      for (const url of CONFIG.scmManageApiUrls) {
+        try {
+          log(`请求云函数: ${url} | action=${action}。`);
+          const { status, data } = await fetchJson(url, { action, auth, query });
+          if (status < 200 || status >= 300) {
+            throw new Error(data && data.message ? data.message : `HTTP ${status}`);
+          }
+          if (Number(data.code) !== 0) {
+            throw new Error(data.message || "云函数业务失败");
+          }
+          return data.data;
+        } catch (error) {
+          lastError = error;
+          log(`请求失败，尝试下一个地址: ${error.message}`, "warn");
+        }
+      }
+      throw lastError || new Error("所有云函数地址均调用失败");
+    }
+
+    async function searchGroupCandidates(keyword) {
+      const input = $("groupInput");
+      const searchBtn = $("groupSearchBtn");
+      const kw = String(keyword || "").trim();
+
+      if (!state.auth) {
+        renderGroupResultPanel([]);
+        log("未登录，跳过控销组搜索", "warn");
+        return;
+      }
+      if (!kw) {
+        renderGroupResultPanel([]);
+        state.suggestions = [];
+        state.selectedGroup = null;
+        notify("请输入控销组关键字", "warn");
+        return;
+      }
+
+      const requestNo = ++state.searchRequestNo;
+      input.disabled = true;
+      searchBtn.disabled = true;
+      searchBtn.textContent = "搜索中...";
+      log(`开始搜索控销组候选，关键字: ${kw}。`);
+
+      try {
+        const result = await callManageApi("searchGroups", {
+          groupName: kw,
+          storeName: "",
+          pageNo: 1,
+          pageSize: 30
+        });
+
+        if (requestNo !== state.searchRequestNo) {
+          log("候选结果过期，忽略", "warn");
+          return;
+        }
+
+        state.suggestions = normalizeGroupList(result.list);
+        renderGroupResultPanel(state.suggestions);
+        state.selectedGroup = null;
+        log(`控销组候选加载完成，共 ${state.suggestions.length} 条`, "ok");
+
+        const exact = state.suggestions.filter((x) => x.groupName === kw);
+        if (exact.length === 1) {
+          const idx = state.suggestions.findIndex((x) => x.storeGroupId === exact[0].storeGroupId);
+          if (idx >= 0) chooseGroupByIndex(idx);
+        } else if (!state.suggestions.length) {
+          notify("未搜索到匹配控销组", "warn");
+        }
+      } catch (error) {
+        renderGroupResultPanel([]);
+        notify(`控销组候选查询失败: ${error.message}`, "error");
+      } finally {
+        if (requestNo === state.searchRequestNo) {
+          input.disabled = false;
+          searchBtn.disabled = false;
+          searchBtn.textContent = "搜索";
+          input.focus();
+        }
+      }
+    }
+
+    const LoginUi = {
+      createLoginDialog() {
+        if (state.loginUi.overlay) return;
+
+        const overlay = document.createElement("div");
+        overlay.id = "login-overlay";
+        overlay.className = "login-overlay";
+        overlay.style.display = "none";
+
+        const container = document.createElement("div");
+        container.id = "login-container";
+        container.className = "login-container";
+
+        const closeBtn = document.createElement("button");
+        closeBtn.id = "login-close";
+        closeBtn.className = "login-close";
+        closeBtn.innerHTML = "×";
+        closeBtn.addEventListener("click", () => this.close());
+
+        const main = document.createElement("div");
+        main.id = "login-main";
+        main.className = "login-main";
+
+        container.appendChild(closeBtn);
+        container.appendChild(main);
+        overlay.appendChild(container);
+        document.body.appendChild(overlay);
+
+        state.loginUi.overlay = overlay;
+        state.loginUi.container = container;
+        state.loginUi.main = main;
+        state.loginUi.closeBtn = closeBtn;
+      },
+
+      addEventListener(element, event, handler) {
+        element.addEventListener(event, handler);
+        state.loginUi.eventListeners.push({ element, event, handler });
+      },
+
+      clearEventListeners() {
+        for (const x of state.loginUi.eventListeners) {
+          x.element.removeEventListener(x.event, x.handler);
+        }
+        state.loginUi.eventListeners = [];
+      },
+
+      open() {
+        if (!window.ScmLoginModule) {
+          notify("SCM登录模块未加载", "error");
+          return;
+        }
+
+        this.createLoginDialog();
+        this.clearEventListeners();
+        state.loginUi.captchaData = null;
+        state.loginUi.prefillLoading = false;
+        state.loginUi.accountPasswordPrefill = null;
+        state.loginUi.isOpen = true;
+
+        ScmLoginModule.init();
+        this.renderScmFormView();
+
+        state.loginUi.overlay.style.display = "flex";
+        state.loginUi.closeBtn.style.display = "";
+        setTimeout(() => {
+          state.loginUi.overlay.classList.add("active");
+          state.loginUi.container.classList.add("active");
+        }, 10);
+
+        log("打开SCM登录弹窗。");
+      },
+
+      close() {
+        if (!state.loginUi.overlay) return;
+        if (window.ScmLoginModule) ScmLoginModule.stopPolling();
+
+        state.loginUi.overlay.classList.remove("active");
+        state.loginUi.container.classList.remove("active");
+        setTimeout(() => {
+          state.loginUi.overlay.style.display = "none";
+          state.loginUi.isOpen = false;
+          this.clearEventListeners();
+        }, 300);
+      },
+
+      async loadCaptcha() {
+        const captchaImage = state.loginUi.main.querySelector("#captcha-image");
+        const captchaInput = state.loginUi.main.querySelector("#scm-captcha");
+        if (!captchaImage) return;
+
+        try {
+          captchaImage.innerHTML = '<div class="captcha-loading">加载中...</div>';
+          if (captchaInput) {
+            captchaInput.value = "";
+            captchaInput.placeholder = "自动加载中......";
+            captchaInput.disabled = true;
+          }
+
+          const data = await ScmLoginModule.getCaptcha();
+
+          if (data.success && data.captcha_base64) {
+            captchaImage.innerHTML = `<img src="${data.captcha_base64}" alt="验证码">`;
+            state.loginUi.captchaData = data;
+            if (captchaInput) {
+              captchaInput.value = "******";
+              captchaInput.placeholder = "点击下一步自动识别";
+              captchaInput.disabled = false;
+            }
+          } else {
+            captchaImage.innerHTML = '<div class="captcha-loading">加载失败，点击重试</div>';
+            if (captchaInput) {
+              captchaInput.value = "";
+              captchaInput.placeholder = "请输入验证码";
+              captchaInput.disabled = false;
+            }
+          }
+        } catch (error) {
+          captchaImage.innerHTML = '<div class="captcha-loading">加载失败，点击重试</div>';
+          if (captchaInput) {
+            captchaInput.value = "";
+            captchaInput.placeholder = "请输入验证码";
+            captchaInput.disabled = false;
+          }
+          notify(`加载验证码失败: ${error.message}`, "error");
+        }
+      },
+
+      renderScmFormView() {
+        state.loginUi.main.innerHTML = "";
+
+        const header = document.createElement("div");
+        header.className = "login-header";
+        header.innerHTML = "<h3>SCM系统登录</h3>";
+
+        const body = document.createElement("div");
+        body.className = "login-body";
+        body.innerHTML = `
+          <div class="login-form">
+            <div class="form-group">
+              <label for="scm-account">1. 账号</label>
+              <input type="text" id="scm-account" placeholder="自动加载中......" autocomplete="off" disabled>
+            </div>
+            <div class="form-group">
+              <label for="scm-password">2. 密码</label>
+              <input type="password" id="scm-password" placeholder="自动加载中......" autocomplete="off" disabled>
+            </div>
+            <div class="form-group">
+              <label for="scm-captcha">3. 验证码 <span style="font-size:12px;color:#999;">（默认自动识别）</span></label>
+              <div class="captcha-row">
+                <input type="text" id="scm-captcha" placeholder="请输入验证码" autocomplete="off">
+                <div id="captcha-image" class="captcha-image">
+                  <div class="captcha-loading">点击加载验证码</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const footer = document.createElement("div");
+        footer.className = "login-footer";
+        footer.innerHTML = '<button id="scm-next" class="login-btn primary">下一步</button>';
+
+        state.loginUi.main.appendChild(header);
+        state.loginUi.main.appendChild(body);
+        state.loginUi.main.appendChild(footer);
+
+        const captchaImage = body.querySelector("#captcha-image");
+        const nextBtn = footer.querySelector("#scm-next");
+        this.addEventListener(captchaImage, "click", () => this.loadCaptcha());
+        this.addEventListener(nextBtn, "click", () => this.verifyScmAccount());
+
+        this.loadCaptcha();
+        this.tryAutoFillScmAccountPassword();
+      },
+
+      async tryAutoFillScmAccountPassword() {
+        const accountInput = state.loginUi.main.querySelector("#scm-account");
+        const passwordInput = state.loginUi.main.querySelector("#scm-password");
+        if (!accountInput || !passwordInput) return;
+        if (state.loginUi.prefillLoading) return;
+
+        state.loginUi.prefillLoading = true;
+        try {
+          const prefill = await resolveScmLoginFormPrefill();
+          state.loginUi.accountPasswordPrefill = prefill;
+          if (!prefill || !state.loginUi.isOpen) {
+            accountInput.disabled = false;
+            passwordInput.disabled = false;
+            accountInput.placeholder = "请输入账号";
+            passwordInput.placeholder = "请输入密码";
+            return;
+          }
+
+          const accountNow = state.loginUi.main.querySelector("#scm-account");
+          const passwordNow = state.loginUi.main.querySelector("#scm-password");
+          if (!accountNow || !passwordNow) return;
+
+          accountNow.value = prefill.account;
+          passwordNow.value = prefill.password;
+          accountNow.disabled = false;
+          passwordNow.disabled = false;
+          accountNow.placeholder = "请输入账号";
+          passwordNow.placeholder = "请输入密码";
+          log(`已自动填充账号密码（${prefill.source}）`, "ok");
+        } catch (error) {
+          log(`自动填充账号密码失败: ${error.message}`, "warn");
+          accountInput.disabled = false;
+          passwordInput.disabled = false;
+          accountInput.placeholder = "请输入账号";
+          passwordInput.placeholder = "请输入密码";
+        } finally {
+          state.loginUi.prefillLoading = false;
+        }
+      },
+
+      async verifyScmAccount() {
+        const accountInput = state.loginUi.main.querySelector("#scm-account");
+        const passwordInput = state.loginUi.main.querySelector("#scm-password");
+        const captchaInput = state.loginUi.main.querySelector("#scm-captcha");
+        const nextBtn = state.loginUi.main.querySelector("#scm-next");
+
+        const account = accountInput.value.trim();
+        const password = passwordInput.value.trim();
+        let captcha = captchaInput.value.trim();
+
+        if (!account || !password) {
+          notify("请输入账号和密码", "warn");
+          return;
+        }
+
+        if (!state.loginUi.captchaData) {
+          notify("请先加载验证码", "warn");
+          return;
+        }
+
+        if (captcha === "******" || captcha === "") {
+          captchaInput.value = "";
+          captchaInput.placeholder = "自动识别中......";
+          captchaInput.disabled = true;
+          nextBtn.disabled = true;
+          nextBtn.textContent = "识别中...";
+
+          try {
+            const result = await ScmLoginModule.recognizeCaptcha(state.loginUi.captchaData.captcha_base64);
+            if (result) {
+              captcha = result;
+              captchaInput.value = result;
+              captchaInput.disabled = false;
+              log(`验证码自动识别: ${result}。`);
+            } else {
+              throw new Error("验证码识别失败");
+            }
+          } catch (error) {
+            captchaInput.value = "";
+            captchaInput.placeholder = "请输入验证码";
+            captchaInput.disabled = false;
+            notify("验证码识别失败，请手动输入", "warn");
+            nextBtn.disabled = false;
+            nextBtn.textContent = "下一步";
+            return;
+          }
+        }
+
+        nextBtn.disabled = true;
+        nextBtn.textContent = "校验中...";
+
+        try {
+          const result = await ScmLoginModule.startLogin(account, password, {
+            captcha,
+            cookies: state.loginUi.captchaData.cookies
+          });
+          this.renderScmQrcodeView(result.qrcodeUrl);
+          log("账号校验成功，进入扫码阶段", "ok");
+        } catch (error) {
+          notify(`登录校验失败: ${error.message}`, "error");
+          this.loadCaptcha();
+        } finally {
+          nextBtn.disabled = false;
+          nextBtn.textContent = "下一步";
+        }
+      },
+
+      renderScmQrcodeView(qrcodeUrl) {
+        state.loginUi.main.innerHTML = "";
+
+        const header = document.createElement("div");
+        header.className = "login-header";
+        header.innerHTML = "<h3>SCM系统登录</h3>";
+
+        const body = document.createElement("div");
+        body.className = "login-body";
+        body.innerHTML = `
+          <div class="qrcode-container">
+            <div class="qrcode-image" style="position: relative;">
+              <img src="${qrcodeUrl}" alt="企业微信二维码" id="qrcode-img">
+              <div class="qrcode-overlay" id="qrcode-overlay" style="display: none;">
+                <i class="fas fa-check-circle">✓</i>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const footer = document.createElement("div");
+        footer.className = "login-footer";
+        footer.innerHTML = '<button id="scm-login" class="login-btn primary">登录</button>';
+
+        state.loginUi.main.appendChild(header);
+        state.loginUi.main.appendChild(body);
+        state.loginUi.main.appendChild(footer);
+
+        const qrcodeImage = body.querySelector(".qrcode-image");
+        const loginBtn = footer.querySelector("#scm-login");
+
+        this.addEventListener(qrcodeImage, "click", () => this.refreshScmQrcode());
+        loginBtn.disabled = true;
+        loginBtn.textContent = "等待扫码...";
+
+        this.startScmPolling();
+      },
+
+      async refreshScmQrcode() {
+        const qrcodeImg = state.loginUi.main.querySelector("#qrcode-img");
+        const qrcodeOverlay = state.loginUi.main.querySelector("#qrcode-overlay");
+        const loginBtn = state.loginUi.main.querySelector("#scm-login");
+        if (!qrcodeImg || !loginBtn) return;
+
+        const oldState = ScmLoginModule.getState();
+        const account = oldState.account;
+        const password = oldState.password;
+        const cookies = oldState.cookies;
+
+        try {
+          qrcodeImg.style.opacity = "0.5";
+          if (qrcodeOverlay) qrcodeOverlay.style.display = "none";
+          loginBtn.disabled = true;
+          loginBtn.textContent = "刷新中...";
+
+          ScmLoginModule.stopPolling();
+          ScmLoginModule.restart();
+
+          const result = await ScmLoginModule.startLogin(account, password, { captcha: "", cookies });
+          qrcodeImg.src = result.qrcodeUrl;
+          qrcodeImg.style.opacity = "1";
+          loginBtn.textContent = "等待扫码...";
+          this.startScmPolling();
+          log("二维码已刷新。");
+        } catch (error) {
+          qrcodeImg.style.opacity = "1";
+          loginBtn.disabled = false;
+          loginBtn.textContent = "重试";
+          notify(`刷新二维码失败: ${error.message}`, "error");
+        }
+      },
+
+      _startPolling() {
+        const qrcodeOverlay = state.loginUi.main.querySelector("#qrcode-overlay");
+        const loginBtn = state.loginUi.main.querySelector("#scm-login");
+        if (!qrcodeOverlay || !loginBtn) return;
+
+        ScmLoginModule.startPolling().then(() => {
+          this.showLoginSuccess();
+        }).catch((error) => {
+          qrcodeOverlay.style.display = "none";
+          loginBtn.disabled = false;
+          loginBtn.textContent = "重试";
+          notify(`扫码轮询失败: ${error.message}`, "error");
+        });
+
+        const checkStatus = () => {
+          const s = ScmLoginModule.getState();
+          if (!state.loginUi.isOpen) return;
+
+          if (s.currentStep === "polling") {
+            if (s.lastStatus === "QRCODE_SCAN_ING") {
+              qrcodeOverlay.style.display = "flex";
+              loginBtn.disabled = true;
+              loginBtn.textContent = "扫码成功，请确认...";
+            } else if (s.lastStatus === "QRCODE_SCAN_SUCC") {
+              qrcodeOverlay.style.display = "flex";
+              loginBtn.disabled = true;
+              loginBtn.textContent = "登录中...";
+            } else {
+              qrcodeOverlay.style.display = "none";
+              loginBtn.disabled = true;
+              loginBtn.textContent = "等待扫码...";
+            }
+            setTimeout(checkStatus, 300);
+          } else if (s.currentStep === "success") {
+            qrcodeOverlay.style.display = "flex";
+            loginBtn.disabled = true;
+            loginBtn.textContent = "登录中...";
+          }
+        };
+
+        checkStatus();
+      },
+
+      startScmPolling() {
+        this._startPolling();
+      },
+
+      showLoginSuccess() {
+        state.loginUi.main.innerHTML = "";
+
+        const header = document.createElement("div");
+        header.className = "login-header";
+        header.innerHTML = "<h3>SCM系统登录</h3>";
+
+        const body = document.createElement("div");
+        body.className = "login-body";
+        body.innerHTML = `
+          <div class="success-container">
+            <div class="success-icon"><i>✓</i></div>
+            <div class="success-message">
+              <h4>登录成功！</h4>
+              <p>正在返回...</p>
+            </div>
+          </div>
+        `;
+
+        const footer = document.createElement("div");
+        footer.className = "login-footer";
+        footer.innerHTML = '<button class="login-btn primary" disabled>登录</button>';
+
+        state.loginUi.main.appendChild(header);
+        state.loginUi.main.appendChild(body);
+        state.loginUi.main.appendChild(footer);
+
+        const s = ScmLoginModule.getState();
+        const credentials = s.credentials || {};
+
+        state.auth = mapCredentialsToAuth(credentials);
+
+        if (!state.auth.token || !state.auth.cookies) {
+          notify("登录成功但凭证不完整，请重试", "error");
+          return;
+        }
+
+        saveAuth();
+        saveLegacyScmLocal(s.account || "", credentials, s.providerInfo || null);
+        persistScmLoginToFirebase(s.account || "", s.password || "", credentials, s.providerInfo || null);
+        $("loginBtn").textContent = "重新登录";
+        log("登录成功，已获取 token/cookies", "ok");
+
+        setTimeout(() => this.close(), 900);
+      }
+    };
+
+    async function handleBatchDelete() {
+      if (!state.auth) {
+        notify("请先登录系统", "warn");
+        return;
+      }
+      if (!state.selectedGroup) {
+        let matched = tryPickExactGroupFromInput();
+        if (!matched) {
+          const groupName = String($("groupInput").value || "").trim();
+          if (groupName) {
+            log("未选择控销组，尝试按输入名称自动匹配。");
+            try {
+              const result = await callManageApi("searchGroups", {
+                groupName,
+                storeName: "",
+                pageNo: 1,
+                pageSize: 30
+              });
+              state.suggestions = normalizeGroupList(result.list);
+              renderGroupResultPanel(state.suggestions);
+              matched = tryPickExactGroupFromInput();
+            } catch (error) {
+              notify(`控销组自动匹配失败: ${error.message}`, "error");
+              return;
+            }
+          }
+        }
+        if (!matched) {
+          notify("请先点击搜索，并从下拉中选择控销组", "warn");
+          return;
+        }
+      }
+
+      const ids = normalizeIdList($("storeIdsInput").value);
+      if (!ids.length) {
+        notify("请填写药店ID（每行一个）", "warn");
+        return;
+      }
+
+      const ok = window.confirm(`确认从控销组 [${state.selectedGroup.groupName}] 删除 ${ids.length} 个药店ID？`);
+      if (!ok) return;
+
+      const btn = $("deleteBtn");
+      btn.disabled = true;
+      btn.textContent = "删除中...";
+
+      try {
+        const result = await callManageApi("deleteGroupStores", {
+          storeGroupId: state.selectedGroup.storeGroupId,
+          branchIdList: ids
+        });
+        notify(`删除成功：${result.deletedCount} 个药店ID。`, "ok");
+      } catch (error) {
+        notify(`批量删除失败: ${error.message}`, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "批量删除";
+      }
+    }
+
+    async function tryValidateCachedAuth(authObj) {
+      try {
+        await callManageApi("searchGroups", {
+          groupName: "",
+          storeName: "",
+          pageNo: 1,
+          pageSize: 1
+        }, authObj);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function bindEvents() {
+      $("clearLogBtn").addEventListener("click", () => {
+        $("logBody").innerHTML = "";
+        state.logSeq = 0;
+        log("日志已清空。");
+      });
+
+      $("loginBtn").addEventListener("click", () => LoginUi.open());
+      $("deleteBtn").addEventListener("click", handleBatchDelete);
+
+      $("groupSearchBtn").addEventListener("click", () => {
+        searchGroupCandidates($("groupInput").value);
+      });
+
+      $("groupInput").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          $("groupSearchBtn").click();
+        }
+      });
+
+      $("groupInput").addEventListener("input", () => {
+        const inputName = String($("groupInput").value || "").trim();
+        if (!inputName) {
+          state.selectedGroup = null;
+          state.suggestions = [];
+          renderGroupResultPanel([]);
+          return;
+        }
+        if (state.selectedGroup && state.selectedGroup.groupName !== inputName) {
+          state.selectedGroup = null;
+          syncActiveGroupRow();
+        }
+      });
+
+      $("groupResultList").addEventListener("click", (event) => {
+        const item = event.target.closest(".group-result-item");
+        if (!item) return;
+        const idx = Number(item.dataset.idx);
+        if (!Number.isFinite(idx)) return;
+        chooseGroupByIndex(idx);
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest(".input-wrap")) {
+          hideGroupResultPanel();
+        }
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && state.loginUi.isOpen) {
+          LoginUi.close();
+        }
+      });
+    }
+
+    async function init() {
+      bindEvents();
+      LoginUi.createLoginDialog();
+
+      log("页面初始化完成。");
+      state.auth = null;
+      saveAuth();
+      const legacyLocal = loadLegacyScmLocal();
+      const preferredProviderId = legacyLocal?.credentials?.provider_id || "";
+
+      if (legacyLocal?.credentials) {
+        log("发现 SCM 本地凭证，开始验证。");
+        const localValid = await validateScmCredentials(legacyLocal.credentials);
+        if (localValid) {
+          state.auth = mapCredentialsToAuth(legacyLocal.credentials);
+          saveAuth();
+          $("loginBtn").textContent = "重新登录";
+          log("SCM本地凭证有效，可直接使用", "ok");
+          return;
+        }
+        log("SCM本地凭证失效，尝试按供应商ID自动恢复。", "warn");
+        clearLegacyScmLocal();
+        await markScmInvalidInFirebase(legacyLocal.username || "");
+      } else {
+        log("未发现 SCM 本地凭证", "warn");
+      }
+
+      if (!preferredProviderId) {
+        log("缺少供应商ID，跳过数据库自动恢复，请手动登录", "warn");
+        return;
+      }
+
+      const restored = await tryRestoreAuthFromFirebaseByProvider(preferredProviderId);
+      if (!restored) {
+        log("按供应商ID自动恢复失败，请重新登录", "warn");
+        return;
+      } else {
+        state.auth = restored;
+        saveAuth();
+        $("loginBtn").textContent = "重新登录";
+        log("已按供应商ID从数据库自动恢复登录", "ok");
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
