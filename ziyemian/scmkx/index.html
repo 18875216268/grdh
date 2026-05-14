@@ -774,6 +774,66 @@
       }
     }
 
+    .query-result-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e8e8e8;
+      font-size: 13px;
+      line-height: 1.6;
+      background: #fff;
+      transition: background 0.15s ease;
+    }
+
+    .query-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .query-result-item:hover {
+      background: #f5f9ff;
+    }
+
+    .query-result-name {
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+
+    .query-result-id {
+      color: #3b82f6;
+      font-family: Consolas, Monaco, monospace;
+    }
+
+    .query-result-empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: #9ca3af;
+      font-size: 14px;
+    }
+
+    .query-result-loading {
+      padding: 40px 20px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .query-result-status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-left: 8px;
+    }
+
+    .query-result-status.success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .query-result-status.error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
     @media (max-width: 1024px) {
       body {
         align-items: flex-start;
@@ -859,12 +919,37 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
         <div class="actions">
           <button id="loginBtn" class="btn btn-primary">登录系统</button>
           <button id="deleteBtn" class="btn btn-danger">批量删除</button>
+          <button id="queryBtn" class="btn btn-primary">查询</button>
         </div>
       </div>
     </section>
   </main>
 
   <div id="toastContainer" class="toast-container"></div>
+
+  <div id="queryOverlay" class="login-overlay" style="display: none;">
+    <div id="queryContainer" class="login-container" style="width: 520px; height: 85vh; max-height: 85vh;">
+      <button id="queryClose" class="login-close">×</button>
+      <div id="queryMain" class="login-main">
+        <div class="login-header">
+          <h3>批量查询药店信息</h3>
+        </div>
+        <div class="login-body" style="display: flex; flex-direction: column; gap: 14px; flex: 1; min-height: 0;">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 14px; font-weight: 500; color: #333;">药店名称（一行一个）</label>
+            <textarea id="queryNamesInput" placeholder="请输入药店全称，一行一个：&#10;&#10;老飞机场门诊部&#10;罗思俊诊所&#10;......" style="height: 120px; resize: none; overflow-y: auto;"></textarea>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0;">
+            <label style="font-size: 14px; font-weight: 500; color: #333;">查询结果</label>
+            <div id="queryResultList" style="flex: 1; min-height: 0; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px; background: #fafafa;"></div>
+          </div>
+        </div>
+        <div class="login-footer">
+          <button id="queryStartBtn" class="login-btn primary">开始查询</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     // 设备指纹模块
@@ -1877,7 +1962,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
             throw new Error(data && data.message ? data.message : `HTTP ${status}`);
           }
           if (Number(data.code) !== 0) {
-            throw new Error(data.message || "云函数业务失败！");
+            throw new Error(data.message || "云函数业务失败");
           }
           return data.data;
         } catch (error) {
@@ -1885,7 +1970,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
           log(`请求失败，尝试下一个地址: ${error.message}。`, "warn");
         }
       }
-      throw lastError || new Error("所有云函数地址均调用失败！");
+      throw lastError || new Error("所有云函数地址均调用失败");
     }
 
     async function searchGroupCandidates(keyword) {
@@ -1902,7 +1987,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
         renderGroupResultPanel([]);
         state.suggestions = [];
         state.selectedGroup = null;
-        notify("请输入控销组关键字！", "warn");
+        notify("请输入控销组关键字", "warn");
         return;
       }
 
@@ -2398,6 +2483,197 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
       }
     };
 
+    const QueryUi = {
+      open() {
+        const overlay = $("queryOverlay");
+        const container = $("queryContainer");
+        const closeBtn = $("queryClose");
+        const startBtn = $("queryStartBtn");
+        const namesInput = $("queryNamesInput");
+        const resultList = $("queryResultList");
+
+        if (!state.auth) {
+          notify("请先登录系统", "warn");
+          return;
+        }
+
+        if (!state.selectedGroup) {
+          notify("请先选择控销组", "warn");
+          return;
+        }
+
+        namesInput.value = "";
+        resultList.innerHTML = '<div class="query-result-empty">请输入药店名称后点击"开始查询"</div>';
+
+        overlay.style.display = "flex";
+        setTimeout(() => {
+          overlay.classList.add("active");
+          container.classList.add("active");
+        }, 10);
+
+        closeBtn.onclick = () => this.close();
+        startBtn.onclick = () => this.startQuery();
+
+        log(`打开查询弹窗 - 控销组: ${state.selectedGroup.groupName}。`);
+      },
+
+      close() {
+        const overlay = $("queryOverlay");
+        const container = $("queryContainer");
+
+        overlay.classList.remove("active");
+        container.classList.remove("active");
+        setTimeout(() => {
+          overlay.style.display = "none";
+        }, 300);
+      },
+
+      async startQuery() {
+        const namesInput = $("queryNamesInput");
+        const resultList = $("queryResultList");
+        const startBtn = $("queryStartBtn");
+
+        const names = String(namesInput.value || "")
+          .split(/[\n\r]+/)
+          .map(x => x.trim())
+          .filter(x => x);
+
+        if (!names.length) {
+          notify("请输入药店名称", "warn");
+          return;
+        }
+
+        const BATCH_SIZES = [50, 30, 10, 5];
+        const MAX_RETRIES = 3;
+
+        startBtn.disabled = true;
+        startBtn.textContent = "查询中...";
+        resultList.innerHTML = '<div class="query-result-loading">正在查询，请稍候...</div>';
+
+        log(`开始批量查询 ${names.length} 个药店（初始并发: ${BATCH_SIZES[0]}）- 控销组: ${state.selectedGroup.groupName}。`);
+
+        const retryCount = new Map();
+        const finalResults = new Map();
+        let toQuery = [...names];
+
+        while (toQuery.length > 0) {
+          let currentBatchIndex = 0;
+          let currentBatchSize = BATCH_SIZES[currentBatchIndex];
+          let processedCount = 0;
+          const roundResults = [];
+
+          const isRetry = toQuery.some(name => retryCount.has(name));
+          if (isRetry) {
+            log(`开始重试 ${toQuery.length} 个失败的药店。`, "warn");
+          }
+
+          while (processedCount < toQuery.length) {
+            const batch = toQuery.slice(processedCount, processedCount + currentBatchSize);
+            const batchNum = Math.floor(processedCount / currentBatchSize) + 1;
+
+            log(`查询进度: 第 ${batchNum} 批（${processedCount + 1}-${processedCount + batch.length}/${toQuery.length}，并发: ${currentBatchSize}）。`);
+
+            const batchResults = await Promise.all(
+              batch.map(async (name) => {
+                try {
+                  const data = await callManageApi("searchNoOrderStore", {
+                    storeGroupId: state.selectedGroup.storeGroupId,
+                    fullName: name
+                  });
+                  return { name, success: true, data };
+                } catch (error) {
+                  return { name, success: false, error: error.message };
+                }
+              })
+            );
+
+            roundResults.push(...batchResults);
+            processedCount += batch.length;
+
+            for (const result of batchResults) {
+              if (result.success) {
+                finalResults.set(result.name, result);
+              }
+            }
+            this.renderResults(Array.from(finalResults.values()));
+
+            const failCount = batchResults.filter(r => !r.success).length;
+            const failRate = failCount / batchResults.length;
+
+            if (failRate > 0.5 && currentBatchIndex < BATCH_SIZES.length - 1) {
+              currentBatchIndex++;
+              currentBatchSize = BATCH_SIZES[currentBatchIndex];
+              log(`失败率过高（${(failRate * 100).toFixed(0)}%），降低并发至 ${currentBatchSize}。`, "warn");
+            }
+          }
+
+          const failedNames = [];
+          for (const result of roundResults) {
+            if (!result.success) {
+              const count = (retryCount.get(result.name) || 0) + 1;
+              retryCount.set(result.name, count);
+
+              if (count < MAX_RETRIES) {
+                failedNames.push(result.name);
+              } else {
+                finalResults.set(result.name, result);
+                log(`药店"${result.name}"已重试${count}次，放弃查询。`, "error");
+              }
+            }
+          }
+
+          toQuery = failedNames;
+        }
+
+        startBtn.disabled = false;
+        startBtn.textContent = "开始查询";
+
+        const allResults = Array.from(finalResults.values());
+        this.renderResults(allResults);
+
+        const successCount = allResults.filter(r => r.success && r.data && r.data.length > 0).length;
+        const failedCount = allResults.filter(r => !r.success).length;
+        log(`查询完成，成功 ${successCount}/${names.length} 个，失败 ${failedCount} 个。`, successCount > 0 ? "ok" : "warn");
+      },
+
+      renderResults(results) {
+        const resultList = $("queryResultList");
+
+        if (!results.length) {
+          resultList.innerHTML = '<div class="query-result-empty">无查询结果</div>';
+          return;
+        }
+
+        let html = "";
+        for (const result of results) {
+          if (result.success && result.data && result.data.length > 0) {
+            const store = result.data[0];
+            html += `
+              <div class="query-result-item">
+                <div class="query-result-name">
+                  ${store.fullName || store.storetitle || result.name}
+                  <span class="query-result-status success">找到</span>
+                </div>
+                <div class="query-result-id">ID: ${store.drugstoreBranchId}</div>
+              </div>
+            `;
+          } else {
+            html += `
+              <div class="query-result-item">
+                <div class="query-result-name">
+                  ${result.name}
+                  <span class="query-result-status error">未找到</span>
+                </div>
+                <div style="color: #6b7280; font-size: 12px;">${result.error || "该药店不存在或已在控销组中"}</div>
+              </div>
+            `;
+          }
+        }
+
+        resultList.innerHTML = html;
+      }
+    };
+
     async function handleBatchDelete() {
       if (!state.auth) {
         notify("请先登录系统", "warn");
@@ -2478,6 +2754,7 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
 
       $("loginBtn").addEventListener("click", () => LoginUi.open());
       $("deleteBtn").addEventListener("click", handleBatchDelete);
+      $("queryBtn").addEventListener("click", () => QueryUi.open());
 
       $("groupSearchBtn").addEventListener("click", () => {
         searchGroupCandidates($("groupInput").value);
@@ -2519,8 +2796,12 @@ Ps：建议单次不易过多，具体根据不同电脑性能而定，可自行
       });
 
       window.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && state.loginUi.isOpen) {
-          LoginUi.close();
+        if (event.key === "Escape") {
+          if (state.loginUi.isOpen) {
+            LoginUi.close();
+          } else if ($("queryOverlay").style.display === "flex") {
+            QueryUi.close();
+          }
         }
       });
     }
