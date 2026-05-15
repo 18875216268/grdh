@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+
+
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -146,6 +148,16 @@
 
         .rule-grid .wide { grid-column: 1 / 3; }
 
+        #operation-config-fields,
+        #activity-status-config-fields {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        #operation-config-fields .wide,
+        #activity-status-config-fields .wide {
+            grid-column: auto;
+        }
+
         .config-card,
         .area-config-box {
             border: 1px solid #dbe3ef;
@@ -171,6 +183,7 @@
 
         .dual-config-row .config-card {
             margin-bottom: 0;
+            min-width: 0;
         }
 
         .time-range-row {
@@ -300,12 +313,14 @@
             gap: 4px;
             font-size: 12px;
             color: var(--muted);
+            min-width: 0;
         }
 
         input, textarea, select, button { font: inherit; }
 
         input:not([type="checkbox"]):not([type="radio"]), select {
             width: 100%;
+            min-width: 0;
             border: 1px solid #d1d5db;
             border-radius: 10px;
             height: 32px;
@@ -2062,27 +2077,10 @@
         }
     }
 
-    function createListBody(auth, wholesaleId, wholesaleStatus, buildTime) {
+    function createListBody(auth, wholesaleId, buildTime) {
         return {
             providerId: String(auth.providerId),
             wholesaleId: String(wholesaleId),
-            wholesaleStatus: wholesaleStatus,
-            provDrugCode: '',
-            drugKeyword: '',
-            approval: '',
-            contactor: '',
-            operator: '',
-            busiFlag: '',
-            checkFlag: 1,
-            leyoTagIdList: [],
-            provTagIdList: [],
-            pricingStatusList: [],
-            abnPricingTypeList: [],
-            specialFlag: '',
-            operationFlag: '',
-            linkFlag: '',
-            beClickAbnWaitCheck: '',
-            beClickMyAbnWaitCheck: '',
             page: 1,
             pageSize: 10,
             token: auth.token,
@@ -2093,20 +2091,11 @@
     async function queryActivityById(auth, activityId) {
         const buildTime = formatBuildTime();
 
-        const first = await relayPmsApi('pageOneFixedWsList', auth.token, createListBody(auth, activityId, '5', buildTime));
-        assertBizOk(first, '查询活动');
-
-        let row = first.data && Array.isArray(first.data.results)
-            ? first.data.results.find(function (x) { return String(x.wholesaleId) === String(activityId); })
+        const resp = await relayPmsApi('pageOneFixedWsList', auth.token, createListBody(auth, activityId, buildTime));
+        assertBizOk(resp, '查询活动');
+        const row = resp.data && Array.isArray(resp.data.results)
+            ? resp.data.results.find(function (x) { return String(x.wholesaleId) === String(activityId); })
             : null;
-
-        if (!row) {
-            const second = await relayPmsApi('pageOneFixedWsList', auth.token, createListBody(auth, activityId, '', buildTime));
-            assertBizOk(second, '查询活动(兜底)');
-            row = second.data && Array.isArray(second.data.results)
-                ? second.data.results.find(function (x) { return String(x.wholesaleId) === String(activityId); })
-                : null;
-        }
 
         return row || null;
     }
@@ -3405,6 +3394,44 @@
     init();
 })();
 
+</script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
 </script>
 </body>
 </html>
