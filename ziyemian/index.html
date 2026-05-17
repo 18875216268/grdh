@@ -2097,14 +2097,22 @@
                 buildTime: buildTime,
                 ...params
             };
+            log('[调试] 尝试API: ' + apiName + ', 参数: ' + JSON.stringify(params));
             const resp = await relayPmsApi(apiName, auth.token, body);
+            log('[调试] API响应: ' + apiName + ', code=' + (resp ? resp.code : 'null'));
+
             if (resp && resp.code === '40001' && resp.data && Array.isArray(resp.data.results)) {
-                return resp.data.results.find(function (x) { return String(x.wholesaleId) === String(activityId); });
+                const found = resp.data.results.find(function (x) { return String(x.wholesaleId) === String(activityId); });
+                if (found) log('[调试] 在 ' + apiName + ' 中找到活动！');
+                return found;
             }
             if (resp && resp.code === '40001' && resp.data && Array.isArray(resp.data.list)) {
-                return resp.data.list.find(function (x) { return String(x.wholesaleId) === String(activityId); });
+                const found = resp.data.list.find(function (x) { return String(x.wholesaleId) === String(activityId); });
+                if (found) log('[调试] 在 ' + apiName + ' 中找到活动！');
+                return found;
             }
         } catch (e) {
+            log('[调试] API调用异常: ' + apiName + ', 错误: ' + e.message, 'err');
             return null;
         }
         return null;
