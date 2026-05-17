@@ -2087,16 +2087,47 @@
         };
     }
 
+    async function tryQueryApi(auth, activityId, apiName, params) {
+        try {
+            const buildTime = formatBuildTime();
+            const body = {
+                providerId: String(auth.providerId),
+                wholesaleId: String(activityId),
+                token: auth.token,
+                buildTime: buildTime,
+                ...params
+            };
+            const resp = await relayPmsApi(apiName, auth.token, body);
+            if (resp && resp.code === '40001' && resp.data && Array.isArray(resp.data.results)) {
+                return resp.data.results.find(function (x) { return String(x.wholesaleId) === String(activityId); });
+            }
+            if (resp && resp.code === '40001' && resp.data && Array.isArray(resp.data.list)) {
+                return resp.data.list.find(function (x) { return String(x.wholesaleId) === String(activityId); });
+            }
+        } catch (e) {
+            return null;
+        }
+        return null;
+    }
+
     async function queryActivityById(auth, activityId) {
-        const buildTime = formatBuildTime();
+        const wave1 = [
+            tryQueryApi(auth, activityId, 'pageOneFixedWsList', { page: 1, pageSize: 10 }),
+            tryQueryApi(auth, activityId, 'getSpecialProductWholeSaleList', { page: 1, pageSize: 10 })
+        ];
 
-        const resp = await relayPmsApi('pageOneFixedWsList', auth.token, createListBody(auth, activityId, buildTime));
-        assertBizOk(resp, '查询活动');
-        const row = resp.data && Array.isArray(resp.data.results)
-            ? resp.data.results.find(function (x) { return String(x.wholesaleId) === String(activityId); })
-            : null;
+        const results1 = await Promise.all(wave1);
+        const found1 = results1.find(function (r) { return r !== null; });
+        if (found1) return found1;
 
-        return row || null;
+        const wave2 = [
+            tryQueryApi(auth, activityId, 'pageWholeSaleByType', { tabType: 2, pageNum: 1, pageSize: 10 }),
+            tryQueryApi(auth, activityId, 'pageWholeSaleByType', { tabType: 3, pageNum: 1, pageSize: 10 }),
+            tryQueryApi(auth, activityId, 'pageWholeSaleByType', { tabType: 4, pageNum: 1, pageSize: 10 })
+        ];
+
+        const results2 = await Promise.all(wave2);
+        return results2.find(function (r) { return r !== null; }) || null;
     }
 
     function resolveRulePayloadValues(row, targetConfig) {
