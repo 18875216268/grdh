@@ -1334,6 +1334,33 @@
         return Number.isFinite(n) ? n : fallback;
     }
 
+    function markActivityQuerySource(row, apiName, params) {
+        if (row && typeof row === 'object') {
+            row.__queryApiName = apiName || '';
+            row.__queryParams = params || {};
+        }
+        return row;
+    }
+
+    function resolveYkjWholeSaleType(row) {
+        const sourceApiName = String(row && row.__queryApiName || '');
+        const rawType = toFiniteNumber(row && row.wholesaleType, null);
+
+        if (rawType === 1 || rawType === 2) {
+            return rawType;
+        }
+        if (sourceApiName === 'getSpecialProductWholeSaleList') {
+            return 2;
+        }
+        if (sourceApiName === 'pageOneFixedWsList') {
+            return 1;
+        }
+        if (rawType === 4) {
+            return 2;
+        }
+        return 1;
+    }
+
     function readRuleValues(row) {
         return {
             minQty: toFiniteNumber(row && row.minQty, null),
@@ -2105,14 +2132,14 @@
                 const found = resp.data.results.find(function (x) { return String(x.wholesaleId) === String(activityId); });
                 if (found) {
                     log('[调试] 在 ' + apiName + ' 中找到活动！');
-                    return found;
+                    return markActivityQuerySource(found, apiName, params);
                 }
             }
             if (resp && resp.code === '40001' && resp.data && Array.isArray(resp.data.list)) {
                 const found = resp.data.list.find(function (x) { return String(x.wholesaleId) === String(activityId); });
                 if (found) {
                     log('[调试] 在 ' + apiName + ' 中找到活动！');
-                    return found;
+                    return markActivityQuerySource(found, apiName, params);
                 }
             }
         } catch (e) {
@@ -2247,7 +2274,7 @@
             wholeSaleId: toFiniteNumber(row.wholesaleId, row.wholesaleId),
             beginDate: beginDate,
             endDate: endDate,
-            wholeSaleType: toFiniteNumber(row.wholesaleType, 1),
+            wholeSaleType: resolveYkjWholeSaleType(row),
             token: auth.token,
             buildTime: formatBuildTime()
         };
@@ -2296,7 +2323,7 @@
 
     async function updateActivityStatus(auth, row, statusConfig) {
         const wholeSaleId = toFiniteNumber(row.wholesaleId, row.wholesaleId);
-        const wholeSaleType = toFiniteNumber(row.wholesaleType, 1);
+        const wholeSaleType = resolveYkjWholeSaleType(row);
         const candidates = getActivityStatusUpdateCodes(statusConfig.wholesaleStatus);
         const errors = [];
 
@@ -3439,4 +3466,3 @@
 </script>
 </body>
 </html>
-
